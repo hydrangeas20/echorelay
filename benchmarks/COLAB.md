@@ -194,101 +194,172 @@ should be labelled as such.
 
 ---
 
-# Phase 2 experiments
+# Phase 2 experiments: E7, E1, E2
 
 Plan, predictions and pass/fail checks: [`docs/phase2-plan.md`](../docs/phase2-plan.md).
-Run stages 0–2 above first (clone, install, `gpu_smoke`). Use the **same
-five Phase 1 files** so results are comparable:
+Run the cells **in order, one experiment at a time**, in a single Colab
+session on a T4 runtime. Every experiment writes into its own folder under
+`/content/echorelay/results/phase2/`, together with a `provenance.json`
+(commit, packages, GPU, server configuration).
+
+Set `PHASE2_SHA` to the commit you are validating. It is the head of
+`feat/phase2-observability` at the time you run this; `verify_commit` refuses
+anything else.
+
+## P0. Setup (once per session)
+
+**P0.1 GPU attached**
 
 ```bash
-!python -m benchmarks.prepare_audio --out eval_audio5 --num 5
-!sha256sum eval_audio5/*.wav   # compare with the audio manifest in docs/benchmarks/phase1-t4/raw/*.json
+!nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv
 ```
 
-Helper used below to (re)start the server. Every Phase 2 run enables
-per-event timing:
+**P0.2 Clone the private repo without persisting credentials.** Uses the
+`GH_TOKEN` Colab secret: a fine-grained, read-only token for this repository
+only (see "Private repository" above).
 
 ```python
-import subprocess, time, urllib.request
-def start_server(compute_type="float16", workers=1, max_streams=8):
-    subprocess.run("pkill -f 'python -m echorelay'", shell=True)
-    time.sleep(2)
-    env = (f"ECHORELAY_DEVICE=cuda ECHORELAY_COMPUTE_TYPE={compute_type} ECHORELAY_EVENT_TIMING=true "
-           f"ECHORELAY_MAX_CONCURRENT_INFERENCE={workers} ECHORELAY_MAX_CONCURRENT_STREAMS={max_streams}")
-    subprocess.Popen(f"{env} nohup python -m echorelay --port 8000 > server_{compute_type}_w{workers}.log 2>&1",
-                     shell=True)
-    for _ in range(90):
-        try:
-            print(urllib.request.urlopen("http://127.0.0.1:8000/health", timeout=2).read().decode()[:160])
-            return
-        except OSError:
-            time.sleep(2)
-    raise RuntimeError("server did not start; check the log")
+import base64, os, subprocess
+from google.colab import userdata
+
+PHASE2_SHA = "<paste the commit SHA here>"
+
+token = userdata.get("GH_TOKEN")
+auth = base64.b64encode(f"x-access-token:{token}".encode()).decode()
+env = {**os.environ, "GIT_TERMINAL_PROMPT": "0", "GIT_CONFIG_COUNT": "1",
+       "GIT_CONFIG_KEY_0": "http.https://github.com/.extraheader",
+       "GIT_CONFIG_VALUE_0": f"AUTHORIZATION: basic {auth}"}
+subprocess.run(["git", "clone", "-b", "feat/phase2-observability",
+                "https://github.com/hydrangeas20/echorelay.git", "/content/echorelay"],
+               env=env, check=True)
+del token, auth, env
+subprocess.run(["git", "-C", "/content/echorelay", "checkout", "--quiet", "--detach", PHASE2_SHA], check=True)
 ```
 
-**E7: rescore Phase 1 WER with references (no GPU needed)**
+**P0.3 Install, then verify the commit.**
 
-```bash
-!python -m benchmarks.rescore --audio-dir eval_audio5 \
-    docs/benchmarks/phase1-t4/raw/stream_fp16_c4.json docs/benchmarks/phase1-t4/raw/stream_int8_c4.json \
-    docs/benchmarks/phase1-t4/raw/precision_t4.json --output results/phase1_rescore.json
+```python
+%cd /content/echorelay
+!pip install -q -e ".[bench]" soundfile
+from benchmarks.colab_helpers import *
+verify_commit(PHASE2_SHA)
+!git -C /content/echorelay config --list | grep -i -E "extraheader|token" || echo "no credentials stored"
 ```
 
-**E1: offline decode cost vs audio length**
+**P0.4 Evaluation audio: the same five files as Phase 1.** The check
+compares PCM sample hashes with the Phase 1 result manifest. `sha256sum` on
+the .wav files cannot be compared because it includes the WAV header.
 
-```bash
-!python -m benchmarks.profile_decode --audio-dir eval_audio5 \
+```python
+!python -m benchmarks.prepare_audio --out /content/echorelay/eval_audio5 --num 5
+verify_eval_audio("/content/echorelay/eval_audio5",
+                  "/content/echorelay/docs/benchmarks/phase1-t4/raw/stream_fp16_c4.json")
+```
+
+If this fails, stop: Phase 2 would not be comparable with Phase 1.
+
+**P0.5 GPU smoke gate**
+
+```python
+!python -m benchmarks.gpu_smoke --audio-dir /content/echorelay/eval_audio5 \
+    --output /content/echorelay/results/phase2/P0_smoke/gpu_smoke.json
+```
+
+Continue only if both compute types print `[PASS]`.
+
+**Saving results.** Run this cell after **every** experiment. A Colab
+disconnect then loses at most one experiment. The zip contains everything
+under `results/phase2/`.
+
+```python
+import shutil
+from google.colab import files
+shutil.make_archive("/content/echorelay_phase2_results", "zip", "/content/echorelay/results/phase2")
+files.download("/content/echorelay_phase2_results.zip")
+```
+
+## E7. Rescore Phase 1 WER with reference transcripts (no GPU work, seconds)
+
+```python
+EXP = "/content/echorelay/results/phase2/E7_rescore"
+os.makedirs(EXP, exist_ok=True)
+!python -m benchmarks.rescore --audio-dir /content/echorelay/eval_audio5 \
+    docs/benchmarks/phase1-t4/raw/stream_fp16_pilot.json \
+    docs/benchmarks/phase1-t4/raw/stream_fp16_c4.json \
+    docs/benchmarks/phase1-t4/raw/stream_int8_c4.json \
+    docs/benchmarks/phase1-t4/raw/precision_t4.json \
+    --output {EXP}/rescore.json 2>&1 | tee {EXP}/console.txt
+save_provenance(EXP, "E7: rescore Phase 1 transcripts under WER normalizers v1 and v2")
+```
+
+How to read it:
+* `WER_v1` must reproduce Phase 1 exactly: 0.0708 (FP16) and 0.0619
+  (INT8/FP16). If it does not, the references differ from Phase 1; stop and
+  report.
+* `WER_v2` is the corrected value. The prediction is 0.0531 (6/113) for both
+  precisions. Any other value is the finding.
+
+## E1. Offline decode cost vs audio length (no server, ~5-10 min)
+
+```python
+stop_server()   # nothing else may use the GPU during the profile
+!nvidia-smi --query-compute-apps=pid,process_name,used_memory --format=csv
+EXP = "/content/echorelay/results/phase2/E1_profile_decode"
+os.makedirs(EXP, exist_ok=True)
+!python -m benchmarks.profile_decode --audio-dir /content/echorelay/eval_audio5 \
     --lengths 1 2 4 8 12 16 20 25 30 40 60 --compute-types float16 int8_float16 --repeats 5 \
-    --output results/profile_decode_t4.json
+    --output {EXP}/profile_decode_t4.json 2>&1 | tee {EXP}/console.txt
+save_provenance(EXP, "E1: offline decode cost vs audio length, FP16 and INT8/FP16")
 ```
 
-**E2 / E3 / E5: stress matrix (FP16, then INT8/FP16).** Sampling records SM
-clocks for E5.
+The `nvidia-smi` line should list no compute processes. The prediction:
+partial cost ≈ 31 ms + 6.2 ms per audio-second up to 30 s (FP16), with a
+step above 30 s.
+
+## E2. Stress matrix, FP16 (~8-10 min)
+
+**E2.1 Start the server and verify it.** Same server settings as Phase 1,
+plus per-event timing.
 
 ```python
-start_server("float16")
-!python -m benchmarks.stress --audio-dir eval_audio5 --streams 20 --concurrency 1 4 8 \
-    --burst-extra 4 --label "T4 FP16" --output-dir results/stress_fp16
-start_server("int8_float16")
-!python -m benchmarks.stress --audio-dir eval_audio5 --streams 20 --concurrency 1 4 8 \
-    --burst-extra 4 --label "T4 INT8-FP16" --output-dir results/stress_int8
+EXP = "/content/echorelay/results/phase2/E2_stress_fp16"
+os.makedirs(EXP, exist_ok=True)
+start_server(f"{EXP}/server.log", device="cuda", compute_type="float16", event_timing="true",
+             max_concurrent_inference=1, max_concurrent_streams=8)
+verify_server({"backend": "whisper", "model": "base.en", "device": "cuda", "compute_type": "float16",
+               "event_timing": True, "max_concurrent_inference": 1, "max_concurrent_streams": 8,
+               "partial_interval_s": 1.0, "min_partial_audio_s": 0.5, "partial_beam_size": 1,
+               "final_beam_size": 5, "active_streams": 0})
 ```
 
-**E4: long streams (60 s, built from whole files with exact references)**
+**E2.2 Run the matrix** (c=1, 4, 8, then a burst of 12 connections against
+the limit of 8, then c=1 again for recovery).
 
 ```python
-start_server("float16")
-!python -m benchmarks.stress --audio-dir eval_audio5 --concat-seconds 60 --streams 8 \
-    --concurrency 1 2 4 --burst-extra 0 --stream-timeout-s 600 \
-    --label "T4 FP16 60s" --output-dir results/stress_fp16_long60
+!python -m benchmarks.stress --audio-dir /content/echorelay/eval_audio5 --streams 20 \
+    --concurrency 1 4 8 --burst-extra 4 --label "T4 FP16" --output-dir {EXP} 2>&1 | tee {EXP}/console.txt
 ```
 
-**E6: unpaced capacity**
+The last lines are the PASS/FAIL checks, also in `{EXP}/stress_report.json`.
+A FAIL is a finding to report, not a reason to rerun.
+
+**E2.3 Record provenance while the server is still up, stop it, analyze.**
 
 ```python
-start_server("float16")
-!python -m benchmarks.load_test --audio-dir eval_audio5 --streams 40 --concurrency 4 --speed 0 \
-    --label "T4 FP16 c=4 UNPACED" --output results/unpaced_fp16_c4.json
+save_provenance(EXP, "E2: stress matrix FP16 with event timing")
+stop_server()
+!python -m benchmarks.analyze_results {EXP}/c1.json {EXP}/c4.json {EXP}/c8.json {EXP}/recovery.json \
+    --output {EXP}/analysis.json --markdown {EXP}/analysis.md
 ```
 
-**E8: two inference workers (configuration only)**
+Then run the saving cell and send the zip back.
 
-```python
-start_server("float16", workers=2)
-!python -m benchmarks.stress --audio-dir eval_audio5 --streams 20 --concurrency 4 8 \
-    --burst-extra 0 --label "T4 FP16 2 workers" --output-dir results/stress_fp16_w2
-```
+## Later experiments (not yet scheduled)
 
-**Analyze.** Pass the paced scenario files (`c*.json`, `recovery.json`), not
-`burst.json` or `stress_report.json`:
+Same pattern: a fresh `EXP` folder, `start_server` / `verify_server`, then
+save provenance.
 
-```bash
-!python -m benchmarks.analyze_results results/stress_fp16/c*.json results/stress_int8/c*.json \
-    results/stress_fp16_long60/c*.json --output results/phase2_analysis.json \
-    --markdown results/phase2_analysis.md
-```
-
-Each `stress_report.json` lists every check as PASS/FAIL. A FAIL is a
-finding to report, not something to rerun until it passes. Download
-`results/` and the `server_*.log` files; the logs contain per-stream
-summaries but no transcript text.
+* **E3:** E2 with `compute_type="int8_float16"`.
+* **E4:** `--concat-seconds 60 --streams 8 --concurrency 1 2 4 --burst-extra 0 --stream-timeout-s 600`.
+* **E6:** `load_test --speed 0 --concurrency 4 --streams 40`.
+* **E8:** `max_concurrent_inference=2`, `--concurrency 4 8 --burst-extra 0`.
