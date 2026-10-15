@@ -45,6 +45,19 @@ class ClientDisconnected(Exception):
     pass
 
 
+async def _cancel_and_wait(task: asyncio.Future) -> None:
+    """Cancel ``task`` and wait until it has actually finished.
+
+    ``asyncio.wait`` never raises the task's own exception, so this works
+    whether or not the caller is itself being cancelled; if the caller is
+    cancelled again while waiting, that cancellation propagates normally.
+    """
+    task.cancel()
+    await asyncio.wait({task})
+    if not task.cancelled():
+        task.exception()  # mark retrieved; avoids "exception never retrieved"
+
+
 def inference_failure(exc: Exception) -> StreamError:
     if isinstance(exc, InferenceTimeout):
         return StreamError("inference_timeout", str(exc), CloseCode.INTERNAL_ERROR)
@@ -101,15 +114,19 @@ class StreamSession:
 
     async def _next_message(self) -> Incoming:
         recv = asyncio.ensure_future(self._receive())
-        done, _ = await asyncio.wait(
-            {recv, self._fatal},
-            timeout=self.settings.idle_timeout_s,
-            return_when=asyncio.FIRST_COMPLETED,
-        )
+        try:
+            done, _ = await asyncio.wait(
+                {recv, self._fatal},
+                timeout=self.settings.idle_timeout_s,
+                return_when=asyncio.FIRST_COMPLETED,
+            )
+        finally:
+            # Runs on every exit path, including cancellation of this
+            # coroutine: never leave the receive task pending.
+            if not recv.done():
+                await _cancel_and_wait(recv)
         if recv in done:
             return recv.result()
-        recv.cancel()
-        await asyncio.gather(recv, return_exceptions=True)
         if self._fatal in done:
             raise self._fatal.result()
         raise StreamError(

@@ -28,7 +28,7 @@ src/echorelay/
     fake.py          deterministic fake adapter (tests, model-free demos)
     runner.py        thread-pool execution, bounded concurrency, timeouts
 clients/stream_wav.py   demo client
-benchmarks/             load test, FP16/INT8 comparison, eval-audio prep (see COLAB.md)
+benchmarks/             load test, FP16 vs INT8/FP16 mixed-precision comparison, GPU smoke test (see COLAB.md)
 docs/protocol.md        WebSocket protocol specification
 tests/                  pytest suite
 ```
@@ -81,7 +81,7 @@ Environment variables (prefix `ECHORELAY_`):
 | `BACKEND` | `whisper` | `whisper` or `fake` |
 | `MODEL_NAME` | `base.en` | faster-whisper model |
 | `DEVICE` | `cpu` | `cpu`, `cuda`, `auto` |
-| `COMPUTE_TYPE` | `int8` | CTranslate2 type; `float16` / `int8_float16` on GPU |
+| `COMPUTE_TYPE` | `int8` | CTranslate2 type; `float16` or `int8_float16` (INT8/FP16 mixed) on GPU |
 | `MODEL_DIR` | – | weights cache directory |
 | `MAX_CONCURRENT_STREAMS` | `8` | open streams; extra connections get `server_busy` |
 | `MAX_CONCURRENT_INFERENCE` | `1` | decodes running at once (thread pool + model workers) |
