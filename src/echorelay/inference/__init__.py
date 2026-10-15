@@ -4,6 +4,7 @@ from ..config import Settings
 from .base import InferenceError, ModelInfo, Transcriber, TranscriptionResult
 from .fake import FakeTranscriber
 from .runner import InferenceRunner, InferenceTimeout, TimedResult
+from .scheduler import Job, SlotScheduler
 
 
 def build_transcriber(settings: Settings) -> Transcriber:
@@ -29,6 +30,8 @@ __all__ = [
     "InferenceError",
     "InferenceRunner",
     "InferenceTimeout",
+    "Job",
+    "SlotScheduler",
     "ModelInfo",
     "TimedResult",
     "Transcriber",
