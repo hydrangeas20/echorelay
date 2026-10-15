@@ -45,6 +45,8 @@ from .common import (
     SAMPLE_RATE,
     Utterance,
     audio_manifest,
+    DEFAULT_NORMALIZER,
+    NORMALIZERS,
     corpus_wer,
     environment,
     load_audio_dir,
@@ -187,7 +189,8 @@ async def run_load(url: str, utts: list[Utterance], n: int, concurrency: int,
     return list(records), time.monotonic() - t0
 
 
-def summarize(records: list[StreamRecord], wall_s: float, utts: list[Utterance]) -> dict:
+def summarize(records: list[StreamRecord], wall_s: float, utts: list[Utterance],
+              wer_normalizer: str = DEFAULT_NORMALIZER) -> dict:
     ok = [r for r in records if r.ok]
     ttfp = [r.t_first_partial - r.t_first_audio for r in ok if r.t_first_partial and r.t_first_audio]
     final_lat = [r.t_final - r.t_end_sent for r in ok if r.t_final and r.t_end_sent]
@@ -214,7 +217,8 @@ def summarize(records: list[StreamRecord], wall_s: float, utts: list[Utterance])
         "wall_clock_s": wall_s,
         "throughput_streams_per_s": len(ok) / wall_s if wall_s else None,
         "throughput_audio_s_per_s": sum(r.audio_s for r in ok) / wall_s if wall_s else None,
-        "wer": corpus_wer(refs, hyps),
+        "wer": corpus_wer(refs, hyps, wer_normalizer),
+        "wer_normalizer": wer_normalizer,
         "wer_num_utterances": len(refs),
     }
 
@@ -232,6 +236,8 @@ def main() -> None:
     p.add_argument("--stream-timeout-s", type=float, default=120.0,
                    help="overall deadline per stream (connect -> final); exceeded streams are "
                         "recorded as stream_timeout failures")
+    p.add_argument("--wer-normalizer", choices=NORMALIZERS, default=DEFAULT_NORMALIZER,
+                   help="v1 reproduces Phase 1 scoring (quote-mark bug); v2 is the fixed default")
     p.add_argument("--label", default="")
     p.add_argument("--output", required=True)
     a = p.parse_args()
@@ -245,7 +251,7 @@ def main() -> None:
         print(f"warm-up: {sum(r.ok for r in warm)}/{len(warm)} ok")
     records, wall = asyncio.run(run_load(a.url, utts, a.streams, a.concurrency, a.chunk_ms, a.speed,
                                          a.stream_timeout_s))
-    summary = summarize(records, wall, utts)
+    summary = summarize(records, wall, utts, a.wer_normalizer)
     ready = next((r.ready for r in records if r.ready), None)
 
     result = {

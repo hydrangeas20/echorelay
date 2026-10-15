@@ -37,7 +37,16 @@ import sys
 import time
 from datetime import datetime, timezone
 
-from .common import audio_manifest, corpus_wer, environment, load_audio_dir, percentiles, write_json
+from .common import (
+    DEFAULT_NORMALIZER,
+    NORMALIZERS,
+    audio_manifest,
+    corpus_wer,
+    environment,
+    load_audio_dir,
+    percentiles,
+    write_json,
+)
 
 
 def cuda_devices() -> int:
@@ -83,7 +92,8 @@ def rtf_stats(per_file_s: dict[str, list[float]], durations: dict[str, float]) -
     }
 
 
-def measure(compute_type: str, device: str, utts, model_name: str, repeats: int, beam: int) -> dict:
+def measure(compute_type: str, device: str, utts, model_name: str, repeats: int, beam: int,
+            wer_normalizer: str = DEFAULT_NORMALIZER) -> dict:
     from echorelay.inference.whisper import WhisperTranscriber
 
     model = WhisperTranscriber(model_name, device, compute_type, final_beam_size=beam)
@@ -116,7 +126,8 @@ def measure(compute_type: str, device: str, utts, model_name: str, repeats: int,
         "model_load_s": load_s,
         "repeats": repeats,
         **rtf_stats(per_file_s, {u.name: u.duration_s for u in utts}),
-        "wer": corpus_wer([r for r, _ in refs], [h for _, h in refs]),
+        "wer": corpus_wer([r for r, _ in refs], [h for _, h in refs], wer_normalizer),
+        "wer_normalizer": wer_normalizer,
         "wer_num_utterances": len(refs),
         "nondeterministic_files": nondeterministic,
         "hypotheses": hyps,
@@ -136,6 +147,7 @@ def main() -> None:
     p.add_argument("--beam-size", type=int, default=5, help="must match server final_beam_size")
     p.add_argument("--repeats", type=int, default=3)
     p.add_argument("--allow-cpu", action="store_true", help="harness check only; not a GPU result")
+    p.add_argument("--wer-normalizer", choices=NORMALIZERS, default=DEFAULT_NORMALIZER)
     p.add_argument("--output", required=True)
     a = p.parse_args()
 
@@ -149,7 +161,7 @@ def main() -> None:
     runs = []
     for ct in a.compute_types:
         print(f"measuring {ct} [{precision_label(ct)}] on {device} ...", flush=True)
-        r = measure(ct, device, utts, a.model, a.repeats, a.beam_size)
+        r = measure(ct, device, utts, a.model, a.repeats, a.beam_size, a.wer_normalizer)
         runs.append(r)
         best = r["rtf_per_file_best_of_repeats"]
         print(f"  aggregate RTF (mean of {r['repeats']} repeats) = {r['aggregate_rtf']:.4f} "
