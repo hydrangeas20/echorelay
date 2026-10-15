@@ -63,6 +63,28 @@ def load_audio_dir(path: str | Path) -> list[Utterance]:
     return out
 
 
+def concatenate(utts: list[Utterance], target_s: float) -> list[Utterance]:
+    """Build long utterances (>= target_s) by joining whole evaluation files.
+
+    Deterministic: utterance i starts at file i (sorted order) and appends
+    the following files cyclically until it reaches ``target_s``. Whole files
+    are joined (no truncation) so the concatenated reference stays exact.
+    """
+    out = []
+    n = len(utts)
+    for i in range(n):
+        parts, dur, j = [], 0.0, i
+        while dur < target_s:
+            parts.append(utts[j % n])
+            dur += utts[j % n].duration_s
+            j += 1
+        pcm = b"".join(u.pcm16 for u in parts)
+        refs = [u.reference for u in parts]
+        ref = " ".join(refs) if all(r is not None for r in refs) else None
+        out.append(Utterance(f"concat{target_s:g}s_{i:02d}", pcm, ref, hashlib.sha256(pcm).hexdigest()))
+    return out
+
+
 def audio_manifest(utts: list[Utterance]) -> dict:
     return {
         "num_files": len(utts),
