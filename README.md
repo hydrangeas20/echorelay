@@ -89,6 +89,8 @@ Environment variables (prefix `ECHORELAY_`):
 | `MAX_FRAME_BYTES` | `262144` | per-frame limit |
 | `IDLE_TIMEOUT_S` | `15` | close a stream with no frames for this long |
 | `INFERENCE_TIMEOUT_S` | `30` | queueing + decode limit per job |
+| `SEND_TIMEOUT_S` | `10` | limit on any single send to a client (client stopped reading) |
+| `EVENT_TIMING` | `false` | add per-event `timing` (queue / decode / staleness) for profiling |
 | `PARTIAL_INTERVAL_S` | `1.0` | new audio between partial decodes |
 | `MIN_PARTIAL_AUDIO_S` | `0.5` | audio required before the first partial |
 | `PARTIAL_BEAM_SIZE` / `FINAL_BEAM_SIZE` | `1` / `5` | greedy partials, beam-search final |

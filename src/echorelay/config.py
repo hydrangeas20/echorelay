@@ -43,6 +43,9 @@ class Settings(BaseSettings):
     max_frame_bytes: int = Field(default=256 * 1024, gt=0)
     idle_timeout_s: float = Field(default=15.0, gt=0)
     inference_timeout_s: float = Field(default=30.0, gt=0)
+    # Bound on any single send to the client. A client that stops reading
+    # (full TCP window) would otherwise hold its stream slot indefinitely.
+    send_timeout_s: float = Field(default=10.0, gt=0)
 
     # --- partial hypotheses ------------------------------------------------
     partial_interval_s: float = Field(default=1.0, gt=0)

@@ -189,6 +189,17 @@ class StreamSession:
             CloseCode.POLICY_VIOLATION,
         )
 
+    async def _send_event(self, payload: dict[str, Any]) -> None:
+        try:
+            async with asyncio.timeout(self.settings.send_timeout_s):
+                await self._send(payload)
+        except TimeoutError as exc:
+            raise StreamError(
+                "send_timeout",
+                f"client did not accept data within {self.settings.send_timeout_s:.1f}s",
+                CloseCode.POLICY_VIOLATION,
+            ) from exc
+
     # ---------------------------------------------------------------- audio
     def _on_audio(self, frame: bytes) -> None:
         if len(frame) > self.settings.max_frame_bytes:
@@ -256,7 +267,13 @@ class StreamSession:
         if self.settings.event_timing:
             timing = {"queue": result.queue_s, "decode": result.inference_s, "staleness": staleness_s}
         st.partials_sent += 1
-        await self._send(partial_event(self._partial_seq, text, audio_s, result.inference_s, timing))
+        try:
+            await self._send_event(
+                partial_event(self._partial_seq, text, audio_s, result.inference_s, timing)
+            )
+        except StreamError as err:  # surface to the receive loop, like a failed decode
+            if not self._fatal.done():
+                self._fatal.set_result(err)
 
     # ---------------------------------------------------------------- final
     async def _finish(self) -> None:
@@ -272,7 +289,7 @@ class StreamSession:
         wait_s = self.stats.final_wait_partial_s
         if audio.size == 0:
             timing = {"wait_partial": wait_s, "queue": 0.0, "decode": 0.0} if self.settings.event_timing else None
-            await self._send(final_event("", 0.0, 0.0, timing))
+            await self._send_event(final_event("", 0.0, 0.0, timing))
             return
         try:
             result = await self.runner.transcribe(audio, final=True)
@@ -283,7 +300,9 @@ class StreamSession:
         timing = None
         if self.settings.event_timing:
             timing = {"wait_partial": wait_s, "queue": result.queue_s, "decode": result.inference_s}
-        await self._send(final_event(result.text, audio.size / SAMPLE_RATE_HZ, result.inference_s, timing))
+        await self._send_event(
+            final_event(result.text, audio.size / SAMPLE_RATE_HZ, result.inference_s, timing)
+        )
 
     # -------------------------------------------------------------- cleanup
     async def cleanup(self) -> None:

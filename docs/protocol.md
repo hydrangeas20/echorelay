@@ -112,6 +112,7 @@ Always the last message; the server closes immediately afterwards.
 | `frame_too_large` | 1009 | Single frame exceeds `max_frame_bytes` |
 | `audio_too_large` | 1009 | Stream audio would exceed `max_audio_seconds` |
 | `idle_timeout` | 1008 | No frame received for `idle_timeout_s` |
+| `send_timeout` | 1008 | Client did not accept a server message within `send_timeout_s` (stopped reading) |
 | `server_busy` | 1013 | `max_concurrent_streams` already active; retry later |
 | `inference_error` | 1011 | Model raised during a partial or final decode |
 | `inference_timeout` | 1011 | Queueing + decode exceeded `inference_timeout_s` |

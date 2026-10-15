@@ -98,11 +98,12 @@ async def _send_json(ws: WebSocket, payload: dict[str, Any]) -> None:
     await ws.send_json(payload)
 
 
-async def _close(ws: WebSocket, code: int, reason: str = "") -> None:
+async def _close(ws: WebSocket, code: int, reason: str = "", timeout_s: float = 10.0) -> None:
     if ws.application_state == WebSocketState.CONNECTED and ws.client_state == WebSocketState.CONNECTED:
         try:
-            await ws.close(code=code, reason=reason[:120])
-        except (RuntimeError, WebSocketDisconnect):  # peer already gone
+            async with asyncio.timeout(timeout_s):
+                await ws.close(code=code, reason=reason[:120])
+        except (RuntimeError, WebSocketDisconnect, TimeoutError, OSError):  # peer gone or stuck
             pass
 
 
@@ -119,13 +120,14 @@ async def transcribe(ws: WebSocket) -> None:
     if not registry.try_admit(session_id):
         metrics.inc("streams.outcome.rejected")
         log.warning("session %s rejected: at capacity (%d)", session_id, registry.max_streams)
-        await _safe_send(ws, error_event("server_busy", "maximum concurrent streams reached"))
-        await _close(ws, CloseCode.TRY_AGAIN_LATER, "server_busy")
+        await _safe_send(ws, error_event("server_busy", "maximum concurrent streams reached"),
+                         settings.send_timeout_s)
+        await _close(ws, CloseCode.TRY_AGAIN_LATER, "server_busy", settings.send_timeout_s)
         return
 
     log.info("session %s opened", session_id)
     try:
-        await ws.send_json(
+        await _send_bounded(ws, settings.send_timeout_s, lambda: ws.send_json(
             ready_event(
                 session_id,
                 {
@@ -135,7 +137,7 @@ async def transcribe(ws: WebSocket) -> None:
                     "partial_interval_s": settings.partial_interval_s,
                 },
             )
-        )
+        ))
         session = StreamSession(
             session_id,
             settings,
@@ -148,13 +150,13 @@ async def transcribe(ws: WebSocket) -> None:
         outcome = "completed"
         registry.completed += 1
         log.info("session %s completed (%.2fs audio)", session_id, session.audio_duration_s)
-        await _close(ws, CloseCode.NORMAL)
+        await _close(ws, CloseCode.NORMAL, timeout_s=settings.send_timeout_s)
     except StreamError as err:
         outcome = f"error.{err.code}"
         registry.failed += 1
         log.warning("session %s failed: %s: %s", session_id, err.code, err.message)
-        await _safe_send(ws, error_event(err.code, err.message))
-        await _close(ws, err.close_code, err.code)
+        await _safe_send(ws, error_event(err.code, err.message), settings.send_timeout_s)
+        await _close(ws, err.close_code, err.code, settings.send_timeout_s)
     except (ClientDisconnected, WebSocketDisconnect):
         outcome = "disconnected"
         registry.disconnected += 1
@@ -169,8 +171,9 @@ async def transcribe(ws: WebSocket) -> None:
     except Exception:
         registry.failed += 1
         log.exception("session %s: unexpected server error", session_id)
-        await _safe_send(ws, error_event("internal_error", "unexpected server error"))
-        await _close(ws, CloseCode.INTERNAL_ERROR, "internal_error")
+        await _safe_send(ws, error_event("internal_error", "unexpected server error"),
+                         settings.send_timeout_s)
+        await _close(ws, CloseCode.INTERNAL_ERROR, "internal_error", settings.send_timeout_s)
     finally:
         registry.release(session_id)
         if session is not None:
@@ -180,9 +183,22 @@ async def transcribe(ws: WebSocket) -> None:
                 log.exception("session %s: failed to record metrics", session_id)
 
 
-async def _safe_send(ws: WebSocket, payload: dict[str, Any]) -> None:
+async def _send_bounded(ws: WebSocket, timeout_s: float, send) -> None:
+    try:
+        async with asyncio.timeout(timeout_s):
+            await send()
+    except TimeoutError as exc:
+        raise StreamError(
+            "send_timeout", f"client did not accept data within {timeout_s:.1f}s",
+            CloseCode.POLICY_VIOLATION,
+        ) from exc
+
+
+async def _safe_send(ws: WebSocket, payload: dict[str, Any], timeout_s: float = 10.0) -> None:
+    """Best-effort send of a terminal message; never raises, never hangs."""
     try:
         if ws.client_state == WebSocketState.CONNECTED:
-            await ws.send_json(payload)
-    except (RuntimeError, WebSocketDisconnect):
+            async with asyncio.timeout(timeout_s):
+                await ws.send_json(payload)
+    except (RuntimeError, WebSocketDisconnect, TimeoutError, OSError):
         pass
