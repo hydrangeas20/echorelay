@@ -11,6 +11,7 @@ from fastapi import FastAPI
 from . import __version__
 from .config import Settings, get_settings
 from .inference import InferenceRunner, Transcriber, build_transcriber
+from .metrics import Metrics, monitor_event_loop_lag, process_resources
 from .protocol import PROTOCOL_VERSION
 from .transport import StreamRegistry, router
 
@@ -29,14 +30,21 @@ def create_app(settings: Settings | None = None, transcriber: Transcriber | None
         model = transcriber or build_transcriber(settings)
         # Model loading is blocking (and may download weights): keep it off the loop.
         await asyncio.to_thread(model.load)
-        runner = InferenceRunner(model, settings.max_concurrent_inference, settings.inference_timeout_s)
+        metrics = Metrics(window=settings.metrics_window)
+        runner = InferenceRunner(
+            model, settings.max_concurrent_inference, settings.inference_timeout_s, metrics=metrics
+        )
         app.state.settings = settings
+        app.state.metrics = metrics
         app.state.runner = runner
         app.state.registry = StreamRegistry(settings.max_concurrent_streams)
+        lag_task = asyncio.create_task(monitor_event_loop_lag(metrics), name="loop-lag-monitor")
         log.info("echorelay ready: %s", model.info)
         try:
             yield
         finally:
+            lag_task.cancel()
+            await asyncio.gather(lag_task, return_exceptions=True)
             runner.shutdown()
 
     app = FastAPI(title="EchoRelay", version=__version__, lifespan=lifespan)
@@ -67,6 +75,35 @@ def create_app(settings: Settings | None = None, transcriber: Transcriber | None
                 "in_flight": app.state.runner.in_flight,
                 "max_concurrent": settings.max_concurrent_inference,
             },
+        }
+
+    @app.get("/metrics")
+    async def metrics_endpoint() -> dict:
+        """Operational metrics as JSON. Definitions: docs/measurements.md."""
+        state = app.state
+        info = state.runner.transcriber.info
+        return {
+            "version": __version__,
+            "model": {
+                "backend": info.backend,
+                "name": info.model,
+                "device": info.device,
+                "compute_type": info.compute_type,
+            },
+            "config": {
+                "partial_interval_s": settings.partial_interval_s,
+                "min_partial_audio_s": settings.min_partial_audio_s,
+                "partial_beam_size": settings.partial_beam_size,
+                "final_beam_size": settings.final_beam_size,
+                "max_concurrent_streams": settings.max_concurrent_streams,
+                "max_concurrent_inference": settings.max_concurrent_inference,
+                "inference_timeout_s": settings.inference_timeout_s,
+                "event_timing": settings.event_timing,
+            },
+            "streams": state.registry.snapshot(),
+            "inference": state.runner.snapshot(),
+            "process": process_resources(),
+            **state.metrics.snapshot(),
         }
 
     return app

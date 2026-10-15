@@ -48,6 +48,12 @@ class Settings(BaseSettings):
     partial_interval_s: float = Field(default=1.0, gt=0)
     min_partial_audio_s: float = Field(default=0.5, ge=0)
 
+    # --- observability -----------------------------------------------------
+    # Add a "timing" object (queue wait, decode, wait-for-partial) to partial
+    # and final events. Off by default so the Phase 1 wire format is unchanged.
+    event_timing: bool = False
+    metrics_window: int = Field(default=10_000, ge=100)  # observations kept per distribution
+
     log_level: str = "INFO"
 
     @model_validator(mode="after")

@@ -10,6 +10,7 @@ from typing import Any
 from fastapi import APIRouter, WebSocket
 from starlette.websockets import WebSocketDisconnect, WebSocketState
 
+from .metrics import Metrics
 from .protocol import CloseCode, StreamError, error_event, ready_event
 from .session import ClientDisconnected, Incoming, StreamSession
 
@@ -18,24 +19,68 @@ router = APIRouter()
 
 
 class StreamRegistry:
-    """Tracks active streams for admission control and /health."""
+    """Tracks active streams for admission control, /health and /metrics."""
 
     def __init__(self, max_streams: int) -> None:
         self.max_streams = max_streams
         self.active: set[str] = set()
+        self.sessions: dict[str, StreamSession] = {}
         self.completed = 0
         self.failed = 0
         self.disconnected = 0
+        self.rejected = 0
+        self.peak_active = 0
 
     def try_admit(self, session_id: str) -> bool:
         # Single event loop: check-and-add cannot interleave.
         if len(self.active) >= self.max_streams:
+            self.rejected += 1
             return False
         self.active.add(session_id)
+        self.peak_active = max(self.peak_active, len(self.active))
         return True
 
     def release(self, session_id: str) -> None:
         self.active.discard(session_id)
+        self.sessions.pop(session_id, None)
+
+    def buffered_audio_bytes(self) -> int:
+        return sum(s.buffer.num_bytes for s in self.sessions.values())
+
+    def snapshot(self) -> dict:
+        return {
+            "active": len(self.active),
+            "peak_active": self.peak_active,
+            "max": self.max_streams,
+            "completed": self.completed,
+            "failed": self.failed,
+            "disconnected": self.disconnected,
+            "rejected": self.rejected,
+            "buffered_audio_bytes": self.buffered_audio_bytes(),
+        }
+
+
+def record_stream_end(metrics: Metrics, session: StreamSession, outcome: str) -> None:
+    """Fold one finished stream's statistics into the metrics and log one
+    summary line. The log never contains transcript text."""
+    summary = session.stats.summary(session.audio_duration_s)
+    metrics.inc(f"streams.outcome.{outcome}")
+    metrics.observe("stream.audio_s", session.audio_duration_s)
+    for key in ("partials_scheduled", "partials_sent", "partials_deferred",
+                "partials_skipped_empty", "partials_skipped_duplicate"):
+        metrics.inc(f"stream.{key}", summary[key])
+    metrics.observe("stream.partial_decode_s", summary["partial_decode_s"])
+    if summary["partial_amplification"] is not None:
+        metrics.observe("stream.partial_amplification", summary["partial_amplification"])
+    for v in session.stats.partial_staleness_s:
+        metrics.observe("stream.partial_staleness_s", v)
+    for key in ("final_wait_partial_s", "final_queue_s", "final_decode_s"):
+        if summary[key] is not None:
+            metrics.observe(f"stream.{key}", summary[key])
+    log.info(
+        "stream_summary session=%s outcome=%s %s",
+        session.session_id, outcome, " ".join(f"{k}={v}" for k, v in summary.items()),
+    )
 
 
 async def _receive(ws: WebSocket) -> Incoming:
@@ -65,10 +110,14 @@ async def _close(ws: WebSocket, code: int, reason: str = "") -> None:
 async def transcribe(ws: WebSocket) -> None:
     state = ws.app.state
     settings, runner, registry = state.settings, state.runner, state.registry
+    metrics: Metrics = state.metrics
     session_id = uuid.uuid4().hex[:12]
+    session: StreamSession | None = None
+    outcome = "failed"
     await ws.accept()
 
     if not registry.try_admit(session_id):
+        metrics.inc("streams.outcome.rejected")
         log.warning("session %s rejected: at capacity (%d)", session_id, registry.max_streams)
         await _safe_send(ws, error_event("server_busy", "maximum concurrent streams reached"))
         await _close(ws, CloseCode.TRY_AGAIN_LATER, "server_busy")
@@ -94,21 +143,26 @@ async def transcribe(ws: WebSocket) -> None:
             receive=lambda: _receive(ws),
             send=lambda payload: _send_json(ws, payload),
         )
+        registry.sessions[session_id] = session
         await session.run()
+        outcome = "completed"
         registry.completed += 1
         log.info("session %s completed (%.2fs audio)", session_id, session.audio_duration_s)
         await _close(ws, CloseCode.NORMAL)
     except StreamError as err:
+        outcome = f"error.{err.code}"
         registry.failed += 1
         log.warning("session %s failed: %s: %s", session_id, err.code, err.message)
         await _safe_send(ws, error_event(err.code, err.message))
         await _close(ws, err.close_code, err.code)
     except (ClientDisconnected, WebSocketDisconnect):
+        outcome = "disconnected"
         registry.disconnected += 1
         log.info("session %s: client disconnected", session_id)
     except asyncio.CancelledError:
         # Handler task cancelled (server shutdown, or an ASGI server that
         # cancels on disconnect). Session cleanup already ran in run()'s finally.
+        outcome = "cancelled"
         registry.disconnected += 1
         log.info("session %s: cancelled", session_id)
         raise
@@ -119,6 +173,11 @@ async def transcribe(ws: WebSocket) -> None:
         await _close(ws, CloseCode.INTERNAL_ERROR, "internal_error")
     finally:
         registry.release(session_id)
+        if session is not None:
+            try:
+                record_stream_end(metrics, session, outcome)
+            except Exception:  # observability must never break a stream
+                log.exception("session %s: failed to record metrics", session_id)
 
 
 async def _safe_send(ws: WebSocket, payload: dict[str, Any]) -> None:
