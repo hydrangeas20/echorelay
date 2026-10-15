@@ -191,3 +191,104 @@ Caveats to record with results: the load generator and server share the
 Colab VM, so at high concurrency the client competes for CPU. `--speed 1.0`
 (default) paces at real time; `--speed 0` measures maximum throughput and
 should be labelled as such.
+
+---
+
+# Phase 2 experiments
+
+Plan, predictions and pass/fail checks: [`docs/phase2-plan.md`](../docs/phase2-plan.md).
+Run stages 0–2 above first (clone, install, `gpu_smoke`). Use the **same
+five Phase 1 files** so results are comparable:
+
+```bash
+!python -m benchmarks.prepare_audio --out eval_audio5 --num 5
+!sha256sum eval_audio5/*.wav   # compare with the audio manifest in docs/benchmarks/phase1-t4/raw/*.json
+```
+
+Helper used below to (re)start the server. Every Phase 2 run enables
+per-event timing:
+
+```python
+import subprocess, time, urllib.request
+def start_server(compute_type="float16", workers=1, max_streams=8):
+    subprocess.run("pkill -f 'python -m echorelay'", shell=True)
+    time.sleep(2)
+    env = (f"ECHORELAY_DEVICE=cuda ECHORELAY_COMPUTE_TYPE={compute_type} ECHORELAY_EVENT_TIMING=true "
+           f"ECHORELAY_MAX_CONCURRENT_INFERENCE={workers} ECHORELAY_MAX_CONCURRENT_STREAMS={max_streams}")
+    subprocess.Popen(f"{env} nohup python -m echorelay --port 8000 > server_{compute_type}_w{workers}.log 2>&1",
+                     shell=True)
+    for _ in range(90):
+        try:
+            print(urllib.request.urlopen("http://127.0.0.1:8000/health", timeout=2).read().decode()[:160])
+            return
+        except OSError:
+            time.sleep(2)
+    raise RuntimeError("server did not start; check the log")
+```
+
+**E7: rescore Phase 1 WER with references (no GPU needed)**
+
+```bash
+!python -m benchmarks.rescore --audio-dir eval_audio5 \
+    docs/benchmarks/phase1-t4/raw/stream_fp16_c4.json docs/benchmarks/phase1-t4/raw/stream_int8_c4.json \
+    docs/benchmarks/phase1-t4/raw/precision_t4.json --output results/phase1_rescore.json
+```
+
+**E1: offline decode cost vs audio length**
+
+```bash
+!python -m benchmarks.profile_decode --audio-dir eval_audio5 \
+    --lengths 1 2 4 8 12 16 20 25 30 40 60 --compute-types float16 int8_float16 --repeats 5 \
+    --output results/profile_decode_t4.json
+```
+
+**E2 / E3 / E5: stress matrix (FP16, then INT8/FP16).** Sampling records SM
+clocks for E5.
+
+```python
+start_server("float16")
+!python -m benchmarks.stress --audio-dir eval_audio5 --streams 20 --concurrency 1 4 8 \
+    --burst-extra 4 --label "T4 FP16" --output-dir results/stress_fp16
+start_server("int8_float16")
+!python -m benchmarks.stress --audio-dir eval_audio5 --streams 20 --concurrency 1 4 8 \
+    --burst-extra 4 --label "T4 INT8-FP16" --output-dir results/stress_int8
+```
+
+**E4: long streams (60 s, built from whole files with exact references)**
+
+```python
+start_server("float16")
+!python -m benchmarks.stress --audio-dir eval_audio5 --concat-seconds 60 --streams 8 \
+    --concurrency 1 2 4 --burst-extra 0 --stream-timeout-s 600 \
+    --label "T4 FP16 60s" --output-dir results/stress_fp16_long60
+```
+
+**E6: unpaced capacity**
+
+```python
+start_server("float16")
+!python -m benchmarks.load_test --audio-dir eval_audio5 --streams 40 --concurrency 4 --speed 0 \
+    --label "T4 FP16 c=4 UNPACED" --output results/unpaced_fp16_c4.json
+```
+
+**E8: two inference workers (configuration only)**
+
+```python
+start_server("float16", workers=2)
+!python -m benchmarks.stress --audio-dir eval_audio5 --streams 20 --concurrency 4 8 \
+    --burst-extra 0 --label "T4 FP16 2 workers" --output-dir results/stress_fp16_w2
+```
+
+**Analyze.** Pass the paced scenario files (`c*.json`, `recovery.json`), not
+`burst.json` or `stress_report.json`:
+
+```bash
+!python -m benchmarks.analyze_results results/stress_fp16/c*.json results/stress_int8/c*.json \
+    results/stress_fp16_long60/c*.json --output results/phase2_analysis.json \
+    --markdown results/phase2_analysis.md
+```
+
+Each `stress_report.json` lists every check as PASS/FAIL. A FAIL is a
+finding to report, not something to rerun until it passes. Download
+`results/` and the `server_*.log` files; the logs contain per-stream
+summaries but no transcript text.

@@ -123,7 +123,24 @@ Environment variables (prefix `ECHORELAY_`):
 * No authentication, TLS termination, or rate limiting per client.
 * Single process; one model instance.
 
+## Observability
+
+* `GET /health`: liveness, model, stream counts (format unchanged since v0.1).
+* `GET /metrics`: JSON gauges and distributions: queue wait vs decode time
+  for partials and finals, active/peak/rejected streams, buffered audio
+  bytes, event-loop lag, process CPU/RSS/threads, per-stream re-decode
+  amplification and partial staleness.
+* `ECHORELAY_EVENT_TIMING=true` adds a `timing` object to `partial`/`final`
+  events (off by default).
+* One `stream_summary` log line per stream; transcripts are never logged.
+
+Definitions: [docs/measurements.md](docs/measurements.md).
+
 ## Benchmarks
 
-See [benchmarks/COLAB.md](benchmarks/COLAB.md). No GPU numbers have been
-recorded yet.
+* [Phase 1 T4 pilot report](docs/benchmarks/phase1-t4/README.md):
+  methodology, environment, results, limitations, reproduction. Raw files
+  and analysis are committed alongside it.
+* [Phase 2 plan](docs/phase2-plan.md): hypotheses, experiments with
+  predictions, decisions pending approval.
+* How to run on Colab: [benchmarks/COLAB.md](benchmarks/COLAB.md).

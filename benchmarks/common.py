@@ -129,7 +129,21 @@ def environment() -> dict:
         env["ctranslate2_cuda_devices"] = ctranslate2.get_cuda_device_count()
     except Exception:  # pragma: no cover
         pass
+    env["git"] = git_revision()
     return env
+
+
+def git_revision() -> dict | None:
+    """Commit of the code that produced a result, and whether it had local edits."""
+    root = Path(__file__).resolve().parents[1]
+    try:
+        commit = subprocess.run(["git", "rev-parse", "HEAD"], cwd=root, capture_output=True,
+                                text=True, timeout=5, check=True).stdout.strip()
+        dirty = subprocess.run(["git", "status", "--porcelain", "--untracked-files=no"], cwd=root,
+                               capture_output=True, text=True, timeout=5, check=True).stdout.strip()
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return {"commit": commit, "dirty": bool(dirty)}
 
 
 def percentiles(values: list[float]) -> dict:

@@ -1,0 +1,1213 @@
+{
+  "label": "T4 FP16 c=4",
+  "timestamp_utc": "2026-10-15T19:51:44.916303+00:00",
+  "clock": "time.monotonic (client); server inference timing also monotonic",
+  "server": {
+    "health": {
+      "status": "ok",
+      "version": "0.1.0",
+      "protocol_version": "1",
+      "model": {
+        "backend": "whisper",
+        "name": "base.en",
+        "device": "cuda",
+        "compute_type": "float16"
+      },
+      "streams": {
+        "active": 0,
+        "max": 8,
+        "completed": 8,
+        "failed": 0,
+        "disconnected": 0
+      },
+      "inference": {
+        "in_flight": 0,
+        "max_concurrent": 1
+      }
+    },
+    "ready_limits": {
+      "max_audio_seconds": 120.0,
+      "max_frame_bytes": 262144,
+      "idle_timeout_s": 15.0,
+      "partial_interval_s": 1.0
+    }
+  },
+  "run_config": {
+    "url": "ws://127.0.0.1:8000/ws/transcribe",
+    "streams": 20,
+    "concurrency": 4,
+    "warmup": 2,
+    "chunk_ms": 100,
+    "speed": 1.0,
+    "stream_timeout_s": 120.0
+  },
+  "metric_definitions": {
+    "time_to_first_partial_s": "client monotonic: first audio frame sent -> first nonempty partial received",
+    "final_latency_s": "client monotonic: end message sent -> final received",
+    "final_inference_rtf": "server-reported final decode time / audio duration. Model call in the worker thread only; EXCLUDES partial decodes, queueing for an inference slot, buffering, and network time",
+    "partial_inference_rtf": "server-reported partial decode time / audio covered, per partial; same exclusions",
+    "throughput": "completed streams (and audio seconds) / wall clock from first connect to last stream end",
+    "failures": "any stream without a final: server error event, connection error, or stream_timeout"
+  },
+  "environment_client": {
+    "python": "3.13.15",
+    "platform": "Linux-6.6.122+-x86_64-with-glibc2.39",
+    "cpu": "x86_64",
+    "packages": {
+      "faster-whisper": "1.2.1",
+      "ctranslate2": "4.8.3",
+      "numpy": "2.1.3",
+      "fastapi": "0.141.1",
+      "uvicorn": "0.54.0",
+      "websockets": "15.0.1",
+      "jiwer": "4.0.0"
+    },
+    "gpus": [
+      "Tesla T4, 580.82.07, 15360 MiB"
+    ],
+    "ctranslate2_cuda_devices": 1
+  },
+  "audio": {
+    "num_files": 5,
+    "total_audio_s": 42.47,
+    "files": [
+      {
+        "name": "1272-135031-0000",
+        "duration_s": 10.885,
+        "sha256": "e24c825ddabf2da00b0e0bb463d4679cbb8c0a9fd2ccd249ba45c79ca7489301",
+        "has_reference": true
+      },
+      {
+        "name": "1272-135031-0001",
+        "duration_s": 11.13,
+        "sha256": "885b3f1741c334a79e09df778471c2b0a29773332b1142963d7fc9b5330e5b74",
+        "has_reference": true
+      },
+      {
+        "name": "1272-135031-0002",
+        "duration_s": 11.475,
+        "sha256": "2c9e7a199503bba2054cfd88970fb4108cb0b3efdd870318d68f4f9cca3a202b",
+        "has_reference": true
+      },
+      {
+        "name": "1272-135031-0003",
+        "duration_s": 4.755,
+        "sha256": "43d01ce2d434e836b47801ae0684f2059e5a0f6884b9ce9b760c9800d467f471",
+        "has_reference": true
+      },
+      {
+        "name": "1272-135031-0004",
+        "duration_s": 4.225,
+        "sha256": "4d667e70c09b9b273c725a5669e14c0057d67f953c144c18680dac785966c5d5",
+        "has_reference": true
+      }
+    ]
+  },
+  "summary": {
+    "streams_total": 20,
+    "streams_ok": 20,
+    "streams_failed": 0,
+    "errors": {},
+    "failures": [],
+    "streams_without_nonempty_partial": 0,
+    "time_to_first_partial_s": {
+      "n": 20,
+      "p50": 0.9422537345008095,
+      "p95": 1.027436786799899,
+      "mean": 0.9545928139998978,
+      "min": 0.929320203998941,
+      "max": 1.044005333998939
+    },
+    "final_latency_s": {
+      "n": 20,
+      "p50": 0.11905373650006368,
+      "p95": 0.14566279634991589,
+      "mean": 0.11020985684990592,
+      "min": 0.06087164299970027,
+      "max": 0.15811534599924926
+    },
+    "final_inference_rtf": {
+      "n": 20,
+      "p50": 0.012091635537913521,
+      "p95": 0.01881703470031546,
+      "mean": 0.013000505289603415,
+      "min": 0.009559912854030501,
+      "max": 0.021913774973711882
+    },
+    "partial_inference_rtf": {
+      "n": 160,
+      "p50": 0.012908333333333334,
+      "p95": 0.032905,
+      "mean": 0.016064960520382397,
+      "min": 0.008,
+      "max": 0.0458
+    },
+    "wall_clock_s": 43.954836475000775,
+    "throughput_streams_per_s": 0.4550124992815059,
+    "throughput_audio_s_per_s": 3.864876168897111,
+    "wer": 0.07079646017699115,
+    "wer_num_utterances": 20
+  },
+  "streams": [
+    {
+      "index": 0,
+      "utterance": "1272-135031-0000",
+      "audio_s": 10.885,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 8312.61774396,
+      "t_first_audio": 8312.625174791,
+      "t_first_partial": 8313.56316685,
+      "t_end_sent": 8323.525737016,
+      "t_final": 8323.638590218,
+      "num_partials": 10,
+      "final_text": "Because you are sleeping instead of conquering, the lovely rose princess has become a fiddle without a bow, while poor Shaggy sits there, accuing dove.",
+      "final_inference_ms": 111.7,
+      "final_audio_s": 10.885,
+      "partial_inference_ms": [
+        33.0,
+        48.3,
+        44.7,
+        45.5,
+        52.5,
+        57.6,
+        71.9,
+        74.6,
+        83.5,
+        90.9
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        10.0
+      ],
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "3544272763df",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      }
+    },
+    {
+      "index": 1,
+      "utterance": "1272-135031-0001",
+      "audio_s": 11.13,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 8312.61875491,
+      "t_first_audio": 8312.62595831,
+      "t_first_partial": 8313.59296931,
+      "t_end_sent": 8323.827195944,
+      "t_final": 8323.98531129,
+      "num_partials": 11,
+      "final_text": "\"'He has gone, and gone for good,' answered Polychrome, who had managed to squeeze into the room beside the dragon, and had witnessed the occurrences with much interest.",
+      "final_inference_ms": 116.3,
+      "final_audio_s": 11.13,
+      "partial_inference_ms": [
+        28.9,
+        47.7,
+        44.4,
+        52.6,
+        59.0,
+        66.4,
+        81.0,
+        76.2,
+        82.7,
+        94.3,
+        95.4
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        10.0,
+        11.0
+      ],
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "f52cb0fe5143",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      }
+    },
+    {
+      "index": 2,
+      "utterance": "1272-135031-0002",
+      "audio_s": 11.475,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 8312.619332689,
+      "t_first_audio": 8312.626457347,
+      "t_first_partial": 8313.62302213,
+      "t_end_sent": 8324.127517332,
+      "t_final": 8324.256451072,
+      "num_partials": 11,
+      "final_text": "I have remained a prisoner only because I wish to be one. And with this, he stepped forward and burst the stout chains as easily as if they had been threads.",
+      "final_inference_ms": 127.9,
+      "final_audio_s": 11.475,
+      "partial_inference_ms": [
+        32.6,
+        46.7,
+        45.5,
+        51.0,
+        49.4,
+        48.4,
+        77.8,
+        72.5,
+        80.9,
+        91.6,
+        95.6
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        10.0,
+        11.0
+      ],
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "a309f4452520",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      }
+    },
+    {
+      "index": 3,
+      "utterance": "1272-135031-0003",
+      "audio_s": 4.755,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 8312.619758292,
+      "t_first_audio": 8312.627756166,
+      "t_first_partial": 8313.654320924,
+      "t_end_sent": 8317.42820558,
+      "t_final": 8317.497816753,
+      "num_partials": 4,
+      "final_text": "The little girl had been asleep, but she heard the raps and opened the door.",
+      "final_inference_ms": 68.0,
+      "final_audio_s": 4.755,
+      "partial_inference_ms": [
+        31.1,
+        47.6,
+        52.4,
+        62.1
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0
+      ],
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "bf479f595c56",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      }
+    },
+    {
+      "index": 4,
+      "utterance": "1272-135031-0004",
+      "audio_s": 4.225,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 8317.498349036,
+      "t_first_audio": 8317.501390672,
+      "t_first_partial": 8318.434440684,
+      "t_end_sent": 8321.802394146,
+      "t_final": 8321.866150736,
+      "num_partials": 4,
+      "final_text": "The king has flooded disgrace and your friends are asking for you.",
+      "final_inference_ms": 63.0,
+      "final_audio_s": 4.225,
+      "partial_inference_ms": [
+        30.9,
+        38.9,
+        50.5,
+        51.2
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0
+      ],
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "f3ea087fe196",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      }
+    },
+    {
+      "index": 5,
+      "utterance": "1272-135031-0000",
+      "audio_s": 10.885,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 8321.866615946,
+      "t_first_audio": 8321.869824304,
+      "t_first_partial": 8322.839807119,
+      "t_end_sent": 8332.770278795,
+      "t_final": 8332.902807509,
+      "num_partials": 10,
+      "final_text": "Because you are sleeping instead of conquering, the lovely rose princess has become a fiddle without a bow, while poor Shaggy sits there, accuing dove.",
+      "final_inference_ms": 131.5,
+      "final_audio_s": 10.885,
+      "partial_inference_ms": [
+        33.8,
+        37.4,
+        37.1,
+        42.0,
+        70.1,
+        84.2,
+        89.6,
+        87.3,
+        98.9,
+        106.7
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        10.0
+      ],
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "53a6791d3b37",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      }
+    },
+    {
+      "index": 6,
+      "utterance": "1272-135031-0001",
+      "audio_s": 11.13,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 8323.641345704,
+      "t_first_audio": 8323.645814375,
+      "t_first_partial": 8324.575134579,
+      "t_end_sent": 8334.846718939,
+      "t_final": 8334.970447799,
+      "num_partials": 11,
+      "final_text": "\"'He has gone, and gone for good,' answered Polychrome, who had managed to squeeze into the room beside the dragon, and had witnessed the occurrences with much interest.",
+      "final_inference_ms": 117.5,
+      "final_audio_s": 11.13,
+      "partial_inference_ms": [
+        28.0,
+        36.9,
+        56.5,
+        71.7,
+        77.5,
+        83.8,
+        87.6,
+        87.1,
+        89.1,
+        92.5,
+        88.0
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        10.0,
+        11.0
+      ],
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "0e53d1be1705",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      }
+    },
+    {
+      "index": 7,
+      "utterance": "1272-135031-0002",
+      "audio_s": 11.475,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 8323.986040999,
+      "t_first_audio": 8323.989624045,
+      "t_first_partial": 8324.922913936,
+      "t_end_sent": 8335.493132773,
+      "t_final": 8335.617059254,
+      "num_partials": 11,
+      "final_text": "I have remained a prisoner only because I wish to be one. And with this, he stepped forward and burst the stout chains as easily as if they had been threads.",
+      "final_inference_ms": 121.2,
+      "final_audio_s": 11.475,
+      "partial_inference_ms": [
+        31.0,
+        47.5,
+        59.5,
+        69.9,
+        72.6,
+        78.5,
+        84.2,
+        87.7,
+        90.5,
+        92.0,
+        97.9
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        10.0,
+        11.0
+      ],
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "3dca9b886a4b",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      }
+    },
+    {
+      "index": 8,
+      "utterance": "1272-135031-0003",
+      "audio_s": 4.755,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 8324.257455137,
+      "t_first_audio": 8324.260315903,
+      "t_first_partial": 8325.194682361,
+      "t_end_sent": 8329.061721231,
+      "t_final": 8329.1668412,
+      "num_partials": 4,
+      "final_text": "The little girl had been asleep, but she heard the raps and opened the door.",
+      "final_inference_ms": 104.2,
+      "final_audio_s": 4.755,
+      "partial_inference_ms": [
+        32.0,
+        50.2,
+        70.3,
+        83.8
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0
+      ],
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "3642f17e6e05",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      }
+    },
+    {
+      "index": 9,
+      "utterance": "1272-135031-0004",
+      "audio_s": 4.225,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 8329.167633976,
+      "t_first_audio": 8329.172075412,
+      "t_first_partial": 8330.119487143,
+      "t_end_sent": 8333.474402821,
+      "t_final": 8333.540405508,
+      "num_partials": 4,
+      "final_text": "The king has flooded disgrace and your friends are asking for you.",
+      "final_inference_ms": 65.2,
+      "final_audio_s": 4.225,
+      "partial_inference_ms": [
+        45.8,
+        52.7,
+        59.7,
+        57.7
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0
+      ],
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "1a788229cc6c",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      }
+    },
+    {
+      "index": 10,
+      "utterance": "1272-135031-0000",
+      "audio_s": 10.885,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 8332.904302251,
+      "t_first_audio": 8332.912037238,
+      "t_first_partial": 8333.855365187,
+      "t_end_sent": 8343.813375099,
+      "t_final": 8343.93618548,
+      "num_partials": 10,
+      "final_text": "Because you are sleeping instead of conquering, the lovely rose princess has become a fiddle without a bow, while poor Shaggy sits there, accuing dove.",
+      "final_inference_ms": 121.2,
+      "final_audio_s": 10.885,
+      "partial_inference_ms": [
+        37.6,
+        38.4,
+        38.6,
+        42.5,
+        61.8,
+        76.2,
+        83.1,
+        82.6,
+        86.9,
+        95.8
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        10.0
+      ],
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "6ba80506f65f",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      }
+    },
+    {
+      "index": 11,
+      "utterance": "1272-135031-0001",
+      "audio_s": 11.13,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 8333.541480171,
+      "t_first_audio": 8333.544161803,
+      "t_first_partial": 8334.488207517,
+      "t_end_sent": 8344.744688486,
+      "t_final": 8344.884193667,
+      "num_partials": 11,
+      "final_text": "\"'He has gone, and gone for good,' answered Polychrome, who had managed to squeeze into the room beside the dragon, and had witnessed the occurrences with much interest.",
+      "final_inference_ms": 134.7,
+      "final_audio_s": 11.13,
+      "partial_inference_ms": [
+        40.0,
+        49.4,
+        43.4,
+        58.9,
+        71.6,
+        81.8,
+        89.3,
+        81.8,
+        85.9,
+        87.9,
+        91.3
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        10.0,
+        11.0
+      ],
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "3762e0bdffc3",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      }
+    },
+    {
+      "index": 12,
+      "utterance": "1272-135031-0002",
+      "audio_s": 11.475,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 8334.973405387,
+      "t_first_audio": 8334.97688122,
+      "t_first_partial": 8335.911770183,
+      "t_end_sent": 8346.47809127,
+      "t_final": 8346.588826,
+      "num_partials": 11,
+      "final_text": "I have remained a prisoner only because I wish to be one. And with this, he stepped forward and burst the stout chains as easily as if they had been threads.",
+      "final_inference_ms": 109.7,
+      "final_audio_s": 11.475,
+      "partial_inference_ms": [
+        32.6,
+        34.8,
+        51.1,
+        62.0,
+        64.1,
+        60.8,
+        76.1,
+        80.3,
+        84.8,
+        86.9,
+        102.5
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        10.0,
+        11.0
+      ],
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "a6e774db0c99",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      }
+    },
+    {
+      "index": 13,
+      "utterance": "1272-135031-0003",
+      "audio_s": 4.755,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 8335.617935798,
+      "t_first_audio": 8335.621050034,
+      "t_first_partial": 8336.568384164,
+      "t_end_sent": 8340.422875972,
+      "t_final": 8340.513247777,
+      "num_partials": 4,
+      "final_text": "The little girl had been asleep, but she heard the raps and opened the door.",
+      "final_inference_ms": 88.7,
+      "final_audio_s": 4.755,
+      "partial_inference_ms": [
+        41.1,
+        46.4,
+        62.2,
+        71.9
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0
+      ],
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "a3df9972d066",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      }
+    },
+    {
+      "index": 14,
+      "utterance": "1272-135031-0004",
+      "audio_s": 4.225,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 8340.516469283,
+      "t_first_audio": 8340.521186674,
+      "t_first_partial": 8341.462366194,
+      "t_end_sent": 8344.822245223,
+      "t_final": 8344.948445595,
+      "num_partials": 4,
+      "final_text": "The king has flooded disgrace and your friends are asking for you.",
+      "final_inference_ms": 65.6,
+      "final_audio_s": 4.225,
+      "partial_inference_ms": [
+        39.6,
+        43.6,
+        51.7,
+        55.8
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0
+      ],
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "f5d12d747531",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      }
+    },
+    {
+      "index": 15,
+      "utterance": "1272-135031-0000",
+      "audio_s": 10.885,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 8343.936464267,
+      "t_first_audio": 8343.940153772,
+      "t_first_partial": 8344.984159106,
+      "t_end_sent": 8354.842200531,
+      "t_final": 8354.98720793,
+      "num_partials": 10,
+      "final_text": "Because you are sleeping instead of conquering, the lovely rose princess has become a fiddle without a bow, while poor Shaggy sits there, accuing dove.",
+      "final_inference_ms": 110.8,
+      "final_audio_s": 10.885,
+      "partial_inference_ms": [
+        35.3,
+        41.4,
+        45.1,
+        51.8,
+        57.1,
+        61.0,
+        66.4,
+        68.4,
+        85.5,
+        91.7
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        10.0
+      ],
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "4ec854ffebbc",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      }
+    },
+    {
+      "index": 16,
+      "utterance": "1272-135031-0001",
+      "audio_s": 11.13,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 8344.884616744,
+      "t_first_audio": 8344.888681713,
+      "t_first_partial": 8345.822180351,
+      "t_end_sent": 8356.089254618,
+      "t_final": 8356.225272013,
+      "num_partials": 11,
+      "final_text": "\"'He has gone, and gone for good,' answered Polychrome, who had managed to squeeze into the room beside the dragon, and had witnessed the occurrences with much interest.",
+      "final_inference_ms": 134.8,
+      "final_audio_s": 11.13,
+      "partial_inference_ms": [
+        29.4,
+        37.2,
+        46.0,
+        49.8,
+        77.1,
+        65.4,
+        68.8,
+        77.8,
+        78.1,
+        84.2,
+        92.0
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        10.0,
+        11.0
+      ],
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "01d0e2dabfa3",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      }
+    },
+    {
+      "index": 17,
+      "utterance": "1272-135031-0002",
+      "audio_s": 11.475,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 8344.951435247,
+      "t_first_audio": 8344.955703702,
+      "t_first_partial": 8345.91751747,
+      "t_end_sent": 8356.456540772,
+      "t_final": 8356.571837864,
+      "num_partials": 11,
+      "final_text": "I have remained a prisoner only because I wish to be one. And with this, he stepped forward and burst the stout chains as easily as if they had been threads.",
+      "final_inference_ms": 113.6,
+      "final_audio_s": 11.475,
+      "partial_inference_ms": [
+        32.9,
+        45.0,
+        65.1,
+        48.3,
+        52.3,
+        51.7,
+        67.5,
+        76.6,
+        81.5,
+        86.5,
+        102.7
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        10.0,
+        11.0
+      ],
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "bce05edf47ba",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      }
+    },
+    {
+      "index": 18,
+      "utterance": "1272-135031-0003",
+      "audio_s": 4.755,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 8346.590328895,
+      "t_first_audio": 8346.593107013,
+      "t_first_partial": 8347.527126818,
+      "t_end_sent": 8351.394256287,
+      "t_final": 8351.467060664,
+      "num_partials": 4,
+      "final_text": "The little girl had been asleep, but she heard the raps and opened the door.",
+      "final_inference_ms": 71.9,
+      "final_audio_s": 4.755,
+      "partial_inference_ms": [
+        29.5,
+        37.9,
+        47.7,
+        56.4
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0
+      ],
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "8f373d94371b",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      }
+    },
+    {
+      "index": 19,
+      "utterance": "1272-135031-0004",
+      "audio_s": 4.225,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 8351.467780222,
+      "t_first_audio": 8351.470680378,
+      "t_first_partial": 8352.402869126,
+      "t_end_sent": 8355.771796555,
+      "t_final": 8355.832668198,
+      "num_partials": 4,
+      "final_text": "The king has flooded disgrace and your friends are asking for you.",
+      "final_inference_ms": 59.6,
+      "final_audio_s": 4.225,
+      "partial_inference_ms": [
+        30.8,
+        37.8,
+        48.8,
+        53.9
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0
+      ],
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "70c14088e57a",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      }
+    }
+  ]
+}
