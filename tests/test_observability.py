@@ -163,18 +163,48 @@ def test_slow_inference_defers_partials_and_reports_staleness(make_client):
     assert m["distributions"]["stream.partial_staleness_s"]["count"] == len(stale)
 
 
+DECODE_S = 0.3
+# If a decode ran on the event loop, every decode would show up as at least
+# DECODE_S of lag. The threshold sits well below that and well above
+# scheduler / GIL noise from the in-process test client threads (a fixed
+# 50 ms bound was flaky on a 2-core runner: one 63 ms wake-up in ~600 runs).
+LAG_LIMIT_S = DECODE_S / 2
+
+
 def test_inference_does_not_lag_event_loop_under_load(make_client):
-    """Several streams with slow (thread-blocking) decodes: loop lag stays low."""
-    client = make_client(FakeTranscriber(delay_s=0.2), max_concurrent_inference=2,
-                         max_concurrent_streams=6)
+    """Several streams with slow (thread-blocking) decodes: no lag sample
+    comes anywhere near one decode's duration."""
+    fake = FakeTranscriber(delay_s=DECODE_S)
+    client = make_client(fake, max_concurrent_inference=2, max_concurrent_streams=6)
     threads = [threading.Thread(target=_stream, args=(client, 2.0)) for _ in range(4)]
     for t in threads:
         t.start()
     for t in threads:
         t.join(timeout=30)
     lag = client.get("/metrics").json()["distributions"]["event_loop.lag_s"]
-    assert lag["count"] > 5
-    assert lag["p99"] < 0.05, lag
+    assert len(fake.calls) >= 8  # decodes really happened during the window
+    assert lag["count"] >= 10
+    assert lag["max"] < LAG_LIMIT_S, lag
+
+
+def test_lag_threshold_would_catch_inference_on_the_loop():
+    """Control for the test above: the same decode duration executed on the
+    loop produces lag beyond LAG_LIMIT_S."""
+
+    async def block_loop():
+        time.sleep(DECODE_S)  # what a decode on the loop would do
+
+    async def run():
+        metrics = Metrics()
+        task = asyncio.create_task(monitor_event_loop_lag(metrics))
+        await asyncio.sleep(0.15)
+        await block_loop()
+        await asyncio.sleep(0.15)
+        task.cancel()
+        await asyncio.gather(task, return_exceptions=True)
+        return metrics.summary("event_loop.lag_s")["max"]
+
+    assert asyncio.run(run()) >= LAG_LIMIT_S
 
 
 def test_stream_summary_log_has_no_transcript_text(make_client, caplog):

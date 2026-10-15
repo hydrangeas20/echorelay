@@ -132,3 +132,16 @@ def test_summarize_samples():
     assert s["server_cpu_cores_mean"] == pytest.approx(0.5)
     assert s["sm_clock_mhz"] == {"min": 585.0, "p50": 1087.5, "mean": 1087.5, "max": 1590.0}
     assert np.isclose(s["gpu_util_pct"]["mean"], 30.0)
+
+
+def test_markdown_handles_zero_cost_decodes():
+    """Fake-backend runs report 0 ms decodes: undefined r and ratios must
+    render as '–', not crash."""
+    from benchmarks.analyze_results import to_markdown
+
+    r = _synthetic_result()
+    for s in r["streams"]:
+        s["partial_inference_ms"] = [0.0] * len(s["partial_inference_ms"])
+        s["final_inference_ms"] = 0.0
+    md = to_markdown({"x": analyze(r)})
+    assert "| synthetic |" in md and "–" in md

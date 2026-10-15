@@ -186,7 +186,7 @@ def analyze(result: dict) -> dict:
     ffit = final_cost_fit(result)
     util = utilization(result)
     return {
-        "label": result.get("label"),
+        "label": " ".join(x for x in (result.get("label"), result.get("scenario")) if x) or None,
         "model": result["server"]["health"]["model"],
         "run_config": result["run_config"],
         "streams_ok": result["summary"]["streams_ok"],
@@ -217,7 +217,7 @@ def to_markdown(analyses: dict[str, dict]) -> str:
         fit = (f"{f['intercept_ms']:.1f} + {f['slope_ms_per_audio_s']:.2f}·s"
                if "slope_ms_per_audio_s" in f else "–")
         rem = a["time_to_first_partial"].get("remainder_s", {}).get("p95")
-        lines.append(f"| {a['label'] or path} | {fit} | {f.get('r', float('nan')):.2f} | "
+        lines.append(f"| {a['label'] or path} | {fit} | {_x(f.get('r'), '.2f')} | "
                      f"{_x(a['utilization']['busy_fraction'], '.1%')} | "
                      f"{_x(a['utilization']['partial_share'], '.0%')} | "
                      f"{_ms(rem)} | {_ms(a['final_latency']['remainder_s']['p95'])} |")
