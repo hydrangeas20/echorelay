@@ -9,7 +9,7 @@ from .scheduler import Job, SlotScheduler
 
 def build_transcriber(settings: Settings) -> Transcriber:
     if settings.backend == "fake":
-        return FakeTranscriber()
+        return FakeTranscriber(delay_s=settings.fake_delay_s)
     from .whisper import WhisperTranscriber
 
     return WhisperTranscriber(

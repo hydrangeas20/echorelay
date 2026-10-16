@@ -24,6 +24,9 @@ class Settings(BaseSettings):
 
     # --- inference backend -------------------------------------------------
     backend: Literal["whisper", "fake"] = "whisper"
+    # Fake backend only: seconds each decode blocks its worker thread, to
+    # create queueing when validating benchmark tooling without a GPU.
+    fake_delay_s: float = Field(default=0.0, ge=0)
     model_name: str = "base.en"
     device: Literal["cpu", "cuda", "auto"] = "cpu"
     # CTranslate2 compute type: int8 (CPU default), float16 / int8_float16 (GPU).

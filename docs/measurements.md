@@ -40,7 +40,9 @@ Inside `partial` / `final` events:
 
 `timing` is present only with `ECHORELAY_EVENT_TIMING=true`.
 
-**Final latency decomposition** (server side, timing enabled):
+**Final latency decomposition** (server side, timing enabled; with
+`FINAL_PRIORITY` the final is submitted at `end`, so `wait_partial` and
+`queue` overlap and are reported separately rather than summed):
 final latency ≈ `wait_partial` + `queue` + `decode` + network/scheduling.
 Without timing (Phase 1), only `final latency − final decode` can be computed;
 `analyze_results` reports it as the *remainder*.
@@ -81,7 +83,9 @@ and `max`. Memory is bounded regardless of uptime.
 | `stream.partial_staleness_s` | s | per partial sent (see §2) |
 | `stream.final_{wait_partial,queue,decode}_s` | s | see §2 |
 
-Counters: `inference.{kind}.{completed,errors,timeouts,timeouts_while_queued,cancelled_callers}`,
+Counters: `inference.{kind}.{completed,errors,timeouts,timeouts_while_queued,cancelled_callers,cancelled_while_queued}`,
+`stream.partials_{promoted,cancelled}_at_end`, `stream.partial_at_end.<state>` (state of the
+stream's partial when `end` was processed: `none`, `created`, `queued`, `running`, `done`),
 `stream.partials_{scheduled,sent,deferred,skipped_empty,skipped_duplicate}`,
 `streams.outcome.<outcome>`.
 
@@ -145,3 +149,18 @@ transcripts under both versions without re-running a model.
   beyond the fitted audio range are flagged `extrapolated`. Above 30 s
   Whisper decodes in multiple windows, which the linear model does not
   capture.
+
+## 9. Scheduling comparison (`benchmarks/compare_policies.py`)
+
+* Groups: policy × concurrency. c=4 pools the `c4` and `recovery`
+  scenarios (identical workloads); rounds are pooled, and the p95 per round
+  is reported alongside.
+* **Final text identical to baseline**: fraction of a policy's streams whose
+  final text equals the baseline's text for the same utterance. Decoding is
+  deterministic and scheduling never changes the final's input, so the
+  expected value is 100 %.
+* **Final decode (control)**: scheduling must not change decode time; a
+  shift means GPU state differed between runs.
+* **Bootstrap interval**: percentile bootstrap of the difference in p95
+  (candidate − baseline), resampling streams within each arm, 2,000
+  resamples, seed 0. Optimistic, because streams within a run are correlated.
