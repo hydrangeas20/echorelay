@@ -1,6 +1,9 @@
 # Final-priority scheduling and obsolete-partial cancellation
 
-Status: **experiment.** Both policies are behind flags that default to off.
+Status: **experiment.** GPU results (Phase 3, T4):
+[`docs/benchmarks/scheduling-t4`](benchmarks/scheduling-t4/README.md).
+The prediction that inheritance alone would remove the own-partial wait
+under final priority was **wrong**; see that report. Both policies are behind flags that default to off.
 The default code path, model settings, audio, benchmark methodology and
 wire protocol are unchanged. Adoption depends on the matched GPU comparison
 (section 9).

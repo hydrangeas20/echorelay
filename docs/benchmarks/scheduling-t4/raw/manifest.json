@@ -1,0 +1,106 @@
+{
+  "commit": "53161b588a716b2c3c1ce847ec46843ba1442d62",
+  "order": [
+    {
+      "index": 1,
+      "round": 1,
+      "policy": "base",
+      "dir": "01_r1_base",
+      "stress_exit": 0,
+      "failed_checks": []
+    },
+    {
+      "index": 2,
+      "round": 1,
+      "policy": "prio",
+      "dir": "02_r1_prio",
+      "stress_exit": 0,
+      "failed_checks": []
+    },
+    {
+      "index": 3,
+      "round": 1,
+      "policy": "cancel",
+      "dir": "03_r1_cancel",
+      "stress_exit": 0,
+      "failed_checks": []
+    },
+    {
+      "index": 4,
+      "round": 1,
+      "policy": "both",
+      "dir": "04_r1_both",
+      "stress_exit": 0,
+      "failed_checks": []
+    },
+    {
+      "index": 5,
+      "round": 2,
+      "policy": "both",
+      "dir": "05_r2_both",
+      "stress_exit": 0,
+      "failed_checks": []
+    },
+    {
+      "index": 6,
+      "round": 2,
+      "policy": "cancel",
+      "dir": "06_r2_cancel",
+      "stress_exit": 0,
+      "failed_checks": []
+    },
+    {
+      "index": 7,
+      "round": 2,
+      "policy": "prio",
+      "dir": "07_r2_prio",
+      "stress_exit": 0,
+      "failed_checks": []
+    },
+    {
+      "index": 8,
+      "round": 2,
+      "policy": "base",
+      "dir": "08_r2_base",
+      "stress_exit": 0,
+      "failed_checks": []
+    }
+  ],
+  "common_settings": {
+    "event_timing": true,
+    "max_concurrent_inference": 1,
+    "max_concurrent_streams": 8,
+    "backend": "whisper",
+    "device": "cuda",
+    "compute_type": "float16"
+  },
+  "policies": {
+    "base": {
+      "final_priority": false,
+      "cancel_queued_partial_on_end": false
+    },
+    "prio": {
+      "final_priority": true,
+      "cancel_queued_partial_on_end": false
+    },
+    "cancel": {
+      "final_priority": false,
+      "cancel_queued_partial_on_end": true
+    },
+    "both": {
+      "final_priority": true,
+      "cancel_queued_partial_on_end": true
+    }
+  },
+  "stress_args": {
+    "concurrency": [
+      4,
+      8
+    ],
+    "streams": 20,
+    "speed": 1.0,
+    "burst_extra": 0,
+    "warmup": 2
+  },
+  "audio_dir": "/content/echorelay/eval_audio5"
+}

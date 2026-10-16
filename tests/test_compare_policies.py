@@ -82,3 +82,26 @@ def test_text_identity_flags_a_changed_final(tmp_path):
         "commit": "b" * 40, "common_settings": {}, "stress_args": {}, "order": entries}))
     a = analyze(tmp_path, None)
     assert a["groups"]["both c=4"]["final_text_identical_to_baseline"] == 0.0
+
+
+def test_end_state_breakdown_joins_client_and_server_by_session(tmp_path):
+    from benchmarks.end_state_breakdown import breakdown
+
+    run = tmp_path / "01_r1_both"
+    run.mkdir()
+    streams, log = [], []
+    for i, (state, cancelled, lat) in enumerate([("done", False, 0.1)] * 18 + [("queued", True, 0.3)] * 2):
+        sid = f"s{i:02d}"
+        streams.append({"ok": True, "ready": {"session_id": sid}, "t_end_sent": 1.0, "t_final": 1.0 + lat,
+                        "final_timing": {"wait_partial_ms": 0.0, "queue_ms": lat * 500}})
+        log.append(f"2026 INFO echorelay.transport: stream_summary session={sid} outcome=completed "
+                   f"partial_state_at_end={state} partial_promoted_at_end=False "
+                   f"partial_cancelled_at_end={cancelled}")
+    (run / "c8.json").write_text(json.dumps({"streams": streams}))
+    (run / "server.log").write_text("\n".join(log) + "\n")
+    (tmp_path / "manifest.json").write_text(json.dumps({"order": [{"dir": run.name, "policy": "both"}]}))
+    b = breakdown(tmp_path, "c8")["both"]
+    assert b["n"] == 20
+    assert b["classes"]["queued"]["n"] == 2 and b["classes"]["queued"]["cancelled"] == 2
+    assert b["classes"]["queued"]["latency_ms"]["max"] == pytest.approx(300)
+    assert b["classes"]["queued"]["at_or_above_p95"] == 2 and b["classes"]["done"]["at_or_above_p95"] == 0

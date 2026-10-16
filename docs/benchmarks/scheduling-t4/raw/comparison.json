@@ -1,0 +1,1079 @@
+{
+  "manifest": {
+    "commit": "53161b588a716b2c3c1ce847ec46843ba1442d62",
+    "common_settings": {
+      "event_timing": true,
+      "max_concurrent_inference": 1,
+      "max_concurrent_streams": 8,
+      "backend": "whisper",
+      "device": "cuda",
+      "compute_type": "float16"
+    },
+    "stress_args": {
+      "concurrency": [
+        4,
+        8
+      ],
+      "streams": 20,
+      "speed": 1.0,
+      "burst_extra": 0,
+      "warmup": 2
+    }
+  },
+  "run_order": [
+    [
+      1,
+      "base"
+    ],
+    [
+      1,
+      "prio"
+    ],
+    [
+      1,
+      "cancel"
+    ],
+    [
+      1,
+      "both"
+    ],
+    [
+      2,
+      "both"
+    ],
+    [
+      2,
+      "cancel"
+    ],
+    [
+      2,
+      "prio"
+    ],
+    [
+      2,
+      "base"
+    ]
+  ],
+  "groups": {
+    "base c=4": {
+      "streams": 80,
+      "ok": 80,
+      "failures": 0,
+      "errors": {},
+      "throughput_streams_per_s": {
+        "mean": 0.45519873943708367,
+        "per_scenario_run": [
+          0.45542899267041,
+          0.45521123716910716,
+          0.45508403556919086,
+          0.4550706923396267
+        ]
+      },
+      "partials_sent_per_stream": 8.0,
+      "streams_without_nonempty_partial": 0,
+      "final_latency_s": {
+        "n": 80,
+        "p50": 0.11356682650000494,
+        "p95": 0.15300249490010173,
+        "mean": 0.10675971412498483,
+        "max": 0.18199670799981504
+      },
+      "final_queue_s": {
+        "n": 80,
+        "p50": 0.0,
+        "p95": 0.047914999999999985,
+        "mean": 0.0076637499999999996,
+        "max": 0.06620000000000001
+      },
+      "final_wait_own_partial_s": {
+        "n": 80,
+        "p50": 0.0003,
+        "p95": 0.0004,
+        "mean": 0.00027,
+        "max": 0.0005
+      },
+      "final_decode_s": {
+        "n": 80,
+        "p50": 0.1093,
+        "p95": 0.132095,
+        "mean": 0.09732749999999998,
+        "max": 0.1469
+      },
+      "ttfp_s": {
+        "n": 80,
+        "p50": 0.9348954765000599,
+        "p95": 1.026445535950046,
+        "mean": 0.9498439511375096,
+        "max": 1.0522234449999814
+      },
+      "partial_queue_s": {
+        "n": 640,
+        "p50": 0.0,
+        "p95": 0.1276149999999997,
+        "mean": 0.02259875,
+        "max": 0.22690000000000002
+      },
+      "per_round_p95": {
+        "1": {
+          "final_latency_s": 0.15300249490010173,
+          "final_queue_s": 0.05443999999999997,
+          "ttfp_s": 1.026445535950046
+        },
+        "2": {
+          "final_latency_s": 0.13660037394993188,
+          "final_queue_s": 0.0457,
+          "ttfp_s": 1.0146542736999662
+        }
+      },
+      "wer_v2": 0.05309734513274336,
+      "final_text_identical_to_baseline": 1.0
+    },
+    "base c=8": {
+      "streams": 40,
+      "ok": 40,
+      "failures": 0,
+      "errors": {},
+      "throughput_streams_per_s": {
+        "mean": 0.8437099084488155,
+        "per_scenario_run": [
+          0.843356393126553,
+          0.844063423771078
+        ]
+      },
+      "partials_sent_per_stream": 8.0,
+      "streams_without_nonempty_partial": 0,
+      "final_latency_s": {
+        "n": 40,
+        "p50": 0.1209145665000051,
+        "p95": 0.5624491227000021,
+        "mean": 0.22378132422501834,
+        "max": 0.5741784089998418
+      },
+      "final_queue_s": {
+        "n": 40,
+        "p50": 0.01515,
+        "p95": 0.3313599999999998,
+        "mean": 0.1152775,
+        "max": 0.4131
+      },
+      "final_wait_own_partial_s": {
+        "n": 40,
+        "p50": 0.0003,
+        "p95": 0.021614999999999503,
+        "mean": 0.0108425,
+        "max": 0.2243
+      },
+      "final_decode_s": {
+        "n": 40,
+        "p50": 0.1076,
+        "p95": 0.13969,
+        "mean": 0.0957375,
+        "max": 0.1435
+      },
+      "ttfp_s": {
+        "n": 40,
+        "p50": 0.9483820059999744,
+        "p95": 1.143671301200095,
+        "mean": 0.9971423425499892,
+        "max": 1.1747027500000513
+      },
+      "partial_queue_s": {
+        "n": 320,
+        "p50": 0.02885,
+        "p95": 0.34975000000000006,
+        "mean": 0.094255625,
+        "max": 0.5209
+      },
+      "per_round_p95": {
+        "1": {
+          "final_latency_s": 0.5630059577499879,
+          "final_queue_s": 0.3313600000000001,
+          "ttfp_s": 1.143671301200095
+        },
+        "2": {
+          "final_latency_s": 0.559758715099963,
+          "final_queue_s": 0.3102150000000001,
+          "ttfp_s": 1.1416949468000326
+        }
+      },
+      "wer_v2": 0.05309734513274336,
+      "final_text_identical_to_baseline": 1.0
+    },
+    "both c=4": {
+      "streams": 80,
+      "ok": 80,
+      "failures": 0,
+      "errors": {},
+      "throughput_streams_per_s": {
+        "mean": 0.4556069955642055,
+        "per_scenario_run": [
+          0.45541857958920345,
+          0.4557535162685304,
+          0.4553064032115564,
+          0.4559494831875317
+        ]
+      },
+      "partials_sent_per_stream": 8.0,
+      "streams_without_nonempty_partial": 0,
+      "final_latency_s": {
+        "n": 80,
+        "p50": 0.11154969850008456,
+        "p95": 0.15601582355010343,
+        "mean": 0.10686218338749712,
+        "max": 0.19460070900004212
+      },
+      "final_queue_s": {
+        "n": 80,
+        "p50": 0.0,
+        "p95": 0.05310999999999998,
+        "mean": 0.008087500000000001,
+        "max": 0.0825
+      },
+      "final_wait_own_partial_s": {
+        "n": 80,
+        "p50": 0.0003,
+        "p95": 0.0004,
+        "mean": 0.00026750000000000005,
+        "max": 0.0004
+      },
+      "final_decode_s": {
+        "n": 80,
+        "p50": 0.10969999999999999,
+        "p95": 0.125655,
+        "mean": 0.09702375,
+        "max": 0.1618
+      },
+      "ttfp_s": {
+        "n": 80,
+        "p50": 0.9345207080001501,
+        "p95": 1.0326211535499397,
+        "mean": 0.9505533211249997,
+        "max": 1.058527758000082
+      },
+      "partial_queue_s": {
+        "n": 640,
+        "p50": 0.0,
+        "p95": 0.145915,
+        "mean": 0.024200937500000002,
+        "max": 0.2288
+      },
+      "per_round_p95": {
+        "1": {
+          "final_latency_s": 0.15223732194999673,
+          "final_queue_s": 0.054139999999999924,
+          "ttfp_s": 1.01451597235
+        },
+        "2": {
+          "final_latency_s": 0.15601582355010343,
+          "final_queue_s": 0.04892999999999996,
+          "ttfp_s": 1.0326211535499397
+        }
+      },
+      "wer_v2": 0.05309734513274336,
+      "final_text_identical_to_baseline": 1.0
+    },
+    "both c=8": {
+      "streams": 40,
+      "ok": 40,
+      "failures": 0,
+      "errors": {},
+      "throughput_streams_per_s": {
+        "mean": 0.8532724285900226,
+        "per_scenario_run": [
+          0.8537286054704935,
+          0.8528162517095519
+        ]
+      },
+      "partials_sent_per_stream": 7.9,
+      "streams_without_nonempty_partial": 0,
+      "final_latency_s": {
+        "n": 40,
+        "p50": 0.11720199800004139,
+        "p95": 0.26630067964993026,
+        "mean": 0.13897238982499402,
+        "max": 0.31697012099994026
+      },
+      "final_queue_s": {
+        "n": 40,
+        "p50": 0.018799999999999997,
+        "p95": 0.1480799999999999,
+        "mean": 0.0403525,
+        "max": 0.197
+      },
+      "final_wait_own_partial_s": {
+        "n": 40,
+        "p50": 0.0003,
+        "p95": 0.034444999999999976,
+        "mean": 0.004515,
+        "max": 0.0723
+      },
+      "final_decode_s": {
+        "n": 40,
+        "p50": 0.10975,
+        "p95": 0.128605,
+        "mean": 0.0963125,
+        "max": 0.136
+      },
+      "ttfp_s": {
+        "n": 40,
+        "p50": 0.9534083605000205,
+        "p95": 1.172338441100044,
+        "mean": 1.0084556044249837,
+        "max": 1.1877395989999968
+      },
+      "partial_queue_s": {
+        "n": 316,
+        "p50": 0.0237,
+        "p95": 0.35714999999999997,
+        "mean": 0.0934620253164557,
+        "max": 0.6181
+      },
+      "per_round_p95": {
+        "1": {
+          "final_latency_s": 0.25321276715011437,
+          "final_queue_s": 0.13193000000000002,
+          "ttfp_s": 1.1686254042502013
+        },
+        "2": {
+          "final_latency_s": 0.2678976287499268,
+          "final_queue_s": 0.14921500000000004,
+          "ttfp_s": 1.172338441100044
+        }
+      },
+      "wer_v2": 0.05309734513274336,
+      "final_text_identical_to_baseline": 1.0
+    },
+    "cancel c=4": {
+      "streams": 80,
+      "ok": 80,
+      "failures": 0,
+      "errors": {},
+      "throughput_streams_per_s": {
+        "mean": 0.4549196991954375,
+        "per_scenario_run": [
+          0.454069815474646,
+          0.4549997980787112,
+          0.4554597215450373,
+          0.4551494616833555
+        ]
+      },
+      "partials_sent_per_stream": 8.0,
+      "streams_without_nonempty_partial": 0,
+      "final_latency_s": {
+        "n": 80,
+        "p50": 0.11109442950009907,
+        "p95": 0.15619265105016208,
+        "mean": 0.10768171051249453,
+        "max": 0.2397926590001589
+      },
+      "final_queue_s": {
+        "n": 80,
+        "p50": 0.0,
+        "p95": 0.05261499999999998,
+        "mean": 0.008217499999999999,
+        "max": 0.1163
+      },
+      "final_wait_own_partial_s": {
+        "n": 80,
+        "p50": 0.0003,
+        "p95": 0.0004,
+        "mean": 0.00026499999999999994,
+        "max": 0.0004
+      },
+      "final_decode_s": {
+        "n": 80,
+        "p50": 0.10945,
+        "p95": 0.136215,
+        "mean": 0.09763250000000001,
+        "max": 0.153
+      },
+      "ttfp_s": {
+        "n": 80,
+        "p50": 0.9341955544999792,
+        "p95": 1.0325791192500673,
+        "mean": 0.9500557156624836,
+        "max": 1.0524173249998512
+      },
+      "partial_queue_s": {
+        "n": 640,
+        "p50": 0.0,
+        "p95": 0.12865499999999985,
+        "mean": 0.02262515625,
+        "max": 0.2325
+      },
+      "per_round_p95": {
+        "1": {
+          "final_latency_s": 0.15465044890005397,
+          "final_queue_s": 0.05204999999999994,
+          "ttfp_s": 1.0139179643500027
+        },
+        "2": {
+          "final_latency_s": 0.15619265105016208,
+          "final_queue_s": 0.05261499999999998,
+          "ttfp_s": 1.0325791192500673
+        }
+      },
+      "wer_v2": 0.05309734513274336,
+      "final_text_identical_to_baseline": 1.0
+    },
+    "cancel c=8": {
+      "streams": 40,
+      "ok": 40,
+      "failures": 0,
+      "errors": {},
+      "throughput_streams_per_s": {
+        "mean": 0.8458431662551257,
+        "per_scenario_run": [
+          0.8460185144942132,
+          0.8456678180160382
+        ]
+      },
+      "partials_sent_per_stream": 7.95,
+      "streams_without_nonempty_partial": 0,
+      "final_latency_s": {
+        "n": 40,
+        "p50": 0.13243552699998418,
+        "p95": 0.4752350513000123,
+        "mean": 0.2089656053250053,
+        "max": 0.5076670879998346
+      },
+      "final_queue_s": {
+        "n": 40,
+        "p50": 0.026499999999999996,
+        "p95": 0.3419199999999999,
+        "mean": 0.11004,
+        "max": 0.37560000000000004
+      },
+      "final_wait_own_partial_s": {
+        "n": 40,
+        "p50": 0.0003,
+        "p95": 0.0004,
+        "mean": 0.00026,
+        "max": 0.0006
+      },
+      "final_decode_s": {
+        "n": 40,
+        "p50": 0.10805000000000001,
+        "p95": 0.131575,
+        "mean": 0.09677,
+        "max": 0.175
+      },
+      "ttfp_s": {
+        "n": 40,
+        "p50": 0.9675447375000203,
+        "p95": 1.1583367074500188,
+        "mean": 0.9984368396999799,
+        "max": 1.1893945399999666
+      },
+      "partial_queue_s": {
+        "n": 318,
+        "p50": 0.0368,
+        "p95": 0.3250849999999998,
+        "mean": 0.08956037735849057,
+        "max": 0.4593
+      },
+      "per_round_p95": {
+        "1": {
+          "final_latency_s": 0.4743151862501691,
+          "final_queue_s": 0.33921500000000004,
+          "ttfp_s": 1.1594705926000188
+        },
+        "2": {
+          "final_latency_s": 0.47537751995000693,
+          "final_queue_s": 0.34192,
+          "ttfp_s": 1.135680336049927
+        }
+      },
+      "wer_v2": 0.05309734513274336,
+      "final_text_identical_to_baseline": 1.0
+    },
+    "prio c=4": {
+      "streams": 80,
+      "ok": 80,
+      "failures": 0,
+      "errors": {},
+      "throughput_streams_per_s": {
+        "mean": 0.4553425654894735,
+        "per_scenario_run": [
+          0.4553737529489915,
+          0.45515600690600166,
+          0.4555019899452333,
+          0.4553385121576675
+        ]
+      },
+      "partials_sent_per_stream": 8.0,
+      "streams_without_nonempty_partial": 0,
+      "final_latency_s": {
+        "n": 80,
+        "p50": 0.11283421450002606,
+        "p95": 0.14302897924998206,
+        "mean": 0.10499216684998772,
+        "max": 0.16934655999989445
+      },
+      "final_queue_s": {
+        "n": 80,
+        "p50": 0.0,
+        "p95": 0.04462,
+        "mean": 0.006673749999999999,
+        "max": 0.0818
+      },
+      "final_wait_own_partial_s": {
+        "n": 80,
+        "p50": 0.0003,
+        "p95": 0.0004,
+        "mean": 0.00026875,
+        "max": 0.0004
+      },
+      "final_decode_s": {
+        "n": 80,
+        "p50": 0.10985,
+        "p95": 0.13078499999999998,
+        "mean": 0.09657875,
+        "max": 0.1398
+      },
+      "ttfp_s": {
+        "n": 80,
+        "p50": 0.9344777844999044,
+        "p95": 1.0336699225000872,
+        "mean": 0.9500096362499988,
+        "max": 1.0477559220000785
+      },
+      "partial_queue_s": {
+        "n": 640,
+        "p50": 0.0,
+        "p95": 0.13247999999999985,
+        "mean": 0.02406109375,
+        "max": 0.22740000000000002
+      },
+      "per_round_p95": {
+        "1": {
+          "final_latency_s": 0.14306751429999168,
+          "final_queue_s": 0.06002999999999994,
+          "ttfp_s": 1.0336699225000872
+        },
+        "2": {
+          "final_latency_s": 0.1331033478998847,
+          "final_queue_s": 0.04165499999999999,
+          "ttfp_s": 1.022844254399945
+        }
+      },
+      "wer_v2": 0.05309734513274336,
+      "final_text_identical_to_baseline": 1.0
+    },
+    "prio c=8": {
+      "streams": 40,
+      "ok": 40,
+      "failures": 0,
+      "errors": {},
+      "throughput_streams_per_s": {
+        "mean": 0.8457765665622623,
+        "per_scenario_run": [
+          0.8459601031671504,
+          0.8455930299573742
+        ]
+      },
+      "partials_sent_per_stream": 8.0,
+      "streams_without_nonempty_partial": 0,
+      "final_latency_s": {
+        "n": 40,
+        "p50": 0.1232364324999935,
+        "p95": 0.38984450474996457,
+        "mean": 0.16893804710001065,
+        "max": 0.5176365780000651
+      },
+      "final_queue_s": {
+        "n": 40,
+        "p50": 0.025500000000000002,
+        "p95": 0.26770999999999967,
+        "mean": 0.069325,
+        "max": 0.39330000000000004
+      },
+      "final_wait_own_partial_s": {
+        "n": 40,
+        "p50": 0.0003,
+        "p95": 0.26869999999999966,
+        "mean": 0.04390499999999999,
+        "max": 0.3939
+      },
+      "final_decode_s": {
+        "n": 40,
+        "p50": 0.10845,
+        "p95": 0.13183999999999998,
+        "mean": 0.09729499999999999,
+        "max": 0.133
+      },
+      "ttfp_s": {
+        "n": 40,
+        "p50": 0.9999851029999718,
+        "p95": 1.1762438121999481,
+        "mean": 1.0250059550499941,
+        "max": 1.1834542809999675
+      },
+      "partial_queue_s": {
+        "n": 320,
+        "p50": 0.042749999999999996,
+        "p95": 0.38774000000000075,
+        "mean": 0.11079187500000001,
+        "max": 0.8947999999999999
+      },
+      "per_round_p95": {
+        "1": {
+          "final_latency_s": 0.376257212400185,
+          "final_queue_s": 0.2559300000000001,
+          "ttfp_s": 1.17656109429995
+        },
+        "2": {
+          "final_latency_s": 0.390732549399968,
+          "final_queue_s": 0.2685650000000001,
+          "ttfp_s": 1.173534279199987
+        }
+      },
+      "wer_v2": 0.05309734513274336,
+      "final_text_identical_to_baseline": 1.0
+    }
+  },
+  "deltas": {
+    "both vs base c=4": {
+      "final_latency_s": {
+        "diff_p95": 0.003013328650001701,
+        "ci95": [
+          -0.03169398219231511,
+          0.04376463736127876
+        ],
+        "relative": 0.0196946373454182,
+        "n_base": 80,
+        "n_cand": 80
+      },
+      "final_queue_s": {
+        "diff_p95": 0.005194999999999991,
+        "ci95": [
+          -0.023000000000000007,
+          0.03723012500000001
+        ],
+        "relative": 0.10842116247521638,
+        "n_base": 80,
+        "n_cand": 80
+      },
+      "ttfp_s": {
+        "diff_p95": 0.006175617599893712,
+        "ci95": [
+          -0.034868878233540845,
+          0.04386602630731581
+        ],
+        "relative": 0.006016507825890395,
+        "n_base": 80,
+        "n_cand": 80
+      },
+      "final_decode_s": {
+        "diff_p95": -0.006440000000000001,
+        "ci95": [
+          -0.018265000000000017,
+          0.007483874999999979
+        ],
+        "relative": -0.04875279155153489,
+        "n_base": 80,
+        "n_cand": 80
+      }
+    },
+    "both vs base c=8": {
+      "final_latency_s": {
+        "diff_p95": -0.2961484430500719,
+        "ci95": [
+          -0.3581125493324508,
+          -0.14172026290005996
+        ],
+        "relative": -0.5265337451829059,
+        "n_base": 40,
+        "n_cand": 40
+      },
+      "final_queue_s": {
+        "diff_p95": -0.18327999999999992,
+        "ci95": [
+          -0.29363475,
+          -0.11879950000000002
+        ],
+        "relative": -0.5531144374698214,
+        "n_base": 40,
+        "n_cand": 40
+      },
+      "ttfp_s": {
+        "diff_p95": 0.028667139899948957,
+        "ci95": [
+          -0.02929256810003844,
+          0.08628010774998551
+        ],
+        "relative": 0.025065890758881076,
+        "n_base": 40,
+        "n_cand": 40
+      },
+      "final_decode_s": {
+        "diff_p95": -0.011085000000000012,
+        "ci95": [
+          -0.02489999999999999,
+          0.016731750000000052
+        ],
+        "relative": -0.07935428448707861,
+        "n_base": 40,
+        "n_cand": 40
+      }
+    },
+    "cancel vs base c=4": {
+      "final_latency_s": {
+        "diff_p95": 0.0031901561500603526,
+        "ci95": [
+          -0.0275146087275755,
+          0.032556812052568496
+        ],
+        "relative": 0.020850353794186604,
+        "n_base": 80,
+        "n_cand": 80
+      },
+      "final_queue_s": {
+        "diff_p95": 0.004699999999999996,
+        "ci95": [
+          -0.019248750000000044,
+          0.026090249999999995
+        ],
+        "relative": 0.09809036836063857,
+        "n_base": 80,
+        "n_cand": 80
+      },
+      "ttfp_s": {
+        "diff_p95": 0.006133583300021339,
+        "ci95": [
+          -0.03983070476640874,
+          0.041714433249848026
+        ],
+        "relative": 0.005975556505630165,
+        "n_base": 80,
+        "n_cand": 80
+      },
+      "final_decode_s": {
+        "diff_p95": 0.0041200000000000125,
+        "ci95": [
+          -0.013180500000000024,
+          0.01754375000000002
+        ],
+        "relative": 0.031189674098187008,
+        "n_base": 80,
+        "n_cand": 80
+      }
+    },
+    "cancel vs base c=8": {
+      "final_latency_s": {
+        "diff_p95": -0.08721407139998982,
+        "ci95": [
+          -0.1787661924989828,
+          0.07258484886726428
+        ],
+        "relative": -0.15506126310825072,
+        "n_base": 40,
+        "n_cand": 40
+      },
+      "final_queue_s": {
+        "diff_p95": 0.01056000000000007,
+        "ci95": [
+          -0.09656500000000001,
+          0.06584887499999996
+        ],
+        "relative": 0.03186866248189303,
+        "n_base": 40,
+        "n_cand": 40
+      },
+      "ttfp_s": {
+        "diff_p95": 0.014665406249923851,
+        "ci95": [
+          -0.06687770532748903,
+          0.0749655293424594
+        ],
+        "relative": 0.012823095442313644,
+        "n_base": 40,
+        "n_cand": 40
+      },
+      "final_decode_s": {
+        "diff_p95": -0.008115000000000011,
+        "ci95": [
+          -0.021882250000000037,
+          0.05326000000000006
+        ],
+        "relative": -0.05809292003722536,
+        "n_base": 40,
+        "n_cand": 40
+      }
+    },
+    "prio vs base c=4": {
+      "final_latency_s": {
+        "diff_p95": -0.009973515650119669,
+        "ci95": [
+          -0.03177130800008854,
+          0.01065851087375024
+        ],
+        "relative": -0.06518531385146084,
+        "n_base": 80,
+        "n_cand": 80
+      },
+      "final_queue_s": {
+        "diff_p95": -0.0032949999999999854,
+        "ci95": [
+          -0.031695000000000015,
+          0.03199999999999999
+        ],
+        "relative": -0.06876760930814957,
+        "n_base": 80,
+        "n_cand": 80
+      },
+      "ttfp_s": {
+        "diff_p95": 0.007224386550041206,
+        "ci95": [
+          -0.03628105079983479,
+          0.04194883107366819
+        ],
+        "relative": 0.007038256095443524,
+        "n_base": 80,
+        "n_cand": 80
+      },
+      "final_decode_s": {
+        "diff_p95": -0.0013100000000000056,
+        "ci95": [
+          -0.014015,
+          0.011530875000000008
+        ],
+        "relative": -0.00991710511374394,
+        "n_base": 80,
+        "n_cand": 80
+      }
+    },
+    "prio vs base c=8": {
+      "final_latency_s": {
+        "diff_p95": -0.17260461795003756,
+        "ci95": [
+          -0.3070063020999215,
+          0.07241537864994141
+        ],
+        "relative": -0.3068804110164841,
+        "n_base": 40,
+        "n_cand": 40
+      },
+      "final_queue_s": {
+        "diff_p95": -0.06365000000000015,
+        "ci95": [
+          -0.24075550000000026,
+          0.07987000000000011
+        ],
+        "relative": -0.1920871559633033,
+        "n_base": 40,
+        "n_cand": 40
+      },
+      "ttfp_s": {
+        "diff_p95": 0.032572510999853144,
+        "ci95": [
+          -0.027563156963900614,
+          0.08902162339492446
+        ],
+        "relative": 0.028480657830334336,
+        "n_base": 40,
+        "n_cand": 40
+      },
+      "final_decode_s": {
+        "diff_p95": -0.007850000000000024,
+        "ci95": [
+          -0.021725750000000037,
+          0.017860499999999998
+        ],
+        "relative": -0.0561958622664473,
+        "n_base": 40,
+        "n_cand": 40
+      }
+    }
+  },
+  "work_counters": {
+    "base": {
+      "inference.final.completed": [
+        42,
+        42
+      ],
+      "inference.partial.completed": [
+        322,
+        323
+      ],
+      "stream.partial_at_end.done": [
+        38,
+        39
+      ],
+      "stream.partial_at_end.queued": [
+        1,
+        1
+      ],
+      "stream.partial_at_end.running": [
+        3,
+        2
+      ],
+      "stream.partials_deferred": [
+        2,
+        3
+      ],
+      "stream.partials_scheduled": [
+        322,
+        323
+      ],
+      "stream.partials_sent": [
+        322,
+        323
+      ],
+      "stream.partials_skipped_duplicate": [
+        0,
+        0
+      ],
+      "stream.partials_skipped_empty": [
+        0,
+        0
+      ]
+    },
+    "prio": {
+      "inference.final.completed": [
+        42,
+        42
+      ],
+      "inference.partial.completed": [
+        323,
+        323
+      ],
+      "stream.partial_at_end.done": [
+        36,
+        36
+      ],
+      "stream.partial_at_end.queued": [
+        3,
+        3
+      ],
+      "stream.partial_at_end.running": [
+        3,
+        3
+      ],
+      "stream.partials_deferred": [
+        2,
+        3
+      ],
+      "stream.partials_promoted_at_end": [
+        3,
+        3
+      ],
+      "stream.partials_scheduled": [
+        323,
+        323
+      ],
+      "stream.partials_sent": [
+        323,
+        323
+      ],
+      "stream.partials_skipped_duplicate": [
+        0,
+        0
+      ],
+      "stream.partials_skipped_empty": [
+        0,
+        0
+      ]
+    },
+    "cancel": {
+      "inference.final.completed": [
+        42,
+        42
+      ],
+      "inference.partial.cancelled_while_queued": [
+        1,
+        1
+      ],
+      "inference.partial.completed": [
+        321,
+        321
+      ],
+      "stream.partial_at_end.done": [
+        39,
+        39
+      ],
+      "stream.partial_at_end.queued": [
+        1,
+        1
+      ],
+      "stream.partial_at_end.running": [
+        2,
+        2
+      ],
+      "stream.partials_cancelled_at_end": [
+        1,
+        1
+      ],
+      "stream.partials_deferred": [
+        2,
+        2
+      ],
+      "stream.partials_scheduled": [
+        322,
+        322
+      ],
+      "stream.partials_sent": [
+        321,
+        321
+      ],
+      "stream.partials_skipped_duplicate": [
+        0,
+        0
+      ],
+      "stream.partials_skipped_empty": [
+        0,
+        0
+      ]
+    },
+    "both": {
+      "inference.final.completed": [
+        42,
+        42
+      ],
+      "inference.partial.cancelled_while_queued": [
+        2,
+        2
+      ],
+      "inference.partial.completed": [
+        320,
+        320
+      ],
+      "stream.partial_at_end.done": [
+        36,
+        36
+      ],
+      "stream.partial_at_end.queued": [
+        2,
+        2
+      ],
+      "stream.partial_at_end.running": [
+        4,
+        4
+      ],
+      "stream.partials_cancelled_at_end": [
+        2,
+        2
+      ],
+      "stream.partials_deferred": [
+        2,
+        2
+      ],
+      "stream.partials_scheduled": [
+        322,
+        322
+      ],
+      "stream.partials_sent": [
+        320,
+        320
+      ],
+      "stream.partials_skipped_duplicate": [
+        0,
+        0
+      ],
+      "stream.partials_skipped_empty": [
+        0,
+        0
+      ]
+    }
+  }
+}
