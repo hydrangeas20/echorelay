@@ -12,6 +12,8 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from collections import defaultdict
+from collections.abc import Callable
 import os
 import resource
 import threading
@@ -95,6 +97,60 @@ class Metrics:
                 "counters": dict(sorted(self._counters.items())),
                 "distributions": {k: d.summary() for k, d in sorted(self._dists.items())},
             }
+
+
+class LevelTracker:
+    """Time spent at each integer level of a gauge (active streams, queue
+    depth, in-flight decodes).
+
+    ``set`` is called whenever the gauge changes; the time since the previous
+    change is credited to the previous level. Callers must use one thread
+    (all EchoRelay gauges change on the event loop). The JSON snapshot is
+    lifetime; differencing two snapshots gives the time-weighted
+    distribution over the interval between them.
+    """
+
+    def __init__(self, clock: Callable[[], float] = time.monotonic) -> None:
+        self._clock = clock
+        self.level = 0
+        self.max_level = 0
+        self._since = clock()
+        self._time_at: dict[int, float] = defaultdict(float)
+
+    def set(self, level: int) -> None:
+        now = self._clock()
+        self._time_at[self.level] += now - self._since
+        self._since = now
+        self.level = level
+        if level > self.max_level:
+            self.max_level = level
+
+    def snapshot(self) -> dict[str, Any]:
+        t = dict(self._time_at)
+        t[self.level] = t.get(self.level, 0.0) + (self._clock() - self._since)
+        return {
+            "current": self.level,
+            "max": self.max_level,  # lifetime
+            "time_at_level_s": {str(k): v for k, v in sorted(t.items())},
+            "total_s": sum(t.values()),
+        }
+
+
+def level_window(before: dict, after: dict) -> dict[str, Any]:
+    """Time-weighted distribution of a level between two snapshots."""
+    keys = set(before["time_at_level_s"]) | set(after["time_at_level_s"])
+    t = {int(k): after["time_at_level_s"].get(k, 0.0) - before["time_at_level_s"].get(k, 0.0) for k in keys}
+    t = {k: v for k, v in sorted(t.items()) if v > 1e-9}
+    total = sum(t.values())
+    if total <= 0:
+        return {"total_s": 0.0}
+    return {
+        "total_s": total,
+        "mean": sum(k * v for k, v in t.items()) / total,
+        "max_level_seen": max(t),  # highest level held for a positive time
+        "share_at_level": {str(k): v / total for k, v in t.items()},
+        "share_at_or_above": {str(k): sum(v for j, v in t.items() if j >= k) / total for k in t},
+    }
 
 
 def process_resources() -> dict[str, Any]:

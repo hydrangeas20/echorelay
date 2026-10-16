@@ -33,6 +33,8 @@ import heapq
 import itertools
 from dataclasses import dataclass, field
 
+from ..metrics import LevelTracker
+
 # Lower value = served first.
 PRIORITY_FINAL = 0
 PRIORITY_PARTIAL = 1
@@ -67,6 +69,7 @@ class SlotScheduler:
         self._heap: list[list] = []  # entries: [priority, seq, job, valid]
         self._seq = itertools.count()
         self.waiting = 0
+        self.waiting_level = LevelTracker()  # time at each queue depth
         self.granted_total = 0
         self.handoffs_after_cancel = 0  # S4 race resolved (granted, then cancelled)
 
@@ -100,6 +103,7 @@ class SlotScheduler:
         job.state = "queued"
         self._push(job, job.priority)
         self.waiting += 1
+        self.waiting_level.set(self.waiting)
         try:
             await job._fut
         except asyncio.CancelledError:
@@ -112,6 +116,7 @@ class SlotScheduler:
             raise
         finally:
             self.waiting -= 1
+            self.waiting_level.set(self.waiting)
             if job._entry is not None:
                 job._entry[3] = False
         job.state = "running"

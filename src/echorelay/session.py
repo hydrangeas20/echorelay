@@ -75,6 +75,10 @@ class StreamStats:
     partial_state_at_end: str = "none"
     partial_promoted_at_end: bool = False
     partial_cancelled_at_end: bool = False
+    # Inference queue observed when "end" was processed, before this
+    # stream's final is submitted or its partial promoted/cancelled.
+    inference_waiting_at_end: int | None = None
+    inference_in_flight_at_end: int | None = None
 
     def summary(self, audio_duration_s: float) -> dict[str, Any]:
         return {
@@ -99,6 +103,8 @@ class StreamStats:
             "partial_state_at_end": self.partial_state_at_end,
             "partial_promoted_at_end": self.partial_promoted_at_end,
             "partial_cancelled_at_end": self.partial_cancelled_at_end,
+            "inference_waiting_at_end": self.inference_waiting_at_end,
+            "inference_in_flight_at_end": self.inference_in_flight_at_end,
         }
 
 
@@ -305,6 +311,8 @@ class StreamSession:
         partial. Submitting late would let the slot freed by that partial go
         to another stream's partial first.
         """
+        self.stats.inference_waiting_at_end = self.runner.waiting
+        self.stats.inference_in_flight_at_end = self.runner.in_flight
         t0 = time.monotonic()
         audio = self.buffer.snapshot()  # complete: nothing is buffered after "end"
         task = self._partial_task

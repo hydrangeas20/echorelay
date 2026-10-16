@@ -10,7 +10,7 @@ from typing import Any
 from fastapi import APIRouter, WebSocket
 from starlette.websockets import WebSocketDisconnect, WebSocketState
 
-from .metrics import Metrics
+from .metrics import LevelTracker, Metrics
 from .protocol import CloseCode, StreamError, error_event, ready_event
 from .session import ClientDisconnected, Incoming, StreamSession
 
@@ -30,6 +30,7 @@ class StreamRegistry:
         self.disconnected = 0
         self.rejected = 0
         self.peak_active = 0
+        self.active_level = LevelTracker()  # time at each active-stream count
 
     def try_admit(self, session_id: str) -> bool:
         # Single event loop: check-and-add cannot interleave.
@@ -38,10 +39,12 @@ class StreamRegistry:
             return False
         self.active.add(session_id)
         self.peak_active = max(self.peak_active, len(self.active))
+        self.active_level.set(len(self.active))
         return True
 
     def release(self, session_id: str) -> None:
         self.active.discard(session_id)
+        self.active_level.set(len(self.active))
         self.sessions.pop(session_id, None)
 
     def buffered_audio_bytes(self) -> int:
@@ -75,6 +78,8 @@ def record_stream_end(metrics: Metrics, session: StreamSession, outcome: str) ->
     for v in session.stats.partial_staleness_s:
         metrics.observe("stream.partial_staleness_s", v)
     metrics.inc(f"stream.partial_at_end.{summary['partial_state_at_end']}")
+    if summary["inference_waiting_at_end"] is not None:
+        metrics.observe("stream.inference_waiting_at_end", summary["inference_waiting_at_end"])
     for key in ("final_wait_partial_s", "final_queue_s", "final_decode_s"):
         if summary[key] is not None:
             metrics.observe(f"stream.{key}", summary[key])

@@ -106,6 +106,13 @@ def create_app(settings: Settings | None = None, transcriber: Transcriber | None
             "streams": state.registry.snapshot(),
             "inference": state.runner.snapshot(),
             "process": process_resources(),
+            # Time spent at each level since start; difference two snapshots
+            # for a window (docs/measurements.md, "Level distributions").
+            "levels": {
+                "streams.active": state.registry.active_level.snapshot(),
+                "inference.in_flight": state.runner.in_flight_level.snapshot(),
+                "inference.waiting": state.runner.scheduler.waiting_level.snapshot(),
+            },
             **state.metrics.snapshot(),
         }
 
