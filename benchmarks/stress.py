@@ -70,7 +70,8 @@ async def wait_idle(metrics_url: str, timeout_s: float = 10.0) -> tuple[bool, di
 async def run_paced(url, metrics_url, utts, streams, concurrency, a) -> dict:
     stop = asyncio.Event()
     sampling = asyncio.create_task(sampler.sample(metrics_url, a.sample_interval_s, stop))
-    records, wall = await run_load(url, utts, streams, concurrency, a.chunk_ms, a.speed, a.stream_timeout_s)
+    records, wall = await run_load(url, utts, streams, concurrency, a.chunk_ms, a.speed, a.stream_timeout_s,
+                                   arrival=a.arrival, stagger_s=a.stagger_s)
     stop.set()
     samples = await sampling
     summary = summarize(records, wall, utts)
@@ -138,6 +139,18 @@ def _p95(summary: dict, key: str) -> float | None:
     return v.get("p95")
 
 
+def scenario_plan(concurrency: list[int]) -> list[tuple[str, int]]:
+    """Paced scenarios in order. A repeated concurrency value gets a numbered
+    name (c=8, c=8_2, c=8_3) so each repeat is a separate block and file;
+    without repeats the names are unchanged (c=1, c=4, c=8)."""
+    seen: dict[int, int] = {}
+    plan = []
+    for c in concurrency:
+        seen[c] = seen.get(c, 0) + 1
+        plan.append((f"c={c}" if seen[c] == 1 else f"c={c}_{seen[c]}", c))
+    return plan
+
+
 async def main_async(a) -> int:
     url = a.url
     base = url.replace("ws://", "http://").replace("wss://", "https://").rsplit("/ws/", 1)[0]
@@ -157,7 +170,7 @@ async def main_async(a) -> int:
     if a.warmup:
         await run_load(url, utts, a.warmup, 1, a.chunk_ms, 0.0, a.stream_timeout_s)
 
-    plan = [(f"c={c}", c) for c in a.concurrency]
+    plan = scenario_plan(a.concurrency)
     if a.burst_extra:
         plan.append(("burst", None))
     if a.concurrency:
@@ -165,6 +178,9 @@ async def main_async(a) -> int:
 
     for name, c in plan:
         print(f"--- scenario {name}", flush=True)
+        # Server is idle here (checked after the previous scenario); this
+        # snapshot bounds the scenario's level distributions.
+        m_before = await asyncio.to_thread(sampler.fetch_json, metrics_url)
         if name == "burst":
             r = await run_burst(url, metrics_url, utts[0], limit, a.burst_extra, a)
             outcomes = [x["outcome"] for x in r["connections"]]
@@ -213,13 +229,15 @@ async def main_async(a) -> int:
         if name == "burst" and m_after:
             peak = m_after["streams"]["peak_active"]
             checks.append(Check(name, "peak active == limit", peak == limit, f"peak={peak} limit={limit}"))
+        r["server_metrics_before"] = m_before
         r["server_metrics_after"] = m_after
         scenario_results[name] = r
         write_json(out_dir / f"{name.replace('=', '')}.json", {
             "scenario": name, "label": a.label, "timestamp_utc": datetime.now(timezone.utc).isoformat(),
             "run_config": {"url": url, "streams": a.streams, "concurrency": c, "chunk_ms": a.chunk_ms,
                            "speed": a.speed, "stream_timeout_s": a.stream_timeout_s,
-                           "concat_seconds": a.concat_seconds, "burst_extra": a.burst_extra},
+                           "concat_seconds": a.concat_seconds, "burst_extra": a.burst_extra,
+                           "arrival": a.arrival, "stagger_s": a.stagger_s},
             "server": {"metrics_at_start": m0, "health": {"model": m0["model"],
                        "inference": {"max_concurrent": m0["config"]["max_concurrent_inference"]}},
                        "ready_limits": {"partial_interval_s": m0["config"]["partial_interval_s"]}},
@@ -255,6 +273,9 @@ def main() -> None:
     p.add_argument("--stream-timeout-s", type=float, default=300.0)
     p.add_argument("--concat-seconds", type=float, default=0.0)
     p.add_argument("--sample-interval-s", type=float, default=1.0)
+    p.add_argument("--arrival", choices=["sync", "stagger"], default="sync",
+                   help="first-wave arrival schedule for paced scenarios (burst is unaffected)")
+    p.add_argument("--stagger-s", type=float, default=0.0)
     p.add_argument("--label", default="")
     p.add_argument("--output-dir", required=True)
     raise SystemExit(asyncio.run(main_async(p.parse_args())))
