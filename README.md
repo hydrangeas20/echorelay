@@ -145,4 +145,7 @@ Definitions: [docs/measurements.md](docs/measurements.md).
   and analysis are committed alongside it.
 * [Phase 2 plan](docs/phase2-plan.md): hypotheses, experiments with
   predictions, decisions pending approval.
+* [Phase 3 scheduling results](docs/benchmarks/scheduling-t4/README.md) and the
+  [Phase 4 registration](docs/experiments/phase4-staggered-arrival.md)
+  (staggered arrivals; registered before data).
 * How to run on Colab: [benchmarks/COLAB.md](benchmarks/COLAB.md).
