@@ -1,0 +1,3456 @@
+{
+  "scenario": "recovery",
+  "label": "both r1",
+  "timestamp_utc": "2026-10-16T21:21:56.468976+00:00",
+  "run_config": {
+    "url": "ws://127.0.0.1:8000/ws/transcribe",
+    "streams": 20,
+    "concurrency": 8,
+    "chunk_ms": 100,
+    "speed": 1.0,
+    "stream_timeout_s": 300.0,
+    "concat_seconds": 0.0,
+    "burst_extra": 0,
+    "arrival": "sync",
+    "stagger_s": 0.0
+  },
+  "server": {
+    "metrics_at_start": {
+      "version": "0.1.0",
+      "model": {
+        "backend": "whisper",
+        "name": "base.en",
+        "device": "cuda",
+        "compute_type": "float16"
+      },
+      "config": {
+        "partial_interval_s": 1.0,
+        "min_partial_audio_s": 0.5,
+        "partial_beam_size": 1,
+        "final_beam_size": 5,
+        "max_concurrent_streams": 8,
+        "max_concurrent_inference": 1,
+        "inference_timeout_s": 30.0,
+        "event_timing": true,
+        "final_priority": true,
+        "cancel_queued_partial_on_end": true
+      },
+      "streams": {
+        "active": 0,
+        "peak_active": 0,
+        "max": 8,
+        "completed": 0,
+        "failed": 0,
+        "disconnected": 0,
+        "rejected": 0,
+        "buffered_audio_bytes": 0
+      },
+      "inference": {
+        "in_flight": 0,
+        "waiting": 0,
+        "max_concurrent": 1
+      },
+      "process": {
+        "cpu_user_s": 1.099422,
+        "cpu_system_s": 0.382523,
+        "max_rss_bytes": 376393728,
+        "threads": 3,
+        "rss_bytes": 333967360
+      },
+      "levels": {
+        "streams.active": {
+          "current": 0,
+          "max": 0,
+          "time_at_level_s": {
+            "0": 0.8231913939998776
+          },
+          "total_s": 0.8231913939998776
+        },
+        "inference.in_flight": {
+          "current": 0,
+          "max": 0,
+          "time_at_level_s": {
+            "0": 0.8232147789999544
+          },
+          "total_s": 0.8232147789999544
+        },
+        "inference.waiting": {
+          "current": 0,
+          "max": 0,
+          "time_at_level_s": {
+            "0": 0.8232247210000878
+          },
+          "total_s": 0.8232247210000878
+        }
+      },
+      "uptime_s": 0.8232639919999656,
+      "counters": {},
+      "distributions": {
+        "event_loop.lag_s": {
+          "count": 8,
+          "window": 8,
+          "mean": 0.00037500000010481926,
+          "p50": 2.2737367544323206e-13,
+          "p95": 0.0016499999999609822,
+          "p99": 0.0019299999999543612,
+          "max": 0.0019999999999527063,
+          "sum": 0.003000000000838554
+        }
+      }
+    },
+    "health": {
+      "model": {
+        "backend": "whisper",
+        "name": "base.en",
+        "device": "cuda",
+        "compute_type": "float16"
+      },
+      "inference": {
+        "max_concurrent": 1
+      }
+    },
+    "ready_limits": {
+      "partial_interval_s": 1.0
+    }
+  },
+  "metric_definitions": {
+    "time_to_first_partial_s": "client monotonic: first audio frame sent -> first nonempty partial received",
+    "final_latency_s": "client monotonic: end message sent -> final received",
+    "final_inference_rtf": "server-reported final decode time / audio duration. Model call in the worker thread only; EXCLUDES partial decodes, queueing for an inference slot, buffering, and network time",
+    "partial_inference_rtf": "server-reported partial decode time / audio covered, per partial; same exclusions",
+    "throughput": "completed streams (and audio seconds) / wall clock from first connect to last stream end",
+    "failures": "any stream without a final: server error event, connection error, or stream_timeout"
+  },
+  "summary": {
+    "streams_total": 20,
+    "streams_ok": 20,
+    "streams_failed": 0,
+    "errors": {},
+    "failures": [],
+    "streams_without_nonempty_partial": 0,
+    "time_to_first_partial_s": {
+      "n": 20,
+      "p50": 0.9589500309999721,
+      "p95": 1.1656975691001095,
+      "mean": 1.0054550846000097,
+      "min": 0.9314885419998973,
+      "max": 1.1694751510001424
+    },
+    "final_latency_s": {
+      "n": 20,
+      "p50": 0.13450463800006673,
+      "p95": 0.2943508715500002,
+      "mean": 0.15969002440000396,
+      "min": 0.0700696890000927,
+      "max": 0.3528389429998242
+    },
+    "final_inference_rtf": {
+      "n": 20,
+      "p50": 0.012128253087587304,
+      "p95": 0.017098843322818098,
+      "mean": 0.01328551716379145,
+      "min": 0.00963834422657952,
+      "max": 0.028706624605678237
+    },
+    "partial_inference_rtf": {
+      "n": 158,
+      "p50": 0.012325000000000001,
+      "p95": 0.032630000000000006,
+      "mean": 0.015224655688896197,
+      "min": 0.0083,
+      "max": 0.0428
+    },
+    "wall_clock_s": 23.51398449899989,
+    "throughput_streams_per_s": 0.8505576756185517,
+    "throughput_audio_s_per_s": 7.224636896703978,
+    "server_timing": {
+      "final_wait_partial_s": {
+        "n": 20,
+        "p50": 0.0003,
+        "p95": 0.06192500000000003,
+        "mean": 0.008159999999999999,
+        "min": 0.0001,
+        "max": 0.0985
+      },
+      "final_queue_s": {
+        "n": 20,
+        "p50": 0.03705,
+        "p95": 0.16397000000000006,
+        "mean": 0.054034999999999986,
+        "min": 0.0,
+        "max": 0.2337
+      },
+      "final_decode_s": {
+        "n": 20,
+        "p50": 0.11165,
+        "p95": 0.14392500000000003,
+        "mean": 0.10390999999999999,
+        "min": 0.0579,
+        "max": 0.15580000000000002
+      },
+      "partial_queue_s": {
+        "n": 158,
+        "p50": 0.01585,
+        "p95": 0.35613000000000006,
+        "mean": 0.09592278481012659,
+        "min": 0.0,
+        "max": 0.6357999999999999
+      },
+      "partial_decode_s": {
+        "n": 158,
+        "p50": 0.0529,
+        "p95": 0.097735,
+        "mean": 0.059411392405063296,
+        "min": 0.029,
+        "max": 0.1179
+      },
+      "partial_staleness_s": {
+        "n": 158,
+        "p50": 0.0,
+        "p95": 0.4,
+        "mean": 0.09813291139240507,
+        "min": 0.0,
+        "max": 0.6
+      }
+    },
+    "wer": 0.05309734513274336,
+    "wer_normalizer": "v2",
+    "wer_num_utterances": 20,
+    "resources": {
+      "num_samples": 24,
+      "active": {
+        "min": 0.0,
+        "p50": 8.0,
+        "mean": 7.083333333333333,
+        "max": 8.0
+      },
+      "in_flight": {
+        "min": 0.0,
+        "p50": 1.0,
+        "mean": 0.6666666666666666,
+        "max": 1.0
+      },
+      "waiting": {
+        "min": 0.0,
+        "p50": 0.5,
+        "mean": 2.125,
+        "max": 6.0
+      },
+      "buffered_audio_bytes": {
+        "min": 0.0,
+        "p50": 1189680.0,
+        "mean": 1164606.6666666667,
+        "max": 2210240.0
+      },
+      "rss_bytes": {
+        "min": 709820416.0,
+        "p50": 715440128.0,
+        "mean": 716244480.0,
+        "max": 722743296.0
+      },
+      "threads": {
+        "min": 5.0,
+        "p50": 5.0,
+        "mean": 5.0,
+        "max": 5.0
+      },
+      "loop_lag_max_s": {
+        "min": 0.009000000000014552,
+        "p50": 0.010999999999967258,
+        "mean": 0.010166666666653631,
+        "max": 0.010999999999967258
+      },
+      "server_cpu_cores_mean": 1.1358962057866342,
+      "gpu_util_pct": {
+        "min": 21.0,
+        "p50": 35.5,
+        "mean": 35.416666666666664,
+        "max": 64.0
+      },
+      "gpu_mem_used_mib": {
+        "min": 279.0,
+        "p50": 295.0,
+        "mean": 297.6666666666667,
+        "max": 343.0
+      },
+      "sm_clock_mhz": {
+        "min": 1425.0,
+        "p50": 1560.0,
+        "mean": 1545.0,
+        "max": 1590.0
+      },
+      "sm_clock_max_mhz": {
+        "min": 1590.0,
+        "p50": 1590.0,
+        "mean": 1590.0,
+        "max": 1590.0
+      },
+      "power_w": {
+        "min": 40.1,
+        "p50": 52.05,
+        "mean": 55.367916666666666,
+        "max": 81.24
+      },
+      "temp_c": {
+        "min": 75.0,
+        "p50": 76.0,
+        "mean": 75.75,
+        "max": 77.0
+      }
+    }
+  },
+  "streams": [
+    {
+      "index": 0,
+      "utterance": "1272-135031-0000",
+      "audio_s": 10.885,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 1676.980524047,
+      "t_first_audio": 1676.991627463,
+      "t_first_partial": 1677.926778933,
+      "t_end_sent": 1687.892019341,
+      "t_final": 1688.024267447,
+      "num_partials": 10,
+      "final_text": "Because you are sleeping instead of conquering, the lovely rose princess has become a fiddle without a bow, while poor Shaggy sits there, accuing dove.",
+      "final_inference_ms": 128.1,
+      "final_audio_s": 10.885,
+      "partial_inference_ms": [
+        32.8,
+        40.1,
+        38.2,
+        44.5,
+        54.1,
+        79.6,
+        70.3,
+        75.9,
+        87.5,
+        97.6
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        10.0
+      ],
+      "partial_timing": [
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 32.8,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 40.1,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 38.2,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 44.5,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 54.1,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 79.6,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 70.3,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 75.9,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 87.5,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 97.6,
+          "staleness_ms": 0.0
+        }
+      ],
+      "final_timing": {
+        "wait_partial_ms": 0.3,
+        "queue_ms": 0.0,
+        "decode_ms": 128.1
+      },
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "38d1dae2abd9",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      },
+      "start_delay_s": 0.0,
+      "t_done": 1688.025741621
+    },
+    {
+      "index": 1,
+      "utterance": "1272-135031-0001",
+      "audio_s": 11.13,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 1676.981096582,
+      "t_first_audio": 1676.993564118,
+      "t_first_partial": 1677.958184029,
+      "t_end_sent": 1688.196204155,
+      "t_final": 1688.370062863,
+      "num_partials": 11,
+      "final_text": "\"'He has gone, and gone for good,' answered Polychrome, who had managed to squeeze into the room beside the dragon, and had witnessed the occurrences with much interest.",
+      "final_inference_ms": 113.1,
+      "final_audio_s": 11.13,
+      "partial_inference_ms": [
+        29.5,
+        37.7,
+        41.1,
+        49.8,
+        80.6,
+        98.5,
+        99.1,
+        81.7,
+        92.9,
+        104.9,
+        105.3
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        10.0,
+        11.0
+      ],
+      "partial_timing": [
+        {
+          "queue_ms": 28.5,
+          "decode_ms": 29.5,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 36.0,
+          "decode_ms": 37.7,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 36.6,
+          "decode_ms": 41.1,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 42.1,
+          "decode_ms": 49.8,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 51.9,
+          "decode_ms": 80.6,
+          "staleness_ms": 100.0
+        },
+        {
+          "queue_ms": 81.0,
+          "decode_ms": 98.5,
+          "staleness_ms": 100.0
+        },
+        {
+          "queue_ms": 67.4,
+          "decode_ms": 99.1,
+          "staleness_ms": 100.0
+        },
+        {
+          "queue_ms": 76.2,
+          "decode_ms": 81.7,
+          "staleness_ms": 100.0
+        },
+        {
+          "queue_ms": 85.2,
+          "decode_ms": 92.9,
+          "staleness_ms": 100.0
+        },
+        {
+          "queue_ms": 95.3,
+          "decode_ms": 104.9,
+          "staleness_ms": 100.0
+        },
+        {
+          "queue_ms": 254.2,
+          "decode_ms": 105.3,
+          "staleness_ms": 130.0
+        }
+      ],
+      "final_timing": {
+        "wait_partial_ms": 60.0,
+        "queue_ms": 59.4,
+        "decode_ms": 113.1
+      },
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "d3eb8ceac8d9",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      },
+      "start_delay_s": 0.0,
+      "t_done": 1688.372516014
+    },
+    {
+      "index": 2,
+      "utterance": "1272-135031-0002",
+      "audio_s": 11.475,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 1676.981517887,
+      "t_first_audio": 1676.998141957,
+      "t_first_partial": 1677.997916,
+      "t_end_sent": 1688.499463774,
+      "t_final": 1688.745603261,
+      "num_partials": 11,
+      "final_text": "I have remained a prisoner only because I wish to be one. And with this, he stepped forward and burst the stout chains as easily as if they had been threads.",
+      "final_inference_ms": 143.3,
+      "final_audio_s": 11.475,
+      "partial_inference_ms": [
+        40.7,
+        51.5,
+        58.7,
+        68.2,
+        59.0,
+        52.3,
+        67.8,
+        96.9,
+        82.7,
+        89.2,
+        101.5
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        10.0,
+        11.0
+      ],
+      "partial_timing": [
+        {
+          "queue_ms": 56.9,
+          "decode_ms": 40.7,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 71.1,
+          "decode_ms": 51.5,
+          "staleness_ms": 100.0
+        },
+        {
+          "queue_ms": 72.3,
+          "decode_ms": 58.7,
+          "staleness_ms": 100.0
+        },
+        {
+          "queue_ms": 91.5,
+          "decode_ms": 68.2,
+          "staleness_ms": 100.0
+        },
+        {
+          "queue_ms": 127.5,
+          "decode_ms": 59.0,
+          "staleness_ms": 100.0
+        },
+        {
+          "queue_ms": 173.1,
+          "decode_ms": 52.3,
+          "staleness_ms": 200.0
+        },
+        {
+          "queue_ms": 162.1,
+          "decode_ms": 67.8,
+          "staleness_ms": 200.0
+        },
+        {
+          "queue_ms": 157.6,
+          "decode_ms": 96.9,
+          "staleness_ms": 200.0
+        },
+        {
+          "queue_ms": 175.6,
+          "decode_ms": 82.7,
+          "staleness_ms": 200.0
+        },
+        {
+          "queue_ms": 196.6,
+          "decode_ms": 89.2,
+          "staleness_ms": 200.0
+        },
+        {
+          "queue_ms": 599.6,
+          "decode_ms": 101.5,
+          "staleness_ms": 475.0
+        }
+      ],
+      "final_timing": {
+        "wait_partial_ms": 98.5,
+        "queue_ms": 97.7,
+        "decode_ms": 143.3
+      },
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "0a3d9f581c8f",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      },
+      "start_delay_s": 0.0,
+      "t_done": 1688.748065707
+    },
+    {
+      "index": 3,
+      "utterance": "1272-135031-0003",
+      "audio_s": 4.755,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 1676.981915141,
+      "t_first_audio": 1677.000667989,
+      "t_first_partial": 1678.044471753,
+      "t_end_sent": 1681.8017338,
+      "t_final": 1681.871803489,
+      "num_partials": 4,
+      "final_text": "The little girl had been asleep, but she heard the raps and opened the door.",
+      "final_inference_ms": 69.1,
+      "final_audio_s": 4.755,
+      "partial_inference_ms": [
+        42.8,
+        47.4,
+        54.0,
+        62.8
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0
+      ],
+      "partial_timing": [
+        {
+          "queue_ms": 95.5,
+          "decode_ms": 42.8,
+          "staleness_ms": 100.0
+        },
+        {
+          "queue_ms": 121.2,
+          "decode_ms": 47.4,
+          "staleness_ms": 100.0
+        },
+        {
+          "queue_ms": 128.9,
+          "decode_ms": 54.0,
+          "staleness_ms": 100.0
+        },
+        {
+          "queue_ms": 157.5,
+          "decode_ms": 62.8,
+          "staleness_ms": 200.0
+        }
+      ],
+      "final_timing": {
+        "wait_partial_ms": 0.2,
+        "queue_ms": 0.0,
+        "decode_ms": 69.1
+      },
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "3341ff43c815",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      },
+      "start_delay_s": 0.0,
+      "t_done": 1681.873187834
+    },
+    {
+      "index": 4,
+      "utterance": "1272-135031-0004",
+      "audio_s": 4.225,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 1676.982338216,
+      "t_first_audio": 1677.003307587,
+      "t_first_partial": 1678.07568844,
+      "t_end_sent": 1681.304670907,
+      "t_final": 1681.378697838,
+      "num_partials": 4,
+      "final_text": "The king has flooded disgrace and your friends are asking for you.",
+      "final_inference_ms": 57.9,
+      "final_audio_s": 4.225,
+      "partial_inference_ms": [
+        34.5,
+        42.3,
+        45.7,
+        47.5
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0
+      ],
+      "partial_timing": [
+        {
+          "queue_ms": 133.8,
+          "decode_ms": 34.5,
+          "staleness_ms": 100.0
+        },
+        {
+          "queue_ms": 165.2,
+          "decode_ms": 42.3,
+          "staleness_ms": 200.0
+        },
+        {
+          "queue_ms": 181.6,
+          "decode_ms": 45.7,
+          "staleness_ms": 200.0
+        },
+        {
+          "queue_ms": 219.5,
+          "decode_ms": 47.5,
+          "staleness_ms": 200.0
+        }
+      ],
+      "final_timing": {
+        "wait_partial_ms": 0.1,
+        "queue_ms": 15.5,
+        "decode_ms": 57.9
+      },
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "8d791b53655d",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      },
+      "start_delay_s": 0.0,
+      "t_done": 1681.379833459
+    },
+    {
+      "index": 5,
+      "utterance": "1272-135031-0000",
+      "audio_s": 10.885,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 1676.982713314,
+      "t_first_audio": 1677.005910159,
+      "t_first_partial": 1678.116259823,
+      "t_end_sent": 1687.906599389,
+      "t_final": 1688.149696485,
+      "num_partials": 10,
+      "final_text": "Because you are sleeping instead of conquering, the lovely rose princess has become a fiddle without a bow, while poor Shaggy sits there, accuing dove.",
+      "final_inference_ms": 128.0,
+      "final_audio_s": 10.885,
+      "partial_inference_ms": [
+        39.9,
+        36.8,
+        37.9,
+        45.6,
+        51.7,
+        59.3,
+        65.3,
+        71.1,
+        88.4,
+        92.8
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        10.0
+      ],
+      "partial_timing": [
+        {
+          "queue_ms": 165.9,
+          "decode_ms": 39.9,
+          "staleness_ms": 200.0
+        },
+        {
+          "queue_ms": 205.4,
+          "decode_ms": 36.8,
+          "staleness_ms": 200.0
+        },
+        {
+          "queue_ms": 224.5,
+          "decode_ms": 37.9,
+          "staleness_ms": 200.0
+        },
+        {
+          "queue_ms": 265.2,
+          "decode_ms": 45.6,
+          "staleness_ms": 300.0
+        },
+        {
+          "queue_ms": 178.1,
+          "decode_ms": 51.7,
+          "staleness_ms": 200.0
+        },
+        {
+          "queue_ms": 220.8,
+          "decode_ms": 59.3,
+          "staleness_ms": 200.0
+        },
+        {
+          "queue_ms": 223.8,
+          "decode_ms": 65.3,
+          "staleness_ms": 200.0
+        },
+        {
+          "queue_ms": 248.5,
+          "decode_ms": 71.1,
+          "staleness_ms": 300.0
+        },
+        {
+          "queue_ms": 252.7,
+          "decode_ms": 88.4,
+          "staleness_ms": 300.0
+        },
+        {
+          "queue_ms": 277.6,
+          "decode_ms": 92.8,
+          "staleness_ms": 300.0
+        }
+      ],
+      "final_timing": {
+        "wait_partial_ms": 0.2,
+        "queue_ms": 113.9,
+        "decode_ms": 128.0
+      },
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "cad1332d4582",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      },
+      "start_delay_s": 0.0,
+      "t_done": 1688.15131722
+    },
+    {
+      "index": 6,
+      "utterance": "1272-135031-0001",
+      "audio_s": 11.13,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 1676.983110612,
+      "t_first_audio": 1677.008064134,
+      "t_first_partial": 1678.145719054,
+      "t_end_sent": 1688.208601662,
+      "t_final": 1688.499874214,
+      "num_partials": 10,
+      "final_text": "\"'He has gone, and gone for good,' answered Polychrome, who had managed to squeeze into the room beside the dragon, and had witnessed the occurrences with much interest.",
+      "final_inference_ms": 128.3,
+      "final_audio_s": 11.13,
+      "partial_inference_ms": [
+        29.0,
+        37.5,
+        44.7,
+        48.8,
+        60.8,
+        66.8,
+        69.7,
+        71.6,
+        85.9,
+        85.8
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        10.0
+      ],
+      "partial_timing": [
+        {
+          "queue_ms": 206.3,
+          "decode_ms": 29.0,
+          "staleness_ms": 200.0
+        },
+        {
+          "queue_ms": 241.3,
+          "decode_ms": 37.5,
+          "staleness_ms": 200.0
+        },
+        {
+          "queue_ms": 259.9,
+          "decode_ms": 44.7,
+          "staleness_ms": 300.0
+        },
+        {
+          "queue_ms": 308.6,
+          "decode_ms": 48.8,
+          "staleness_ms": 300.0
+        },
+        {
+          "queue_ms": 230.1,
+          "decode_ms": 60.8,
+          "staleness_ms": 200.0
+        },
+        {
+          "queue_ms": 277.6,
+          "decode_ms": 66.8,
+          "staleness_ms": 300.0
+        },
+        {
+          "queue_ms": 285.8,
+          "decode_ms": 69.7,
+          "staleness_ms": 300.0
+        },
+        {
+          "queue_ms": 319.6,
+          "decode_ms": 71.6,
+          "staleness_ms": 300.0
+        },
+        {
+          "queue_ms": 479.7,
+          "decode_ms": 85.9,
+          "staleness_ms": 500.0
+        },
+        {
+          "queue_ms": 368.2,
+          "decode_ms": 85.8,
+          "staleness_ms": 400.0
+        }
+      ],
+      "final_timing": {
+        "wait_partial_ms": 0.7,
+        "queue_ms": 160.3,
+        "decode_ms": 128.3
+      },
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "bd47c6fe781d",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      },
+      "start_delay_s": 0.0,
+      "t_done": 1688.504290744
+    },
+    {
+      "index": 7,
+      "utterance": "1272-135031-0002",
+      "audio_s": 11.475,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 1676.983467528,
+      "t_first_audio": 1677.009756044,
+      "t_first_partial": 1678.179231195,
+      "t_end_sent": 1688.510663017,
+      "t_final": 1688.86350196,
+      "num_partials": 10,
+      "final_text": "I have remained a prisoner only because I wish to be one. And with this, he stepped forward and burst the stout chains as easily as if they had been threads.",
+      "final_inference_ms": 117.8,
+      "final_audio_s": 11.475,
+      "partial_inference_ms": [
+        33.0,
+        37.1,
+        40.2,
+        52.6,
+        50.8,
+        51.3,
+        67.8,
+        71.3,
+        78.1,
+        88.2
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        10.0
+      ],
+      "partial_timing": [
+        {
+          "queue_ms": 234.5,
+          "decode_ms": 33.0,
+          "staleness_ms": 200.0
+        },
+        {
+          "queue_ms": 277.1,
+          "decode_ms": 37.1,
+          "staleness_ms": 300.0
+        },
+        {
+          "queue_ms": 305.0,
+          "decode_ms": 40.2,
+          "staleness_ms": 300.0
+        },
+        {
+          "queue_ms": 354.0,
+          "decode_ms": 52.6,
+          "staleness_ms": 400.0
+        },
+        {
+          "queue_ms": 289.4,
+          "decode_ms": 50.8,
+          "staleness_ms": 300.0
+        },
+        {
+          "queue_ms": 344.5,
+          "decode_ms": 51.3,
+          "staleness_ms": 300.0
+        },
+        {
+          "queue_ms": 352.9,
+          "decode_ms": 67.8,
+          "staleness_ms": 400.0
+        },
+        {
+          "queue_ms": 388.3,
+          "decode_ms": 71.3,
+          "staleness_ms": 400.0
+        },
+        {
+          "queue_ms": 566.4,
+          "decode_ms": 78.1,
+          "staleness_ms": 600.0
+        },
+        {
+          "queue_ms": 454.2,
+          "decode_ms": 88.2,
+          "staleness_ms": 500.0
+        }
+      ],
+      "final_timing": {
+        "wait_partial_ms": 0.4,
+        "queue_ms": 233.7,
+        "decode_ms": 117.8
+      },
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "46f36480db42",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      },
+      "start_delay_s": 0.0,
+      "t_done": 1688.866668264
+    },
+    {
+      "index": 8,
+      "utterance": "1272-135031-0003",
+      "audio_s": 4.755,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 1681.379882688,
+      "t_first_audio": 1681.382752122,
+      "t_first_partial": 1682.316604904,
+      "t_end_sent": 1686.182964981,
+      "t_final": 1686.392591133,
+      "num_partials": 4,
+      "final_text": "The little girl had been asleep, but she heard the raps and opened the door.",
+      "final_inference_ms": 78.4,
+      "final_audio_s": 4.755,
+      "partial_inference_ms": [
+        32.2,
+        37.9,
+        46.6,
+        57.0
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0
+      ],
+      "partial_timing": [
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 32.2,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 25.2,
+          "decode_ms": 37.9,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 50.8,
+          "decode_ms": 46.6,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 88.8,
+          "decode_ms": 57.0,
+          "staleness_ms": 100.0
+        }
+      ],
+      "final_timing": {
+        "wait_partial_ms": 0.1,
+        "queue_ms": 130.0,
+        "decode_ms": 78.4
+      },
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "53967d4d1f43",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      },
+      "start_delay_s": 0.0,
+      "t_done": 1686.394434943
+    },
+    {
+      "index": 9,
+      "utterance": "1272-135031-0004",
+      "audio_s": 4.225,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 1681.873235741,
+      "t_first_audio": 1681.876287508,
+      "t_first_partial": 1682.810814685,
+      "t_end_sent": 1686.17675865,
+      "t_final": 1686.31351982,
+      "num_partials": 4,
+      "final_text": "The king has flooded disgrace and your friends are asking for you.",
+      "final_inference_ms": 63.7,
+      "final_audio_s": 4.225,
+      "partial_inference_ms": [
+        33.0,
+        40.1,
+        48.4,
+        51.7
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0
+      ],
+      "partial_timing": [
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 33.0,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 40.1,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 48.4,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 51.7,
+          "staleness_ms": 0.0
+        }
+      ],
+      "final_timing": {
+        "wait_partial_ms": 0.2,
+        "queue_ms": 72.0,
+        "decode_ms": 63.7
+      },
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "11690ec8a59b",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      },
+      "start_delay_s": 0.0,
+      "t_done": 1686.319620153
+    },
+    {
+      "index": 10,
+      "utterance": "1272-135031-0000",
+      "audio_s": 10.885,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 1686.319668576,
+      "t_first_audio": 1686.324591955,
+      "t_first_partial": 1687.490090704,
+      "t_end_sent": 1697.225722912,
+      "t_final": 1697.339287365,
+      "num_partials": 10,
+      "final_text": "Because you are sleeping instead of conquering, the lovely rose princess has become a fiddle without a bow, while poor Shaggy sits there, accuing dove.",
+      "final_inference_ms": 112.5,
+      "final_audio_s": 10.885,
+      "partial_inference_ms": [
+        31.9,
+        46.3,
+        41.1,
+        43.5,
+        53.2,
+        61.3,
+        67.1,
+        72.2,
+        82.1,
+        89.0
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        10.0
+      ],
+      "partial_timing": [
+        {
+          "queue_ms": 227.0,
+          "decode_ms": 31.9,
+          "staleness_ms": 200.0
+        },
+        {
+          "queue_ms": 635.8,
+          "decode_ms": 46.3,
+          "staleness_ms": 600.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 41.1,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 43.5,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 53.2,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 61.3,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 67.1,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 72.2,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 82.1,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 89.0,
+          "staleness_ms": 0.0
+        }
+      ],
+      "final_timing": {
+        "wait_partial_ms": 0.3,
+        "queue_ms": 0.0,
+        "decode_ms": 112.5
+      },
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "925828d426eb",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      },
+      "start_delay_s": 0.0,
+      "t_done": 1697.340549283
+    },
+    {
+      "index": 11,
+      "utterance": "1272-135031-0001",
+      "audio_s": 11.13,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 1686.394481473,
+      "t_first_audio": 1686.40141733,
+      "t_first_partial": 1687.517479508,
+      "t_end_sent": 1697.6024143,
+      "t_final": 1697.770113348,
+      "num_partials": 11,
+      "final_text": "\"'He has gone, and gone for good,' answered Polychrome, who had managed to squeeze into the room beside the dragon, and had witnessed the occurrences with much interest.",
+      "final_inference_ms": 116.0,
+      "final_audio_s": 11.13,
+      "partial_inference_ms": [
+        29.9,
+        38.5,
+        41.3,
+        50.9,
+        54.3,
+        66.9,
+        71.4,
+        74.0,
+        81.2,
+        88.3,
+        94.6
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        10.0,
+        11.0
+      ],
+      "partial_timing": [
+        {
+          "queue_ms": 184.8,
+          "decode_ms": 29.9,
+          "staleness_ms": 200.0
+        },
+        {
+          "queue_ms": 608.8,
+          "decode_ms": 38.5,
+          "staleness_ms": 600.0
+        },
+        {
+          "queue_ms": 7.3,
+          "decode_ms": 41.3,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 15.1,
+          "decode_ms": 50.9,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 24.6,
+          "decode_ms": 54.3,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 40.6,
+          "decode_ms": 66.9,
+          "staleness_ms": 100.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 71.4,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 74.0,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 4.0,
+          "decode_ms": 81.2,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 11.9,
+          "decode_ms": 88.3,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 34.5,
+          "decode_ms": 94.6,
+          "staleness_ms": 100.0
+        }
+      ],
+      "final_timing": {
+        "wait_partial_ms": 0.3,
+        "queue_ms": 50.6,
+        "decode_ms": 116.0
+      },
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "910702724473",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      },
+      "start_delay_s": 0.0,
+      "t_done": 1697.773594298
+    },
+    {
+      "index": 12,
+      "utterance": "1272-135031-0002",
+      "audio_s": 11.475,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 1688.025789621,
+      "t_first_audio": 1688.033034926,
+      "t_first_partial": 1688.986315077,
+      "t_end_sent": 1699.53361325,
+      "t_final": 1699.64567848,
+      "num_partials": 11,
+      "final_text": "I have remained a prisoner only because I wish to be one. And with this, he stepped forward and burst the stout chains as easily as if they had been threads.",
+      "final_inference_ms": 110.8,
+      "final_audio_s": 11.475,
+      "partial_inference_ms": [
+        34.9,
+        35.5,
+        39.3,
+        50.6,
+        82.0,
+        51.2,
+        64.6,
+        70.1,
+        117.9,
+        112.4,
+        109.9
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        10.0,
+        11.0
+      ],
+      "partial_timing": [
+        {
+          "queue_ms": 16.6,
+          "decode_ms": 34.9,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 35.5,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 39.3,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 50.6,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 82.0,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 51.2,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.1,
+          "decode_ms": 64.6,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 70.1,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 117.9,
+          "staleness_ms": 100.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 112.4,
+          "staleness_ms": 100.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 109.9,
+          "staleness_ms": 100.0
+        }
+      ],
+      "final_timing": {
+        "wait_partial_ms": 0.3,
+        "queue_ms": 0.0,
+        "decode_ms": 110.8
+      },
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "ebb30874837e",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      },
+      "start_delay_s": 0.0,
+      "t_done": 1699.646667361
+    },
+    {
+      "index": 13,
+      "utterance": "1272-135031-0003",
+      "audio_s": 4.755,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 1688.151495216,
+      "t_first_audio": 1688.159384714,
+      "t_first_partial": 1689.091704551,
+      "t_end_sent": 1692.959670951,
+      "t_final": 1693.157178731,
+      "num_partials": 4,
+      "final_text": "The little girl had been asleep, but she heard the raps and opened the door.",
+      "final_inference_ms": 136.5,
+      "final_audio_s": 4.755,
+      "partial_inference_ms": [
+        30.4,
+        37.5,
+        46.1,
+        58.1
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0
+      ],
+      "partial_timing": [
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 30.4,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 37.5,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 46.1,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 58.1,
+          "staleness_ms": 0.0
+        }
+      ],
+      "final_timing": {
+        "wait_partial_ms": 0.3,
+        "queue_ms": 59.3,
+        "decode_ms": 136.5
+      },
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "572755258f23",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      },
+      "start_delay_s": 0.0,
+      "t_done": 1693.158535762
+    },
+    {
+      "index": 14,
+      "utterance": "1272-135031-0004",
+      "audio_s": 4.225,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 1688.372573096,
+      "t_first_audio": 1688.37869415,
+      "t_first_partial": 1689.31317865,
+      "t_end_sent": 1692.679056268,
+      "t_final": 1692.768024046,
+      "num_partials": 4,
+      "final_text": "The king has flooded disgrace and your friends are asking for you.",
+      "final_inference_ms": 64.4,
+      "final_audio_s": 4.225,
+      "partial_inference_ms": [
+        30.6,
+        39.2,
+        49.1,
+        55.6
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0
+      ],
+      "partial_timing": [
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 30.6,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 39.2,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 49.1,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 7.5,
+          "decode_ms": 55.6,
+          "staleness_ms": 0.0
+        }
+      ],
+      "final_timing": {
+        "wait_partial_ms": 0.1,
+        "queue_ms": 23.5,
+        "decode_ms": 64.4
+      },
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "940f656cb385",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      },
+      "start_delay_s": 0.0,
+      "t_done": 1692.769254231
+    },
+    {
+      "index": 15,
+      "utterance": "1272-135031-0000",
+      "audio_s": 10.885,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 1688.504351163,
+      "t_first_audio": 1688.513089557,
+      "t_first_partial": 1689.446760855,
+      "t_end_sent": 1699.414236012,
+      "t_final": 1699.526391036,
+      "num_partials": 10,
+      "final_text": "Because you are sleeping instead of conquering, the lovely rose princess has become a fiddle without a bow, while poor Shaggy sits there, accuing dove.",
+      "final_inference_ms": 110.1,
+      "final_audio_s": 10.885,
+      "partial_inference_ms": [
+        31.7,
+        37.7,
+        37.2,
+        42.2,
+        51.9,
+        60.4,
+        69.6,
+        72.1,
+        82.8,
+        94.0
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        10.0
+      ],
+      "partial_timing": [
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 31.7,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 37.7,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 37.2,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 42.2,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 51.9,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 60.4,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 69.6,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 72.1,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 20.3,
+          "decode_ms": 82.8,
+          "staleness_ms": 100.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 94.0,
+          "staleness_ms": 0.0
+        }
+      ],
+      "final_timing": {
+        "wait_partial_ms": 0.3,
+        "queue_ms": 0.0,
+        "decode_ms": 110.1
+      },
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "82c5d4a43813",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      },
+      "start_delay_s": 0.0,
+      "t_done": 1699.527320674
+    },
+    {
+      "index": 16,
+      "utterance": "1272-135031-0001",
+      "audio_s": 11.13,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 1688.748136914,
+      "t_first_audio": 1688.751712398,
+      "t_first_partial": 1689.68320094,
+      "t_end_sent": 1699.952075199,
+      "t_final": 1700.108916917,
+      "num_partials": 11,
+      "final_text": "\"'He has gone, and gone for good,' answered Polychrome, who had managed to squeeze into the room beside the dragon, and had witnessed the occurrences with much interest.",
+      "final_inference_ms": 155.8,
+      "final_audio_s": 11.13,
+      "partial_inference_ms": [
+        29.1,
+        38.8,
+        40.9,
+        49.0,
+        59.5,
+        69.3,
+        70.2,
+        80.3,
+        79.2,
+        88.3,
+        91.3
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        10.0,
+        11.0
+      ],
+      "partial_timing": [
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 29.1,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 38.8,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 40.9,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 49.0,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 59.5,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 69.3,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 70.2,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 80.3,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 111.4,
+          "decode_ms": 79.2,
+          "staleness_ms": 100.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 88.3,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 91.3,
+          "staleness_ms": 0.0
+        }
+      ],
+      "final_timing": {
+        "wait_partial_ms": 0.3,
+        "queue_ms": 0.0,
+        "decode_ms": 155.8
+      },
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "9894a3daca39",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      },
+      "start_delay_s": 0.0,
+      "t_done": 1700.110182216
+    },
+    {
+      "index": 17,
+      "utterance": "1272-135031-0002",
+      "audio_s": 11.475,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 1688.86672522,
+      "t_first_audio": 1688.874602038,
+      "t_first_partial": 1689.809043367,
+      "t_end_sent": 1700.375658712,
+      "t_final": 1700.487463108,
+      "num_partials": 11,
+      "final_text": "I have remained a prisoner only because I wish to be one. And with this, he stepped forward and burst the stout chains as easily as if they had been threads.",
+      "final_inference_ms": 110.6,
+      "final_audio_s": 11.475,
+      "partial_inference_ms": [
+        32.6,
+        36.5,
+        48.6,
+        52.1,
+        52.0,
+        50.9,
+        66.3,
+        72.2,
+        78.0,
+        87.7,
+        92.6
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        10.0,
+        11.0
+      ],
+      "partial_timing": [
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 32.6,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 36.5,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 48.6,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 52.1,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 52.0,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 50.9,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 66.3,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 19.8,
+          "decode_ms": 72.2,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 73.9,
+          "decode_ms": 78.0,
+          "staleness_ms": 100.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 87.7,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 92.6,
+          "staleness_ms": 0.0
+        }
+      ],
+      "final_timing": {
+        "wait_partial_ms": 0.4,
+        "queue_ms": 0.0,
+        "decode_ms": 110.6
+      },
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "abe2b9a862c9",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      },
+      "start_delay_s": 0.0,
+      "t_done": 1700.49427818
+    },
+    {
+      "index": 18,
+      "utterance": "1272-135031-0003",
+      "audio_s": 4.755,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 1692.769305873,
+      "t_first_audio": 1692.772412148,
+      "t_first_partial": 1693.746642056,
+      "t_end_sent": 1697.574178793,
+      "t_final": 1697.65666662,
+      "num_partials": 4,
+      "final_text": "The little girl had been asleep, but she heard the raps and opened the door.",
+      "final_inference_ms": 69.9,
+      "final_audio_s": 4.755,
+      "partial_inference_ms": [
+        32.5,
+        40.3,
+        46.8,
+        60.3
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0
+      ],
+      "partial_timing": [
+        {
+          "queue_ms": 40.1,
+          "decode_ms": 32.5,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 50.3,
+          "decode_ms": 40.3,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 47.8,
+          "decode_ms": 46.8,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 61.4,
+          "decode_ms": 60.3,
+          "staleness_ms": 100.0
+        }
+      ],
+      "final_timing": {
+        "wait_partial_ms": 0.1,
+        "queue_ms": 8.8,
+        "decode_ms": 69.9
+      },
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "a27f9a4d16af",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      },
+      "start_delay_s": 0.0,
+      "t_done": 1697.657926525
+    },
+    {
+      "index": 19,
+      "utterance": "1272-135031-0004",
+      "audio_s": 4.225,
+      "ok": true,
+      "error": null,
+      "error_detail": null,
+      "t_connect": 1693.158590212,
+      "t_first_audio": 1693.161805929,
+      "t_first_partial": 1694.093841394,
+      "t_end_sent": 1697.462962653,
+      "t_final": 1697.583731053,
+      "num_partials": 4,
+      "final_text": "The king has flooded disgrace and your friends are asking for you.",
+      "final_inference_ms": 63.9,
+      "final_audio_s": 4.225,
+      "partial_inference_ms": [
+        29.9,
+        37.2,
+        49.8,
+        57.3
+      ],
+      "partial_audio_s": [
+        1.0,
+        2.0,
+        3.0,
+        4.0
+      ],
+      "partial_timing": [
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 29.9,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 37.2,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 49.8,
+          "staleness_ms": 0.0
+        },
+        {
+          "queue_ms": 0.0,
+          "decode_ms": 57.3,
+          "staleness_ms": 0.0
+        }
+      ],
+      "final_timing": {
+        "wait_partial_ms": 0.1,
+        "queue_ms": 56.0,
+        "decode_ms": 63.9
+      },
+      "ready": {
+        "type": "ready",
+        "protocol_version": "1",
+        "session_id": "12a450282431",
+        "audio": {
+          "encoding": "pcm_s16le",
+          "sample_rate": 16000,
+          "channels": 1
+        },
+        "limits": {
+          "max_audio_seconds": 120.0,
+          "max_frame_bytes": 262144,
+          "idle_timeout_s": 15.0,
+          "partial_interval_s": 1.0
+        }
+      },
+      "start_delay_s": 0.0,
+      "t_done": 1697.587183641
+    }
+  ],
+  "resource_samples": [
+    {
+      "t": 5.510000846697949e-07,
+      "server": {
+        "active": 0,
+        "buffered_audio_bytes": 0,
+        "in_flight": 0,
+        "waiting": 0,
+        "rss_bytes": 715411456,
+        "cpu_s": 80.55411,
+        "threads": 5,
+        "loop_lag_max_s": 0.009000000000014552,
+        "loop_lag_p99_s": 0.003000000000156433
+      },
+      "gpus": [
+        {
+          "gpu_util_pct": 36.0,
+          "gpu_mem_used_mib": 279.0,
+          "sm_clock_mhz": 1590.0,
+          "sm_clock_max_mhz": 1590.0,
+          "power_w": 40.3,
+          "temp_c": 75.0
+        }
+      ]
+    },
+    {
+      "t": 1.0009535599999708,
+      "server": {
+        "active": 8,
+        "buffered_audio_bytes": 256000,
+        "in_flight": 1,
+        "waiting": 5,
+        "rss_bytes": 715431936,
+        "cpu_s": 80.75786699999999,
+        "threads": 5,
+        "loop_lag_max_s": 0.009000000000014552,
+        "loop_lag_p99_s": 0.003000000000156433
+      },
+      "gpus": [
+        {
+          "gpu_util_pct": 23.0,
+          "gpu_mem_used_mib": 311.0,
+          "sm_clock_mhz": 1425.0,
+          "sm_clock_max_mhz": 1590.0,
+          "power_w": 44.79,
+          "temp_c": 75.0
+        }
+      ]
+    },
+    {
+      "t": 2.001482374000034,
+      "server": {
+        "active": 8,
+        "buffered_audio_bytes": 512000,
+        "in_flight": 1,
+        "waiting": 5,
+        "rss_bytes": 715448320,
+        "cpu_s": 81.387689,
+        "threads": 5,
+        "loop_lag_max_s": 0.009000000000014552,
+        "loop_lag_p99_s": 0.003000000000156433
+      },
+      "gpus": [
+        {
+          "gpu_util_pct": 25.0,
+          "gpu_mem_used_mib": 279.0,
+          "sm_clock_mhz": 1545.0,
+          "sm_clock_max_mhz": 1590.0,
+          "power_w": 51.56,
+          "temp_c": 75.0
+        }
+      ]
+    },
+    {
+      "t": 3.003096848000041,
+      "server": {
+        "active": 8,
+        "buffered_audio_bytes": 768000,
+        "in_flight": 1,
+        "waiting": 5,
+        "rss_bytes": 715460608,
+        "cpu_s": 82.109354,
+        "threads": 5,
+        "loop_lag_max_s": 0.009000000000014552,
+        "loop_lag_p99_s": 0.003000000000156433
+      },
+      "gpus": [
+        {
+          "gpu_util_pct": 27.0,
+          "gpu_mem_used_mib": 311.0,
+          "sm_clock_mhz": 1530.0,
+          "sm_clock_max_mhz": 1590.0,
+          "power_w": 46.3,
+          "temp_c": 75.0
+        }
+      ]
+    },
+    {
+      "t": 4.00565434400005,
+      "server": {
+        "active": 8,
+        "buffered_audio_bytes": 1024000,
+        "in_flight": 1,
+        "waiting": 6,
+        "rss_bytes": 709820416,
+        "cpu_s": 82.88835900000001,
+        "threads": 5,
+        "loop_lag_max_s": 0.009000000000014552,
+        "loop_lag_p99_s": 0.003000000000156433
+      },
+      "gpus": [
+        {
+          "gpu_util_pct": 29.0,
+          "gpu_mem_used_mib": 311.0,
+          "sm_clock_mhz": 1470.0,
+          "sm_clock_max_mhz": 1590.0,
+          "power_w": 72.93,
+          "temp_c": 75.0
+        }
+      ]
+    },
+    {
+      "t": 5.007630290000179,
+      "server": {
+        "active": 8,
+        "buffered_audio_bytes": 988800,
+        "in_flight": 1,
+        "waiting": 4,
+        "rss_bytes": 711106560,
+        "cpu_s": 84.056486,
+        "threads": 5,
+        "loop_lag_max_s": 0.009000000000014552,
+        "loop_lag_p99_s": 0.003000000000156433
+      },
+      "gpus": [
+        {
+          "gpu_util_pct": 55.0,
+          "gpu_mem_used_mib": 343.0,
+          "sm_clock_mhz": 1560.0,
+          "sm_clock_max_mhz": 1590.0,
+          "power_w": 53.26,
+          "temp_c": 76.0
+        }
+      ]
+    },
+    {
+      "t": 6.008264102000112,
+      "server": {
+        "active": 8,
+        "buffered_audio_bytes": 1244800,
+        "in_flight": 1,
+        "waiting": 4,
+        "rss_bytes": 712802304,
+        "cpu_s": 85.02748899999999,
+        "threads": 5,
+        "loop_lag_max_s": 0.009000000000014552,
+        "loop_lag_p99_s": 0.003000000000156433
+      },
+      "gpus": [
+        {
+          "gpu_util_pct": 30.0,
+          "gpu_mem_used_mib": 311.0,
+          "sm_clock_mhz": 1500.0,
+          "sm_clock_max_mhz": 1590.0,
+          "power_w": 52.54,
+          "temp_c": 75.0
+        }
+      ]
+    },
+    {
+      "t": 7.009660345000157,
+      "server": {
+        "active": 8,
+        "buffered_audio_bytes": 1500800,
+        "in_flight": 1,
+        "waiting": 4,
+        "rss_bytes": 714747904,
+        "cpu_s": 86.13503600000001,
+        "threads": 5,
+        "loop_lag_max_s": 0.009000000000014552,
+        "loop_lag_p99_s": 0.003000000000156433
+      },
+      "gpus": [
+        {
+          "gpu_util_pct": 36.0,
+          "gpu_mem_used_mib": 311.0,
+          "sm_clock_mhz": 1545.0,
+          "sm_clock_max_mhz": 1590.0,
+          "power_w": 51.04,
+          "temp_c": 75.0
+        }
+      ]
+    },
+    {
+      "t": 8.00986524300015,
+      "server": {
+        "active": 8,
+        "buffered_audio_bytes": 1756800,
+        "in_flight": 1,
+        "waiting": 4,
+        "rss_bytes": 716488704,
+        "cpu_s": 87.302055,
+        "threads": 5,
+        "loop_lag_max_s": 0.009000000000014552,
+        "loop_lag_p99_s": 0.003000000000156433
+      },
+      "gpus": [
+        {
+          "gpu_util_pct": 39.0,
+          "gpu_mem_used_mib": 311.0,
+          "sm_clock_mhz": 1500.0,
+          "sm_clock_max_mhz": 1590.0,
+          "power_w": 46.13,
+          "temp_c": 75.0
+        }
+      ]
+    },
+    {
+      "t": 9.010914515999957,
+      "server": {
+        "active": 8,
+        "buffered_audio_bytes": 2012800,
+        "in_flight": 1,
+        "waiting": 4,
+        "rss_bytes": 718524416,
+        "cpu_s": 88.51648399999999,
+        "threads": 5,
+        "loop_lag_max_s": 0.009000000000014552,
+        "loop_lag_p99_s": 0.003000000000156433
+      },
+      "gpus": [
+        {
+          "gpu_util_pct": 37.0,
+          "gpu_mem_used_mib": 311.0,
+          "sm_clock_mhz": 1560.0,
+          "sm_clock_max_mhz": 1590.0,
+          "power_w": 62.95,
+          "temp_c": 76.0
+        }
+      ]
+    },
+    {
+      "t": 10.011818543000118,
+      "server": {
+        "active": 8,
+        "buffered_audio_bytes": 1964800,
+        "in_flight": 1,
+        "waiting": 4,
+        "rss_bytes": 712437760,
+        "cpu_s": 89.825628,
+        "threads": 5,
+        "loop_lag_max_s": 0.010999999999967258,
+        "loop_lag_p99_s": 0.003000000000156433
+      },
+      "gpus": [
+        {
+          "gpu_util_pct": 36.0,
+          "gpu_mem_used_mib": 311.0,
+          "sm_clock_mhz": 1470.0,
+          "sm_clock_max_mhz": 1590.0,
+          "power_w": 62.01,
+          "temp_c": 76.0
+        }
+      ]
+    },
+    {
+      "t": 11.013592357000107,
+      "server": {
+        "active": 8,
+        "buffered_audio_bytes": 2210240,
+        "in_flight": 1,
+        "waiting": 5,
+        "rss_bytes": 714113024,
+        "cpu_s": 91.116529,
+        "threads": 5,
+        "loop_lag_max_s": 0.010999999999967258,
+        "loop_lag_p99_s": 0.003000000000156433
+      },
+      "gpus": [
+        {
+          "gpu_util_pct": 39.0,
+          "gpu_mem_used_mib": 343.0,
+          "sm_clock_mhz": 1575.0,
+          "sm_clock_max_mhz": 1590.0,
+          "power_w": 60.08,
+          "temp_c": 76.0
+        }
+      ]
+    },
+    {
+      "t": 12.014042099000108,
+      "server": {
+        "active": 8,
+        "buffered_audio_bytes": 284800,
+        "in_flight": 0,
+        "waiting": 0,
+        "rss_bytes": 715141120,
+        "cpu_s": 92.93070300000001,
+        "threads": 5,
+        "loop_lag_max_s": 0.010999999999967258,
+        "loop_lag_p99_s": 0.003000000000156433
+      },
+      "gpus": [
+        {
+          "gpu_util_pct": 59.0,
+          "gpu_mem_used_mib": 279.0,
+          "sm_clock_mhz": 1560.0,
+          "sm_clock_max_mhz": 1590.0,
+          "power_w": 47.87,
+          "temp_c": 76.0
+        }
+      ]
+    },
+    {
+      "t": 13.01440085000013,
+      "server": {
+        "active": 8,
+        "buffered_audio_bytes": 540800,
+        "in_flight": 0,
+        "waiting": 0,
+        "rss_bytes": 715141120,
+        "cpu_s": 94.045757,
+        "threads": 5,
+        "loop_lag_max_s": 0.010999999999967258,
+        "loop_lag_p99_s": 0.003000000000156433
+      },
+      "gpus": [
+        {
+          "gpu_util_pct": 22.0,
+          "gpu_mem_used_mib": 279.0,
+          "sm_clock_mhz": 1545.0,
+          "sm_clock_max_mhz": 1590.0,
+          "power_w": 40.96,
+          "temp_c": 76.0
+        }
+      ]
+    },
+    {
+      "t": 14.014723769000057,
+      "server": {
+        "active": 8,
+        "buffered_audio_bytes": 796800,
+        "in_flight": 0,
+        "waiting": 0,
+        "rss_bytes": 716296192,
+        "cpu_s": 95.211652,
+        "threads": 5,
+        "loop_lag_max_s": 0.010999999999967258,
+        "loop_lag_p99_s": 0.003000000000156433
+      },
+      "gpus": [
+        {
+          "gpu_util_pct": 23.0,
+          "gpu_mem_used_mib": 279.0,
+          "sm_clock_mhz": 1560.0,
+          "sm_clock_max_mhz": 1590.0,
+          "power_w": 40.1,
+          "temp_c": 76.0
+        }
+      ]
+    },
+    {
+      "t": 15.015937054999995,
+      "server": {
+        "active": 8,
+        "buffered_audio_bytes": 1052800,
+        "in_flight": 0,
+        "waiting": 0,
+        "rss_bytes": 717590528,
+        "cpu_s": 96.415962,
+        "threads": 5,
+        "loop_lag_max_s": 0.010999999999967258,
+        "loop_lag_p99_s": 0.003000000000156433
+      },
+      "gpus": [
+        {
+          "gpu_util_pct": 21.0,
+          "gpu_mem_used_mib": 279.0,
+          "sm_clock_mhz": 1575.0,
+          "sm_clock_max_mhz": 1590.0,
+          "power_w": 41.09,
+          "temp_c": 76.0
+        }
+      ]
+    },
+    {
+      "t": 16.020474293999996,
+      "server": {
+        "active": 8,
+        "buffered_audio_bytes": 1163360,
+        "in_flight": 1,
+        "waiting": 1,
+        "rss_bytes": 718618624,
+        "cpu_s": 97.705629,
+        "threads": 5,
+        "loop_lag_max_s": 0.010999999999967258,
+        "loop_lag_p99_s": 0.003000000000156433
+      },
+      "gpus": [
+        {
+          "gpu_util_pct": 26.0,
+          "gpu_mem_used_mib": 311.0,
+          "sm_clock_mhz": 1575.0,
+          "sm_clock_max_mhz": 1590.0,
+          "power_w": 46.62,
+          "temp_c": 76.0
+        }
+      ]
+    },
+    {
+      "t": 17.020646657000043,
+      "server": {
+        "active": 8,
+        "buffered_audio_bytes": 1264000,
+        "in_flight": 0,
+        "waiting": 0,
+        "rss_bytes": 719654912,
+        "cpu_s": 98.925566,
+        "threads": 5,
+        "loop_lag_max_s": 0.010999999999967258,
+        "loop_lag_p99_s": 0.003000000000156433
+      },
+      "gpus": [
+        {
+          "gpu_util_pct": 35.0,
+          "gpu_mem_used_mib": 279.0,
+          "sm_clock_mhz": 1560.0,
+          "sm_clock_max_mhz": 1590.0,
+          "power_w": 40.87,
+          "temp_c": 76.0
+        }
+      ]
+    },
+    {
+      "t": 18.0208902710001,
+      "server": {
+        "active": 8,
+        "buffered_audio_bytes": 1520000,
+        "in_flight": 0,
+        "waiting": 0,
+        "rss_bytes": 720683008,
+        "cpu_s": 100.221852,
+        "threads": 5,
+        "loop_lag_max_s": 0.010999999999967258,
+        "loop_lag_p99_s": 0.003000000000156433
+      },
+      "gpus": [
+        {
+          "gpu_util_pct": 38.0,
+          "gpu_mem_used_mib": 279.0,
+          "sm_clock_mhz": 1575.0,
+          "sm_clock_max_mhz": 1590.0,
+          "power_w": 56.74,
+          "temp_c": 76.0
+        }
+      ]
+    },
+    {
+      "t": 19.0231136970001,
+      "server": {
+        "active": 8,
+        "buffered_audio_bytes": 1779200,
+        "in_flight": 0,
+        "waiting": 0,
+        "rss_bytes": 720687104,
+        "cpu_s": 101.577309,
+        "threads": 5,
+        "loop_lag_max_s": 0.010999999999967258,
+        "loop_lag_p99_s": 0.003000000000156433
+      },
+      "gpus": [
+        {
+          "gpu_util_pct": 43.0,
+          "gpu_mem_used_mib": 279.0,
+          "sm_clock_mhz": 1560.0,
+          "sm_clock_max_mhz": 1590.0,
+          "power_w": 81.24,
+          "temp_c": 76.0
+        }
+      ]
+    },
+    {
+      "t": 20.02384273000007,
+      "server": {
+        "active": 8,
+        "buffered_audio_bytes": 2035200,
+        "in_flight": 1,
+        "waiting": 0,
+        "rss_bytes": 721715200,
+        "cpu_s": 102.978325,
+        "threads": 5,
+        "loop_lag_max_s": 0.010999999999967258,
+        "loop_lag_p99_s": 0.003000000000156433
+      },
+      "gpus": [
+        {
+          "gpu_util_pct": 48.0,
+          "gpu_mem_used_mib": 279.0,
+          "sm_clock_mhz": 1575.0,
+          "sm_clock_max_mhz": 1590.0,
+          "power_w": 77.06,
+          "temp_c": 76.0
+        }
+      ]
+    },
+    {
+      "t": 21.02664414800006,
+      "server": {
+        "active": 4,
+        "buffered_audio_bytes": 1216000,
+        "in_flight": 1,
+        "waiting": 0,
+        "rss_bytes": 722743296,
+        "cpu_s": 104.751828,
+        "threads": 5,
+        "loop_lag_max_s": 0.010999999999967258,
+        "loop_lag_p99_s": 0.003000000000156433
+      },
+      "gpus": [
+        {
+          "gpu_util_pct": 64.0,
+          "gpu_mem_used_mib": 279.0,
+          "sm_clock_mhz": 1575.0,
+          "sm_clock_max_mhz": 1590.0,
+          "power_w": 70.73,
+          "temp_c": 77.0
+        }
+      ]
+    },
+    {
+      "t": 22.02864201300008,
+      "server": {
+        "active": 4,
+        "buffered_audio_bytes": 1344000,
+        "in_flight": 1,
+        "waiting": 0,
+        "rss_bytes": 714887168,
+        "cpu_s": 105.628556,
+        "threads": 5,
+        "loop_lag_max_s": 0.010999999999967258,
+        "loop_lag_p99_s": 0.003000000000156433
+      },
+      "gpus": [
+        {
+          "gpu_util_pct": 29.0,
+          "gpu_mem_used_mib": 279.0,
+          "sm_clock_mhz": 1575.0,
+          "sm_clock_max_mhz": 1590.0,
+          "power_w": 64.02,
+          "temp_c": 76.0
+        }
+      ]
+    },
+    {
+      "t": 23.029047453999965,
+      "server": {
+        "active": 2,
+        "buffered_audio_bytes": 714560,
+        "in_flight": 1,
+        "waiting": 0,
+        "rss_bytes": 714915840,
+        "cpu_s": 106.712717,
+        "threads": 5,
+        "loop_lag_max_s": 0.010999999999967258,
+        "loop_lag_p99_s": 0.003000000000156433
+      },
+      "gpus": [
+        {
+          "gpu_util_pct": 30.0,
+          "gpu_mem_used_mib": 311.0,
+          "sm_clock_mhz": 1575.0,
+          "sm_clock_max_mhz": 1590.0,
+          "power_w": 77.64,
+          "temp_c": 77.0
+        }
+      ]
+    }
+  ],
+  "server_metrics_before": {
+    "version": "0.1.0",
+    "model": {
+      "backend": "whisper",
+      "name": "base.en",
+      "device": "cuda",
+      "compute_type": "float16"
+    },
+    "config": {
+      "partial_interval_s": 1.0,
+      "min_partial_audio_s": 0.5,
+      "partial_beam_size": 1,
+      "final_beam_size": 5,
+      "max_concurrent_streams": 8,
+      "max_concurrent_inference": 1,
+      "inference_timeout_s": 30.0,
+      "event_timing": true,
+      "final_priority": true,
+      "cancel_queued_partial_on_end": true
+    },
+    "streams": {
+      "active": 0,
+      "peak_active": 8,
+      "max": 8,
+      "completed": 62,
+      "failed": 0,
+      "disconnected": 0,
+      "rejected": 0,
+      "buffered_audio_bytes": 0
+    },
+    "inference": {
+      "in_flight": 0,
+      "waiting": 0,
+      "max_concurrent": 1
+    },
+    "process": {
+      "cpu_user_s": 78.423821,
+      "cpu_system_s": 2.123796,
+      "max_rss_bytes": 724406272,
+      "threads": 5,
+      "rss_bytes": 715411456
+    },
+    "levels": {
+      "streams.active": {
+        "current": 0,
+        "max": 8,
+        "time_at_level_s": {
+          "0": 0.998665118999952,
+          "1": 1.9367420339999626,
+          "2": 1.0917595360001542,
+          "3": 0.40569000899972707,
+          "4": 5.252276365000171,
+          "5": 0.3711299159999726,
+          "6": 0.47874212899978374,
+          "7": 0.6784537220005404,
+          "8": 60.789554202999625
+        },
+        "total_s": 72.00301303299989
+      },
+      "inference.in_flight": {
+        "current": 0,
+        "max": 1,
+        "time_at_level_s": {
+          "0": 37.02565169999707,
+          "1": 34.977390249003065
+        },
+        "total_s": 72.00304194900013
+      },
+      "inference.waiting": {
+        "current": 0,
+        "max": 7,
+        "time_at_level_s": {
+          "0": 53.73418509399903,
+          "1": 5.349451581001404,
+          "2": 2.767034030000559,
+          "3": 2.9990362889980133,
+          "4": 3.710800899001015,
+          "5": 2.5998906579995946,
+          "6": 0.5223690810007611,
+          "7": 0.32028505299967946
+        },
+        "total_s": 72.00305268500006
+      }
+    },
+    "uptime_s": 72.00309284900004,
+    "counters": {
+      "inference.final.completed": 62,
+      "inference.partial.cancelled_callers": 7,
+      "inference.partial.cancelled_while_queued": 7,
+      "inference.partial.completed": 475,
+      "stream.partial_at_end.done": 48,
+      "stream.partial_at_end.queued": 7,
+      "stream.partial_at_end.running": 7,
+      "stream.partials_cancelled_at_end": 7,
+      "stream.partials_deferred": 2,
+      "stream.partials_scheduled": 482,
+      "stream.partials_sent": 475,
+      "stream.partials_skipped_duplicate": 0,
+      "stream.partials_skipped_empty": 0,
+      "streams.outcome.completed": 62
+    },
+    "distributions": {
+      "event_loop.lag_s": {
+        "count": 716,
+        "window": 716,
+        "mean": 0.0005083798883593421,
+        "p50": 2.2737367544323206e-13,
+        "p95": 0.00200000000018008,
+        "p99": 0.003000000000156433,
+        "max": 0.009000000000014552,
+        "sum": 0.364000000065289
+      },
+      "inference.final.audio_s": {
+        "count": 62,
+        "window": 62,
+        "mean": 8.575080645161291,
+        "p50": 10.885,
+        "p95": 11.475,
+        "p99": 11.475,
+        "max": 11.475,
+        "sum": 531.6550000000001
+      },
+      "inference.final.decode_s": {
+        "count": 62,
+        "window": 62,
+        "mean": 0.1004688240000031,
+        "p50": 0.1121175170000015,
+        "p95": 0.1339969273999827,
+        "p99": 0.15546134914006646,
+        "max": 0.17065121900009217,
+        "sum": 6.229067088000193
+      },
+      "inference.final.queue_wait_s": {
+        "count": 62,
+        "window": 62,
+        "mean": 0.04999304133872512,
+        "p50": 0.022917545500035885,
+        "p95": 0.17810095750011207,
+        "p99": 0.24123464025001798,
+        "max": 0.28345974000012575,
+        "sum": 3.0995685630009575
+      },
+      "inference.final.rtf": {
+        "count": 62,
+        "window": 62,
+        "mean": 0.01258311117776577,
+        "p50": 0.011300670744030877,
+        "p95": 0.017007220783489794,
+        "p99": 0.021582991831767616,
+        "max": 0.023037825026322397,
+        "sum": 0.7801528930214778
+      },
+      "inference.partial.audio_s": {
+        "count": 475,
+        "window": 475,
+        "mean": 5.071578947368421,
+        "p50": 4.0,
+        "p95": 10.0,
+        "p99": 11.0,
+        "max": 11.0,
+        "sum": 2409.0
+      },
+      "inference.partial.decode_s": {
+        "count": 475,
+        "window": 475,
+        "mean": 0.05994567974105753,
+        "p50": 0.05474960700007614,
+        "p95": 0.09522207179998073,
+        "p99": 0.11994608259999039,
+        "max": 0.321092341999929,
+        "sum": 28.474197877002325
+      },
+      "inference.partial.queue_wait_s": {
+        "count": 475,
+        "window": 475,
+        "mean": 0.09839277618104844,
+        "p50": 0.02966160400001172,
+        "p95": 0.3591359064998866,
+        "p99": 0.5775418946600028,
+        "max": 0.6542710740000075,
+        "sum": 46.73656868599801
+      },
+      "inference.partial.rtf": {
+        "count": 475,
+        "window": 475,
+        "mean": 0.016158022816675423,
+        "p50": 0.012173480249998647,
+        "p95": 0.033471425700099644,
+        "p99": 0.048738551160017775,
+        "max": 0.321092341999929,
+        "sum": 7.675060837920824
+      },
+      "stream.audio_s": {
+        "count": 62,
+        "window": 62,
+        "mean": 8.575080645161291,
+        "p50": 10.885,
+        "p95": 11.475,
+        "p99": 11.475,
+        "max": 11.475,
+        "sum": 531.6550000000001
+      },
+      "stream.final_decode_s": {
+        "count": 62,
+        "window": 62,
+        "mean": 0.10046612903225806,
+        "p50": 0.1121,
+        "p95": 0.13398,
+        "p99": 0.15545,
+        "max": 0.1707,
+        "sum": 6.2288999999999985
+      },
+      "stream.final_queue_s": {
+        "count": 62,
+        "window": 62,
+        "mean": 0.04998548387096775,
+        "p50": 0.0229,
+        "p95": 0.17808999999999992,
+        "p99": 0.24122700000000002,
+        "max": 0.2835,
+        "sum": 3.0990999999999995
+      },
+      "stream.final_wait_partial_s": {
+        "count": 62,
+        "window": 62,
+        "mean": 0.01052096774193548,
+        "p50": 0.0003,
+        "p95": 0.07325999999999992,
+        "p99": 0.16719400000000012,
+        "max": 0.2859,
+        "sum": 0.6522999999999992
+      },
+      "stream.inference_waiting_at_end": {
+        "count": 62,
+        "window": 62,
+        "mean": 1.1129032258064515,
+        "p50": 0.0,
+        "p95": 4.0,
+        "p99": 4.0,
+        "max": 4,
+        "sum": 69.0
+      },
+      "stream.partial_amplification": {
+        "count": 62,
+        "window": 62,
+        "mean": 3.9974516129032263,
+        "p50": 4.942,
+        "p95": 5.93,
+        "p99": 5.93,
+        "max": 5.93,
+        "sum": 247.84200000000007
+      },
+      "stream.partial_decode_s": {
+        "count": 62,
+        "window": 62,
+        "mean": 0.45926451612903224,
+        "p50": 0.57805,
+        "p95": 0.76794,
+        "p99": 0.8308220000000001,
+        "max": 0.9161,
+        "sum": 28.474399999999992
+      },
+      "stream.partial_staleness_s": {
+        "count": 475,
+        "window": 475,
+        "mean": 0.145378947368421,
+        "p50": 0.0,
+        "p95": 0.40000000000000036,
+        "p99": 0.6000000000000001,
+        "max": 10.13,
+        "sum": 69.05500000000005
+      }
+    }
+  },
+  "server_metrics_after": {
+    "version": "0.1.0",
+    "model": {
+      "backend": "whisper",
+      "name": "base.en",
+      "device": "cuda",
+      "compute_type": "float16"
+    },
+    "config": {
+      "partial_interval_s": 1.0,
+      "min_partial_audio_s": 0.5,
+      "partial_beam_size": 1,
+      "final_beam_size": 5,
+      "max_concurrent_streams": 8,
+      "max_concurrent_inference": 1,
+      "inference_timeout_s": 30.0,
+      "event_timing": true,
+      "final_priority": true,
+      "cancel_queued_partial_on_end": true
+    },
+    "streams": {
+      "active": 0,
+      "peak_active": 8,
+      "max": 8,
+      "completed": 82,
+      "failed": 0,
+      "disconnected": 0,
+      "rejected": 0,
+      "buffered_audio_bytes": 0
+    },
+    "inference": {
+      "in_flight": 0,
+      "waiting": 0,
+      "max_concurrent": 1
+    },
+    "process": {
+      "cpu_user_s": 104.430707,
+      "cpu_system_s": 2.657062,
+      "max_rss_bytes": 724406272,
+      "threads": 5,
+      "rss_bytes": 715177984
+    },
+    "levels": {
+      "streams.active": {
+        "current": 0,
+        "max": 8,
+        "time_at_level_s": {
+          "0": 1.0249610250000387,
+          "1": 2.3207927999999356,
+          "2": 1.559041157000138,
+          "3": 0.5275758899997527,
+          "4": 7.0122080170003755,
+          "5": 0.4869076549996407,
+          "6": 0.55166379100001,
+          "7": 0.9870519710004828,
+          "8": 81.06026291199964
+        },
+        "total_s": 95.53046521800002
+      },
+      "inference.in_flight": {
+        "current": 0,
+        "max": 1,
+        "time_at_level_s": {
+          "0": 48.99368266599549,
+          "1": 46.53681140100457
+        },
+        "total_s": 95.53049406700006
+      },
+      "inference.waiting": {
+        "current": 0,
+        "max": 7,
+        "time_at_level_s": {
+          "0": 71.44853052799908,
+          "1": 6.933193348001623,
+          "2": 3.6225198440001805,
+          "3": 4.033717085997978,
+          "4": 5.009610353001335,
+          "5": 3.3871192449994396,
+          "6": 0.6940423570008534,
+          "7": 0.40177200499965693
+        },
+        "total_s": 95.53050476600015
+      }
+    },
+    "uptime_s": 95.53054567499998,
+    "counters": {
+      "inference.final.completed": 82,
+      "inference.partial.cancelled_callers": 9,
+      "inference.partial.cancelled_while_queued": 9,
+      "inference.partial.completed": 633,
+      "stream.partial_at_end.done": 64,
+      "stream.partial_at_end.queued": 9,
+      "stream.partial_at_end.running": 9,
+      "stream.partials_cancelled_at_end": 9,
+      "stream.partials_deferred": 2,
+      "stream.partials_scheduled": 642,
+      "stream.partials_sent": 633,
+      "stream.partials_skipped_duplicate": 0,
+      "stream.partials_skipped_empty": 0,
+      "streams.outcome.completed": 82
+    },
+    "distributions": {
+      "event_loop.lag_s": {
+        "count": 950,
+        "window": 950,
+        "mean": 0.0005126315790384021,
+        "p50": 2.2737367544323206e-13,
+        "p95": 0.00200000000018008,
+        "p99": 0.003000000000156433,
+        "max": 0.010999999999967258,
+        "sum": 0.48700000008648203
+      },
+      "inference.final.audio_s": {
+        "count": 82,
+        "window": 82,
+        "mean": 8.55530487804878,
+        "p50": 10.885,
+        "p95": 11.475,
+        "p99": 11.475,
+        "max": 11.475,
+        "sum": 701.5350000000002
+      },
+      "inference.final.decode_s": {
+        "count": 82,
+        "window": 82,
+        "mean": 0.10130519436584719,
+        "p50": 0.1121175170000015,
+        "p95": 0.13650785790000555,
+        "p99": 0.15861298684985736,
+        "max": 0.17065121900009217,
+        "sum": 8.30702593799947
+      },
+      "inference.final.queue_wait_s": {
+        "count": 82,
+        "window": 82,
+        "mean": 0.050981343085371056,
+        "p50": 0.02365110549999372,
+        "p95": 0.1781009575001122,
+        "p99": 0.24318478310993658,
+        "max": 0.28345974000012575,
+        "sum": 4.180470133000426
+      },
+      "inference.final.rtf": {
+        "count": 82,
+        "window": 82,
+        "mean": 0.012754121806511524,
+        "p50": 0.011668946669730649,
+        "p95": 0.017015488359654826,
+        "p99": 0.024115553535254138,
+        "max": 0.028710080336489512,
+        "sum": 1.0458379881339448
+      },
+      "inference.partial.audio_s": {
+        "count": 633,
+        "window": 633,
+        "mean": 5.078988941548183,
+        "p50": 4.0,
+        "p95": 10.0,
+        "p99": 11.0,
+        "max": 11.0,
+        "sum": 3215.0
+      },
+      "inference.partial.decode_s": {
+        "count": 633,
+        "window": 633,
+        "mean": 0.05981274308057342,
+        "p50": 0.05449753899983989,
+        "p95": 0.09636067339997678,
+        "p99": 0.11811348392004219,
+        "max": 0.321092341999929,
+        "sum": 37.86146637000297
+      },
+      "inference.partial.queue_wait_s": {
+        "count": 633,
+        "window": 633,
+        "mean": 0.09777841430488801,
+        "p50": 0.024586147000036362,
+        "p95": 0.3598927139998976,
+        "p99": 0.5901925961198956,
+        "max": 0.6542710740000075,
+        "sum": 61.89373625499411
+      },
+      "inference.partial.rtf": {
+        "count": 633,
+        "window": 633,
+        "mean": 0.015925500054058413,
+        "p50": 0.012219771500042498,
+        "p95": 0.03317854699994314,
+        "p99": 0.04508829411989592,
+        "max": 0.321092341999929,
+        "sum": 10.080841534218976
+      },
+      "stream.audio_s": {
+        "count": 82,
+        "window": 82,
+        "mean": 8.55530487804878,
+        "p50": 10.885,
+        "p95": 11.475,
+        "p99": 11.475,
+        "max": 11.475,
+        "sum": 701.5350000000002
+      },
+      "stream.final_decode_s": {
+        "count": 82,
+        "window": 82,
+        "mean": 0.10130609756097558,
+        "p50": 0.1121,
+        "p95": 0.13649,
+        "p99": 0.15863099999999997,
+        "max": 0.1707,
+        "sum": 8.307099999999997
+      },
+      "stream.final_queue_s": {
+        "count": 82,
+        "window": 82,
+        "mean": 0.05097317073170732,
+        "p50": 0.02365,
+        "p95": 0.17809000000000005,
+        "p99": 0.24316199999999988,
+        "max": 0.2835,
+        "sum": 4.1798
+      },
+      "stream.final_wait_partial_s": {
+        "count": 82,
+        "window": 82,
+        "mean": 0.009945121951219509,
+        "p50": 0.0003,
+        "p95": 0.07349000000000004,
+        "p99": 0.13410599999999956,
+        "max": 0.2859,
+        "sum": 0.8154999999999989
+      },
+      "stream.inference_waiting_at_end": {
+        "count": 82,
+        "window": 82,
+        "mean": 1.0975609756097562,
+        "p50": 0.0,
+        "p95": 4.0,
+        "p99": 4.0,
+        "max": 4,
+        "sum": 90.0
+      },
+      "stream.partial_amplification": {
+        "count": 82,
+        "window": 82,
+        "mean": 4.033109756097561,
+        "p50": 4.942,
+        "p95": 5.93,
+        "p99": 5.93,
+        "max": 5.93,
+        "sum": 330.71500000000015
+      },
+      "stream.partial_decode_s": {
+        "count": 82,
+        "window": 82,
+        "mean": 0.46172560975609767,
+        "p50": 0.5789500000000001,
+        "p95": 0.7685,
+        "p99": 0.8390689999999997,
+        "max": 0.9161,
+        "sum": 37.86150000000001
+      },
+      "stream.partial_staleness_s": {
+        "count": 633,
+        "window": 633,
+        "mean": 0.13358609794628748,
+        "p50": 0.0,
+        "p95": 0.40000000000000036,
+        "p99": 0.6000000000000001,
+        "max": 10.13,
+        "sum": 84.55999999999993
+      }
+    }
+  }
+}

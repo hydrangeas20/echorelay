@@ -1,0 +1,245 @@
+{
+  "commit": "b9e86349b6e5fa4fac788c27ed1c05c312737c99",
+  "order": [
+    {
+      "index": 1,
+      "round": 1,
+      "policy": "base",
+      "dir": "01_r1_sync_base",
+      "stress_exit": 0,
+      "failed_checks": [],
+      "arrival": "sync"
+    },
+    {
+      "index": 2,
+      "round": 1,
+      "policy": "prio",
+      "dir": "02_r1_stagger_prio",
+      "stress_exit": 0,
+      "failed_checks": [],
+      "arrival": "stagger"
+    },
+    {
+      "index": 3,
+      "round": 1,
+      "policy": "both",
+      "dir": "03_r1_sync_both",
+      "stress_exit": 0,
+      "failed_checks": [],
+      "arrival": "sync"
+    },
+    {
+      "index": 4,
+      "round": 1,
+      "policy": "base",
+      "dir": "04_r1_stagger_base",
+      "stress_exit": 0,
+      "failed_checks": [],
+      "arrival": "stagger"
+    },
+    {
+      "index": 5,
+      "round": 1,
+      "policy": "prio",
+      "dir": "05_r1_sync_prio",
+      "stress_exit": 0,
+      "failed_checks": [],
+      "arrival": "sync"
+    },
+    {
+      "index": 6,
+      "round": 1,
+      "policy": "both",
+      "dir": "06_r1_stagger_both",
+      "stress_exit": 0,
+      "failed_checks": [],
+      "arrival": "stagger"
+    },
+    {
+      "index": 7,
+      "round": 2,
+      "policy": "both",
+      "dir": "07_r2_stagger_both",
+      "stress_exit": 0,
+      "failed_checks": [],
+      "arrival": "stagger"
+    },
+    {
+      "index": 8,
+      "round": 2,
+      "policy": "prio",
+      "dir": "08_r2_sync_prio",
+      "stress_exit": 0,
+      "failed_checks": [],
+      "arrival": "sync"
+    },
+    {
+      "index": 9,
+      "round": 2,
+      "policy": "base",
+      "dir": "09_r2_stagger_base",
+      "stress_exit": 0,
+      "failed_checks": [],
+      "arrival": "stagger"
+    },
+    {
+      "index": 10,
+      "round": 2,
+      "policy": "both",
+      "dir": "10_r2_sync_both",
+      "stress_exit": 1,
+      "failed_checks": [
+        {
+          "scenario": "recovery",
+          "check": "TTFP p95 within max(10%, 50 ms) of first run",
+          "pass": false,
+          "detail": "first=1.159s recovery=1.285s tol=0.116s"
+        }
+      ],
+      "arrival": "sync"
+    },
+    {
+      "index": 11,
+      "round": 2,
+      "policy": "prio",
+      "dir": "11_r2_stagger_prio",
+      "stress_exit": 0,
+      "failed_checks": [],
+      "arrival": "stagger"
+    },
+    {
+      "index": 12,
+      "round": 2,
+      "policy": "base",
+      "dir": "12_r2_sync_base",
+      "stress_exit": 0,
+      "failed_checks": [],
+      "arrival": "sync"
+    }
+  ],
+  "common_settings": {
+    "event_timing": true,
+    "max_concurrent_inference": 1,
+    "max_concurrent_streams": 8,
+    "backend": "whisper",
+    "device": "cuda",
+    "compute_type": "float16"
+  },
+  "policies": {
+    "base": {
+      "final_priority": false,
+      "cancel_queued_partial_on_end": false
+    },
+    "prio": {
+      "final_priority": true,
+      "cancel_queued_partial_on_end": false
+    },
+    "cancel": {
+      "final_priority": false,
+      "cancel_queued_partial_on_end": true
+    },
+    "both": {
+      "final_priority": true,
+      "cancel_queued_partial_on_end": true
+    }
+  },
+  "stress_args": {
+    "concurrency": [
+      8,
+      8,
+      8
+    ],
+    "streams": 20,
+    "speed": 1.0,
+    "burst_extra": 0,
+    "warmup": 2
+  },
+  "audio_dir": "/content/echorelay/eval_audio5",
+  "plan": "phase4",
+  "plan_constants": {
+    "policies": [
+      "base",
+      "prio",
+      "both"
+    ],
+    "arrivals": [
+      "sync",
+      "stagger"
+    ],
+    "concurrency": [
+      8,
+      8,
+      8
+    ],
+    "streams": 20,
+    "stagger_s": 1.125,
+    "speed": 1.0,
+    "chunk_ms": 100,
+    "warmup": 2,
+    "burst_extra": 0
+  },
+  "deviations": [],
+  "planned_order": [
+    [
+      1,
+      "sync",
+      "base"
+    ],
+    [
+      1,
+      "stagger",
+      "prio"
+    ],
+    [
+      1,
+      "sync",
+      "both"
+    ],
+    [
+      1,
+      "stagger",
+      "base"
+    ],
+    [
+      1,
+      "sync",
+      "prio"
+    ],
+    [
+      1,
+      "stagger",
+      "both"
+    ],
+    [
+      2,
+      "stagger",
+      "both"
+    ],
+    [
+      2,
+      "sync",
+      "prio"
+    ],
+    [
+      2,
+      "stagger",
+      "base"
+    ],
+    [
+      2,
+      "sync",
+      "both"
+    ],
+    [
+      2,
+      "stagger",
+      "prio"
+    ],
+    [
+      2,
+      "sync",
+      "base"
+    ]
+  ],
+  "stagger_s": 1.125
+}

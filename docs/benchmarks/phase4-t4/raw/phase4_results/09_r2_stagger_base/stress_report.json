@@ -1,0 +1,161 @@
+{
+  "label": "base r2",
+  "timestamp_utc": "2026-10-16T21:33:34.327098+00:00",
+  "model": {
+    "backend": "whisper",
+    "name": "base.en",
+    "device": "cuda",
+    "compute_type": "float16"
+  },
+  "config": {
+    "partial_interval_s": 1.0,
+    "min_partial_audio_s": 0.5,
+    "partial_beam_size": 1,
+    "final_beam_size": 5,
+    "max_concurrent_streams": 8,
+    "max_concurrent_inference": 1,
+    "inference_timeout_s": 30.0,
+    "event_timing": true,
+    "final_priority": false,
+    "cancel_queued_partial_on_end": false
+  },
+  "environment_client": {
+    "python": "3.13.15",
+    "platform": "Linux-6.6.122+-x86_64-with-glibc2.39",
+    "cpu": "x86_64",
+    "packages": {
+      "faster-whisper": "1.2.1",
+      "ctranslate2": "4.8.3",
+      "numpy": "2.1.3",
+      "fastapi": "0.141.1",
+      "uvicorn": "0.54.0",
+      "websockets": "15.0.1",
+      "jiwer": "4.0.0"
+    },
+    "gpus": [
+      "Tesla T4, 580.82.07, 15360 MiB"
+    ],
+    "ctranslate2_cuda_devices": 1,
+    "git": {
+      "commit": "b9e86349b6e5fa4fac788c27ed1c05c312737c99",
+      "dirty": false
+    }
+  },
+  "audio": {
+    "num_files": 5,
+    "total_audio_s": 42.47,
+    "files": [
+      {
+        "name": "1272-135031-0000",
+        "duration_s": 10.885,
+        "sha256": "e24c825ddabf2da00b0e0bb463d4679cbb8c0a9fd2ccd249ba45c79ca7489301",
+        "has_reference": true
+      },
+      {
+        "name": "1272-135031-0001",
+        "duration_s": 11.13,
+        "sha256": "885b3f1741c334a79e09df778471c2b0a29773332b1142963d7fc9b5330e5b74",
+        "has_reference": true
+      },
+      {
+        "name": "1272-135031-0002",
+        "duration_s": 11.475,
+        "sha256": "2c9e7a199503bba2054cfd88970fb4108cb0b3efdd870318d68f4f9cca3a202b",
+        "has_reference": true
+      },
+      {
+        "name": "1272-135031-0003",
+        "duration_s": 4.755,
+        "sha256": "43d01ce2d434e836b47801ae0684f2059e5a0f6884b9ce9b760c9800d467f471",
+        "has_reference": true
+      },
+      {
+        "name": "1272-135031-0004",
+        "duration_s": 4.225,
+        "sha256": "4d667e70c09b9b273c725a5669e14c0057d67f953c144c18680dac785966c5d5",
+        "has_reference": true
+      }
+    ]
+  },
+  "checks": [
+    {
+      "scenario": "c=8",
+      "check": "zero failed streams",
+      "pass": true,
+      "detail": "failed=0 errors={}"
+    },
+    {
+      "scenario": "c=8",
+      "check": "server idle within 10 s",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "c=8",
+      "check": "event-loop lag p99 < 50 ms",
+      "pass": true,
+      "detail": "max sampled p99=3.0 ms, lifetime max 6.0 ms"
+    },
+    {
+      "scenario": "c=8_2",
+      "check": "zero failed streams",
+      "pass": true,
+      "detail": "failed=0 errors={}"
+    },
+    {
+      "scenario": "c=8_2",
+      "check": "server idle within 10 s",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "c=8_2",
+      "check": "event-loop lag p99 < 50 ms",
+      "pass": true,
+      "detail": "max sampled p99=4.0 ms, lifetime max 7.0 ms"
+    },
+    {
+      "scenario": "c=8_3",
+      "check": "zero failed streams",
+      "pass": true,
+      "detail": "failed=0 errors={}"
+    },
+    {
+      "scenario": "c=8_3",
+      "check": "server idle within 10 s",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "c=8_3",
+      "check": "event-loop lag p99 < 50 ms",
+      "pass": true,
+      "detail": "max sampled p99=4.0 ms, lifetime max 7.0 ms"
+    },
+    {
+      "scenario": "recovery",
+      "check": "zero failed streams",
+      "pass": true,
+      "detail": "failed=0 errors={}"
+    },
+    {
+      "scenario": "recovery",
+      "check": "TTFP p95 within max(10%, 50 ms) of first run",
+      "pass": true,
+      "detail": "first=0.993s recovery=0.971s tol=0.099s"
+    },
+    {
+      "scenario": "recovery",
+      "check": "server idle within 10 s",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "scenario": "recovery",
+      "check": "event-loop lag p99 < 50 ms",
+      "pass": true,
+      "detail": "max sampled p99=3.0 ms, lifetime max 7.0 ms"
+    }
+  ],
+  "all_passed": true
+}
