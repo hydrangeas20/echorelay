@@ -51,6 +51,10 @@ class Settings(BaseSettings):
     # Serve waiting final decodes before waiting partial decodes; a stream's
     # own queued partial inherits final priority when the stream ends.
     final_priority: bool = False
+    # When a stream ends, cancel its partial if that partial has not started
+    # decoding (the final covers the same audio). A running partial is never
+    # interrupted. Independent of final_priority.
+    cancel_queued_partial_on_end: bool = False
 
     # --- partial hypotheses ------------------------------------------------
     partial_interval_s: float = Field(default=1.0, gt=0)

@@ -74,6 +74,7 @@ class StreamStats:
     # queued, running or done; and what the scheduling policy did with it.
     partial_state_at_end: str = "none"
     partial_promoted_at_end: bool = False
+    partial_cancelled_at_end: bool = False
 
     def summary(self, audio_duration_s: float) -> dict[str, Any]:
         return {
@@ -97,6 +98,7 @@ class StreamStats:
             "final_decode_s": _r(self.final_decode_s),
             "partial_state_at_end": self.partial_state_at_end,
             "partial_promoted_at_end": self.partial_promoted_at_end,
+            "partial_cancelled_at_end": self.partial_cancelled_at_end,
         }
 
 
@@ -358,6 +360,14 @@ class StreamSession:
             self.stats.partial_state_at_end = "done" if task is not None else "none"
             return
         self.stats.partial_state_at_end = job.state  # created | queued | running
+        # Obsolete-partial cancellation: a partial that has not started would
+        # only decode a prefix of the audio the final is about to decode.
+        # Cancelling a not-started job never consumes a slot (scheduler S4).
+        if self.settings.cancel_queued_partial_on_end and job.state in ("created", "queued"):
+            task.cancel()
+            self.stats.partial_cancelled_at_end = True
+            self.runner.metrics.inc("stream.partials_cancelled_at_end")
+            return
         # Priority inheritance: the final waits for this partial, so a
         # not-yet-running partial must not wait behind other streams' partials.
         if self.runner.scheduler.promote(job, PRIORITY_FINAL):

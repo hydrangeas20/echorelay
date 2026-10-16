@@ -25,6 +25,9 @@ class Stream:
     """A StreamSession fed from a queue, recording what it sends."""
 
     def __init__(self, runner: InferenceRunner, name: str = "s", **settings) -> None:
+        # These scenarios assert exact orders, so pin the cancellation policy
+        # (final priority is set on the runner) instead of inheriting env.
+        settings.setdefault("cancel_queued_partial_on_end", False)
         self.inbox: asyncio.Queue = asyncio.Queue()
         self.sent: list[dict] = []
 

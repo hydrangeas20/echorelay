@@ -101,6 +101,7 @@ def create_app(settings: Settings | None = None, transcriber: Transcriber | None
                 "inference_timeout_s": settings.inference_timeout_s,
                 "event_timing": settings.event_timing,
                 "final_priority": settings.final_priority,
+                "cancel_queued_partial_on_end": settings.cancel_queued_partial_on_end,
             },
             "streams": state.registry.snapshot(),
             "inference": state.runner.snapshot(),
