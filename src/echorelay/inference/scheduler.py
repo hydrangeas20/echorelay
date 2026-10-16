@@ -132,13 +132,24 @@ class SlotScheduler:
             raise RuntimeError("slot released more times than acquired")
 
     def promote(self, job: Job, priority: int) -> bool:
-        """Raise a queued job's priority (priority inheritance). Returns
-        whether the job was still queued. Its arrival order within the new
-        priority class is the time of promotion."""
-        if job.state != "queued" or job._entry is None or priority >= job._entry[0]:
+        """Raise the priority of a job that has not started (priority
+        inheritance). Returns whether anything changed.
+
+        * ``created`` (its task has not reached ``acquire`` yet): the job will
+          queue at the new priority.
+        * ``queued``: re-queued at the new priority; its arrival order within
+          the new class is the time of promotion.
+        * running / done / cancelled: nothing to do.
+        """
+        if not self.prioritize or priority >= job.priority:
             return False
-        if not self.prioritize:
+        if job.state == "created":
+            job.priority = priority
+            job.promoted = True
+            return True
+        if job.state != "queued" or job._entry is None:
             return False
+        job.priority = priority
         job._entry[3] = False  # lazy-delete the old entry
         self._push(job, priority)
         job.promoted = True

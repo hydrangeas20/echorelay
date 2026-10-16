@@ -26,7 +26,8 @@ from typing import Any
 
 from .audio import AudioBuffer, AudioLimitExceeded, InvalidAudioFrame
 from .config import SAMPLE_RATE_HZ, Settings
-from .inference import InferenceError, InferenceRunner, InferenceTimeout
+from .inference import InferenceError, InferenceRunner, InferenceTimeout, Job
+from .inference.scheduler import PRIORITY_FINAL
 from .protocol import (
     CloseCode,
     StreamError,
@@ -69,6 +70,10 @@ class StreamStats:
     final_wait_partial_s: float | None = None
     final_queue_s: float | None = None
     final_decode_s: float | None = None
+    # State of this stream's partial when "end" was processed: none, created,
+    # queued, running or done; and what the scheduling policy did with it.
+    partial_state_at_end: str = "none"
+    partial_promoted_at_end: bool = False
 
     def summary(self, audio_duration_s: float) -> dict[str, Any]:
         return {
@@ -90,6 +95,8 @@ class StreamStats:
             "final_wait_partial_s": _r(self.final_wait_partial_s),
             "final_queue_s": _r(self.final_queue_s),
             "final_decode_s": _r(self.final_decode_s),
+            "partial_state_at_end": self.partial_state_at_end,
+            "partial_promoted_at_end": self.partial_promoted_at_end,
         }
 
 
@@ -132,6 +139,7 @@ class StreamSession:
         self._send = send
         self.buffer = AudioBuffer(settings.max_audio_bytes)
         self._partial_task: asyncio.Task | None = None
+        self._partial_job: Job | None = None
         self._last_partial_samples = 0
         self._last_partial_text = ""
         self._partial_seq = 0
@@ -231,14 +239,17 @@ class StreamSession:
         self._last_partial_samples = n
         self._deferral_counted = False
         self.stats.partials_scheduled += 1
+        # Created synchronously so its state is inspectable from the moment
+        # the partial is scheduled, before the task first runs.
+        self._partial_job = self.runner.new_job(final=False)
         self._partial_task = asyncio.create_task(
-            self._partial(), name=f"partial-{self.session_id}"
+            self._partial(self._partial_job), name=f"partial-{self.session_id}"
         )
 
-    async def _partial(self) -> None:
+    async def _partial(self, job: Job) -> None:
         audio = self.buffer.snapshot()
         try:
-            result = await self.runner.transcribe(audio, final=False)
+            result = await self.runner.transcribe(audio, final=False, job=job)
         except (InferenceError, InferenceTimeout) as exc:
             log.warning("session %s partial decode failed: %s", self.session_id, exc)
             if not self._fatal.done():
@@ -277,32 +288,81 @@ class StreamSession:
 
     # ---------------------------------------------------------------- final
     async def _finish(self) -> None:
-        # Let an in-flight partial complete so events stay ordered
-        # (partials always precede the final).
+        """Decode and send the final transcript.
+
+        Ordering invariant: every partial this stream sends goes out before
+        the final, because the final is sent only after the stream's partial
+        task has finished.
+        Input invariant: the final decodes the complete buffer. No audio is
+        accepted after "end", so the input, and therefore the result, does
+        not depend on when the final decode runs.
+
+        Baseline: wait for the stream's partial, then submit the final.
+        With final_priority: submit the final immediately so it outranks
+        waiting partials, and promote this stream's own not-yet-running
+        partial. Submitting late would let the slot freed by that partial go
+        to another stream's partial first.
+        """
         t0 = time.monotonic()
-        if self._partial_task is not None:
-            await asyncio.gather(self._partial_task, return_exceptions=True)
-        self.stats.final_wait_partial_s = time.monotonic() - t0
-        if self._fatal.done():
-            raise self._fatal.result()
-        audio = self.buffer.snapshot()
-        wait_s = self.stats.final_wait_partial_s
-        if audio.size == 0:
-            timing = {"wait_partial": wait_s, "queue": 0.0, "decode": 0.0} if self.settings.event_timing else None
-            await self._send_event(final_event("", 0.0, 0.0, timing))
-            return
+        audio = self.buffer.snapshot()  # complete: nothing is buffered after "end"
+        task = self._partial_task
+        pending = task is not None and not task.done()
+        if task is not None:
+            self._apply_end_of_stream_policy()
+        early: asyncio.Task | None = None
+        if pending and self.runner.scheduler.prioritize and audio.size:
+            early = asyncio.create_task(self._decode_final(audio), name=f"final-{self.session_id}")
         try:
-            result = await self.runner.transcribe(audio, final=True)
-        except (InferenceError, InferenceTimeout) as exc:
-            raise inference_failure(exc) from exc
+            if task is not None:
+                await asyncio.gather(task, return_exceptions=True)
+            self.stats.final_wait_partial_s = time.monotonic() - t0
+            if self._fatal.done():
+                raise self._fatal.result()
+            wait_s = self.stats.final_wait_partial_s
+            if audio.size == 0:
+                timing = ({"wait_partial": wait_s, "queue": 0.0, "decode": 0.0}
+                          if self.settings.event_timing else None)
+                await self._send_event(final_event("", 0.0, 0.0, timing))
+                return
+            result = await (early if early is not None else self._decode_final(audio))
+        finally:
+            if early is not None:
+                if not early.done():
+                    await _cancel_and_wait(early)  # partial failed or we were cancelled
+                elif not early.cancelled():
+                    early.exception()  # mark retrieved
         self.stats.final_queue_s = result.queue_s
         self.stats.final_decode_s = result.inference_s
         timing = None
         if self.settings.event_timing:
+            # Under final_priority, wait_partial and queue overlap in time.
             timing = {"wait_partial": wait_s, "queue": result.queue_s, "decode": result.inference_s}
         await self._send_event(
             final_event(result.text, audio.size / SAMPLE_RATE_HZ, result.inference_s, timing)
         )
+
+    async def _decode_final(self, audio):
+        try:
+            return await self.runner.transcribe(audio, final=True)
+        except (InferenceError, InferenceTimeout) as exc:
+            raise inference_failure(exc) from exc
+
+    def _apply_end_of_stream_policy(self) -> None:
+        """Decide what happens to this stream's partial when "end" arrives.
+
+        Runs synchronously (no await) so the partial's state cannot change
+        between the check and the action.
+        """
+        task, job = self._partial_task, self._partial_job
+        if task is None or job is None or task.done():
+            self.stats.partial_state_at_end = "done" if task is not None else "none"
+            return
+        self.stats.partial_state_at_end = job.state  # created | queued | running
+        # Priority inheritance: the final waits for this partial, so a
+        # not-yet-running partial must not wait behind other streams' partials.
+        if self.runner.scheduler.promote(job, PRIORITY_FINAL):
+            self.stats.partial_promoted_at_end = True
+            self.runner.metrics.inc("stream.partials_promoted_at_end")
 
     # -------------------------------------------------------------- cleanup
     async def cleanup(self) -> None:

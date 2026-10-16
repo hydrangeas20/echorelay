@@ -47,6 +47,11 @@ class Settings(BaseSettings):
     # (full TCP window) would otherwise hold its stream slot indefinitely.
     send_timeout_s: float = Field(default=10.0, gt=0)
 
+    # --- scheduling experiments (default off = Phase 2 behaviour) ----------
+    # Serve waiting final decodes before waiting partial decodes; a stream's
+    # own queued partial inherits final priority when the stream ends.
+    final_priority: bool = False
+
     # --- partial hypotheses ------------------------------------------------
     partial_interval_s: float = Field(default=1.0, gt=0)
     min_partial_audio_s: float = Field(default=0.5, ge=0)
