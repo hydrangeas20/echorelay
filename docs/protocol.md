@@ -95,6 +95,10 @@ extra `timing` object. Clients must ignore it if they don't use it.
 | `staleness_ms` | audio received after this partial's snapshot was taken, at send time |
 | `wait_partial_ms` | `end` processed → in-flight partial for this stream finished |
 
+With `ECHORELAY_FINAL_PRIORITY=true` the final decode is submitted as soon
+as `end` is processed, so `wait_partial_ms` and `queue_ms` can overlap in
+time and do not add up to the final latency.
+
 Definitions and measurement boundaries: [measurements.md](measurements.md).
 
 ### `error`

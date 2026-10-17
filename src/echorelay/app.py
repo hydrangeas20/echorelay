@@ -32,7 +32,8 @@ def create_app(settings: Settings | None = None, transcriber: Transcriber | None
         await asyncio.to_thread(model.load)
         metrics = Metrics(window=settings.metrics_window)
         runner = InferenceRunner(
-            model, settings.max_concurrent_inference, settings.inference_timeout_s, metrics=metrics
+            model, settings.max_concurrent_inference, settings.inference_timeout_s, metrics=metrics,
+            final_priority=settings.final_priority,
         )
         app.state.settings = settings
         app.state.metrics = metrics
@@ -99,6 +100,8 @@ def create_app(settings: Settings | None = None, transcriber: Transcriber | None
                 "max_concurrent_inference": settings.max_concurrent_inference,
                 "inference_timeout_s": settings.inference_timeout_s,
                 "event_timing": settings.event_timing,
+                "final_priority": settings.final_priority,
+                "cancel_queued_partial_on_end": settings.cancel_queued_partial_on_end,
             },
             "streams": state.registry.snapshot(),
             "inference": state.runner.snapshot(),

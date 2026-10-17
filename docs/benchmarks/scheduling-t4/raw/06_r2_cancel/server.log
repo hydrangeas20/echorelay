@@ -1,0 +1,983 @@
+INFO:     Started server process [8184]
+INFO:     Waiting for application startup.
+2026-10-16 05:15:16,580 INFO echorelay.inference.whisper: loading faster-whisper model=base.en device=cuda compute_type=float16 workers=1
+2026-10-16 05:15:16,952 INFO httpx: HTTP Request: GET https://huggingface.co/api/models/Systran/faster-whisper-base.en/revision/main "HTTP/1.1 200 OK"
+2026-10-16 05:15:17,413 INFO echorelay.app: echorelay ready: ModelInfo(backend='whisper', model='base.en', device='cuda', compute_type='float16', extra={})
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:47322 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47328 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47332 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47340 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:15:18,230 INFO echorelay.transport: session 00c660353df9 opened
+2026-10-16 05:15:18,235 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:15:18,523 INFO faster_whisper: Processing audio with duration 00:10.885
+2026-10-16 05:15:18,700 INFO echorelay.transport: session 00c660353df9 completed (10.88s audio)
+2026-10-16 05:15:18,701 INFO echorelay.transport: stream_summary session=00c660353df9 outcome=completed audio_s=10.885 partials_scheduled=1 partials_completed=1 partials_sent=1 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=1 partial_decode_s=0.2869 partial_queue_s=0.0 partial_amplification=0.092 partial_staleness_max_s=9.885 final_wait_partial_s=0.2165 final_queue_s=0.0 final_decode_s=0.1768 partial_state_at_end=running partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:47350 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:15:18,703 INFO echorelay.transport: session a7419b82795e opened
+2026-10-16 05:15:18,708 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:15:18,759 INFO faster_whisper: Processing audio with duration 00:11.130
+2026-10-16 05:15:18,880 INFO echorelay.transport: session a7419b82795e completed (11.13s audio)
+2026-10-16 05:15:18,880 INFO echorelay.transport: stream_summary session=a7419b82795e outcome=completed audio_s=11.13 partials_scheduled=1 partials_completed=1 partials_sent=1 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=1 partial_decode_s=0.0501 partial_queue_s=0.0 partial_amplification=0.09 partial_staleness_max_s=10.13 final_wait_partial_s=0.0058 final_queue_s=0.0 final_decode_s=0.1204 partial_state_at_end=running partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:47354 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47368 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:15:18,891 INFO echorelay.transport: session 2f56d2437992 opened
+INFO:     127.0.0.1:47378 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:15:18,892 INFO echorelay.transport: session bb92dc440123 opened
+INFO:     127.0.0.1:47386 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:15:18,895 INFO echorelay.transport: session 12487efef420 opened
+INFO:     127.0.0.1:47390 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:15:18,896 INFO echorelay.transport: session 4ae02ecf9409 opened
+2026-10-16 05:15:19,795 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:15:19,829 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:15:19,859 INFO faster_whisper: Processing audio with duration 00:01.000
+INFO:     127.0.0.1:47394 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:19,896 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:15:20,795 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:15:20,840 INFO faster_whisper: Processing audio with duration 00:02.000
+INFO:     127.0.0.1:48640 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:20,888 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:15:20,948 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:15:21,795 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:15:21,839 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:15:21,882 INFO faster_whisper: Processing audio with duration 00:03.000
+INFO:     127.0.0.1:48642 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:21,938 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:15:22,795 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:15:22,843 INFO faster_whisper: Processing audio with duration 00:04.000
+INFO:     127.0.0.1:48656 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:22,899 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:15:22,977 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:15:23,703 INFO faster_whisper: Processing audio with duration 00:04.755
+2026-10-16 05:15:23,773 INFO echorelay.transport: session 4ae02ecf9409 completed (4.75s audio)
+2026-10-16 05:15:23,774 INFO echorelay.transport: stream_summary session=4ae02ecf9409 outcome=completed audio_s=4.755 partials_scheduled=4 partials_completed=4 partials_sent=4 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.2069 partial_queue_s=0.5427 partial_amplification=2.103 partial_staleness_max_s=0.2 final_wait_partial_s=0.0002 final_queue_s=0.0 final_decode_s=0.0702 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:48662 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:15:23,776 INFO echorelay.transport: session 54860ecce8cc opened
+2026-10-16 05:15:23,795 INFO faster_whisper: Processing audio with duration 00:05.000
+2026-10-16 05:15:23,849 INFO faster_whisper: Processing audio with duration 00:05.000
+INFO:     127.0.0.1:48676 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:23,910 INFO faster_whisper: Processing audio with duration 00:05.000
+2026-10-16 05:15:24,678 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:15:24,795 INFO faster_whisper: Processing audio with duration 00:06.000
+2026-10-16 05:15:24,858 INFO faster_whisper: Processing audio with duration 00:06.000
+INFO:     127.0.0.1:48688 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:24,933 INFO faster_whisper: Processing audio with duration 00:06.000
+2026-10-16 05:15:25,678 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:15:25,795 INFO faster_whisper: Processing audio with duration 00:07.000
+2026-10-16 05:15:25,864 INFO faster_whisper: Processing audio with duration 00:07.000
+INFO:     127.0.0.1:48694 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:25,941 INFO faster_whisper: Processing audio with duration 00:07.000
+2026-10-16 05:15:26,678 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:15:26,795 INFO faster_whisper: Processing audio with duration 00:08.000
+2026-10-16 05:15:26,867 INFO faster_whisper: Processing audio with duration 00:08.000
+INFO:     127.0.0.1:48698 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:26,976 INFO faster_whisper: Processing audio with duration 00:08.000
+2026-10-16 05:15:27,678 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:15:27,795 INFO faster_whisper: Processing audio with duration 00:09.000
+2026-10-16 05:15:27,882 INFO faster_whisper: Processing audio with duration 00:09.000
+INFO:     127.0.0.1:48704 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:27,973 INFO faster_whisper: Processing audio with duration 00:09.000
+2026-10-16 05:15:28,078 INFO faster_whisper: Processing audio with duration 00:04.225
+2026-10-16 05:15:28,137 INFO echorelay.transport: session 54860ecce8cc completed (4.22s audio)
+2026-10-16 05:15:28,137 INFO echorelay.transport: stream_summary session=54860ecce8cc outcome=completed audio_s=4.225 partials_scheduled=4 partials_completed=4 partials_sent=4 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.1614 partial_queue_s=0.0001 partial_amplification=2.367 partial_staleness_max_s=0.0 final_wait_partial_s=0.0002 final_queue_s=0.0 final_decode_s=0.0589 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:48714 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:15:28,140 INFO echorelay.transport: session 7a18d2bc7de4 opened
+2026-10-16 05:15:28,796 INFO faster_whisper: Processing audio with duration 00:10.000
+2026-10-16 05:15:28,888 INFO faster_whisper: Processing audio with duration 00:10.000
+INFO:     127.0.0.1:48722 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:29,000 INFO faster_whisper: Processing audio with duration 00:10.000
+2026-10-16 05:15:29,089 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:15:29,796 INFO faster_whisper: Processing audio with duration 00:10.885
+INFO:     127.0.0.1:48736 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:29,911 INFO faster_whisper: Processing audio with duration 00:11.000
+2026-10-16 05:15:29,912 INFO echorelay.transport: session 2f56d2437992 completed (10.88s audio)
+2026-10-16 05:15:29,913 INFO echorelay.transport: stream_summary session=2f56d2437992 outcome=completed audio_s=10.885 partials_scheduled=10 partials_completed=10 partials_sent=10 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.6025 partial_queue_s=0.0002 partial_amplification=5.053 partial_staleness_max_s=0.0 final_wait_partial_s=0.0004 final_queue_s=0.0 final_decode_s=0.113 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:44596 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:15:29,916 INFO echorelay.transport: session 32d7b309cd7c opened
+2026-10-16 05:15:30,015 INFO faster_whisper: Processing audio with duration 00:11.000
+2026-10-16 05:15:30,109 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:15:30,148 INFO faster_whisper: Processing audio with duration 00:11.130
+2026-10-16 05:15:30,263 INFO echorelay.transport: session bb92dc440123 completed (11.13s audio)
+2026-10-16 05:15:30,263 INFO echorelay.transport: stream_summary session=bb92dc440123 outcome=completed audio_s=11.13 partials_scheduled=11 partials_completed=11 partials_sent=11 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.7953 partial_queue_s=0.7069 partial_amplification=5.93 partial_staleness_max_s=0.2 final_wait_partial_s=0.0003 final_queue_s=0.0523 final_decode_s=0.1141 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:44602 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:15:30,265 INFO echorelay.transport: session 4c2b4804afce opened
+2026-10-16 05:15:30,399 INFO faster_whisper: Processing audio with duration 00:11.475
+2026-10-16 05:15:30,509 INFO echorelay.transport: session 12487efef420 completed (11.47s audio)
+2026-10-16 05:15:30,510 INFO echorelay.transport: stream_summary session=12487efef420 outcome=completed audio_s=11.475 partials_scheduled=11 partials_completed=11 partials_sent=11 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.7454 partial_queue_s=1.46 partial_amplification=5.752 partial_staleness_max_s=0.3 final_wait_partial_s=0.0003 final_queue_s=0.0 final_decode_s=0.1101 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:44610 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:15:30,512 INFO echorelay.transport: session 6257d070881e opened
+2026-10-16 05:15:30,821 INFO faster_whisper: Processing audio with duration 00:01.000
+INFO:     127.0.0.1:44624 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:31,042 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:15:31,167 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:15:31,414 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:15:31,821 INFO faster_whisper: Processing audio with duration 00:02.000
+INFO:     127.0.0.1:44640 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:32,043 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:15:32,167 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:15:32,414 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:15:32,821 INFO faster_whisper: Processing audio with duration 00:03.000
+INFO:     127.0.0.1:44644 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:33,043 INFO faster_whisper: Processing audio with duration 00:05.000
+2026-10-16 05:15:33,168 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:15:33,414 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:15:33,820 INFO faster_whisper: Processing audio with duration 00:04.000
+INFO:     127.0.0.1:44654 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:34,042 INFO faster_whisper: Processing audio with duration 00:06.000
+2026-10-16 05:15:34,168 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:15:34,413 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:15:34,821 INFO faster_whisper: Processing audio with duration 00:05.000
+INFO:     127.0.0.1:44656 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:35,042 INFO faster_whisper: Processing audio with duration 00:07.000
+2026-10-16 05:15:35,170 INFO faster_whisper: Processing audio with duration 00:05.000
+2026-10-16 05:15:35,314 INFO faster_whisper: Processing audio with duration 00:04.755
+2026-10-16 05:15:35,421 INFO echorelay.transport: session 6257d070881e completed (4.75s audio)
+2026-10-16 05:15:35,422 INFO echorelay.transport: stream_summary session=6257d070881e outcome=completed audio_s=4.755 partials_scheduled=4 partials_completed=4 partials_sent=4 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.2079 partial_queue_s=0.0001 partial_amplification=2.103 partial_staleness_max_s=0.0 final_wait_partial_s=0.0001 final_queue_s=0.0 final_decode_s=0.1042 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:44668 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:15:35,427 INFO echorelay.transport: session b8d3eca55268 opened
+2026-10-16 05:15:35,822 INFO faster_whisper: Processing audio with duration 00:06.000
+INFO:     127.0.0.1:44670 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:36,042 INFO faster_whisper: Processing audio with duration 00:08.000
+2026-10-16 05:15:36,168 INFO faster_whisper: Processing audio with duration 00:06.000
+2026-10-16 05:15:36,330 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:15:36,821 INFO faster_whisper: Processing audio with duration 00:07.000
+INFO:     127.0.0.1:44686 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:37,043 INFO faster_whisper: Processing audio with duration 00:09.000
+2026-10-16 05:15:37,168 INFO faster_whisper: Processing audio with duration 00:07.000
+2026-10-16 05:15:37,331 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:15:37,821 INFO faster_whisper: Processing audio with duration 00:08.000
+INFO:     127.0.0.1:44688 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:38,043 INFO faster_whisper: Processing audio with duration 00:10.000
+2026-10-16 05:15:38,167 INFO faster_whisper: Processing audio with duration 00:08.000
+2026-10-16 05:15:38,330 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:15:38,821 INFO faster_whisper: Processing audio with duration 00:09.000
+INFO:     127.0.0.1:44694 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:39,042 INFO faster_whisper: Processing audio with duration 00:10.885
+2026-10-16 05:15:39,151 INFO echorelay.transport: session 7a18d2bc7de4 completed (10.88s audio)
+2026-10-16 05:15:39,152 INFO echorelay.transport: stream_summary session=7a18d2bc7de4 outcome=completed audio_s=10.885 partials_scheduled=10 partials_completed=10 partials_sent=10 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.6375 partial_queue_s=0.1131 partial_amplification=5.053 partial_staleness_max_s=0.1 final_wait_partial_s=0.0003 final_queue_s=0.0 final_decode_s=0.1087 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:44708 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:15:39,155 INFO echorelay.transport: session c794040435ab opened
+2026-10-16 05:15:39,168 INFO faster_whisper: Processing audio with duration 00:09.000
+2026-10-16 05:15:39,331 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:15:39,730 INFO faster_whisper: Processing audio with duration 00:04.225
+2026-10-16 05:15:39,791 INFO echorelay.transport: session b8d3eca55268 completed (4.22s audio)
+2026-10-16 05:15:39,791 INFO echorelay.transport: stream_summary session=b8d3eca55268 outcome=completed audio_s=4.225 partials_scheduled=4 partials_completed=4 partials_sent=4 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.1659 partial_queue_s=0.0001 partial_amplification=2.367 partial_staleness_max_s=0.0 final_wait_partial_s=0.0001 final_queue_s=0.0 final_decode_s=0.0599 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:44724 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:15:39,793 INFO echorelay.transport: session 123a967862d5 opened
+2026-10-16 05:15:39,821 INFO faster_whisper: Processing audio with duration 00:10.000
+INFO:     127.0.0.1:44736 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:40,058 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:15:40,168 INFO faster_whisper: Processing audio with duration 00:10.000
+2026-10-16 05:15:40,696 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:15:40,820 INFO faster_whisper: Processing audio with duration 00:11.000
+INFO:     127.0.0.1:38118 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:41,058 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:15:41,121 INFO faster_whisper: Processing audio with duration 00:11.130
+2026-10-16 05:15:41,242 INFO echorelay.transport: session 32d7b309cd7c completed (11.13s audio)
+2026-10-16 05:15:41,243 INFO echorelay.transport: stream_summary session=32d7b309cd7c outcome=completed audio_s=11.13 partials_scheduled=11 partials_completed=11 partials_sent=11 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.7303 partial_queue_s=0.0002 partial_amplification=5.93 partial_staleness_max_s=0.0 final_wait_partial_s=0.0003 final_queue_s=0.0 final_decode_s=0.1211 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+2026-10-16 05:15:41,243 INFO faster_whisper: Processing audio with duration 00:11.000
+INFO:     127.0.0.1:38134 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:15:41,248 INFO echorelay.transport: session c286926c2b25 opened
+2026-10-16 05:15:41,696 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:15:41,768 INFO faster_whisper: Processing audio with duration 00:11.475
+2026-10-16 05:15:41,881 INFO echorelay.transport: session 4c2b4804afce completed (11.47s audio)
+2026-10-16 05:15:41,882 INFO echorelay.transport: stream_summary session=4c2b4804afce outcome=completed audio_s=11.475 partials_scheduled=11 partials_completed=11 partials_sent=11 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.7434 partial_queue_s=0.0749 partial_amplification=5.752 partial_staleness_max_s=0.1 final_wait_partial_s=0.0004 final_queue_s=0.0 final_decode_s=0.1132 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:38138 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:15:41,884 INFO echorelay.transport: session f00f24fd09d4 opened
+INFO:     127.0.0.1:38148 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:42,057 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:15:42,150 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:15:42,695 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:15:42,787 INFO faster_whisper: Processing audio with duration 00:01.000
+INFO:     127.0.0.1:38154 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:43,057 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:15:43,151 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:15:43,697 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:15:43,787 INFO faster_whisper: Processing audio with duration 00:02.000
+INFO:     127.0.0.1:38160 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:44,057 INFO faster_whisper: Processing audio with duration 00:05.000
+2026-10-16 05:15:44,150 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:15:44,697 INFO faster_whisper: Processing audio with duration 00:05.000
+2026-10-16 05:15:44,786 INFO faster_whisper: Processing audio with duration 00:03.000
+INFO:     127.0.0.1:38162 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:45,058 INFO faster_whisper: Processing audio with duration 00:06.000
+2026-10-16 05:15:45,150 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:15:45,697 INFO faster_whisper: Processing audio with duration 00:06.000
+2026-10-16 05:15:45,787 INFO faster_whisper: Processing audio with duration 00:04.000
+INFO:     127.0.0.1:38166 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:46,057 INFO faster_whisper: Processing audio with duration 00:07.000
+2026-10-16 05:15:46,151 INFO faster_whisper: Processing audio with duration 00:05.000
+2026-10-16 05:15:46,687 INFO faster_whisper: Processing audio with duration 00:04.755
+2026-10-16 05:15:46,754 INFO echorelay.transport: session f00f24fd09d4 completed (4.75s audio)
+2026-10-16 05:15:46,755 INFO echorelay.transport: stream_summary session=f00f24fd09d4 outcome=completed audio_s=4.755 partials_scheduled=4 partials_completed=4 partials_sent=4 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.1856 partial_queue_s=0.0001 partial_amplification=2.103 partial_staleness_max_s=0.0 final_wait_partial_s=0.0002 final_queue_s=0.0 final_decode_s=0.067 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+2026-10-16 05:15:46,755 INFO faster_whisper: Processing audio with duration 00:07.000
+INFO:     127.0.0.1:38174 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:15:46,761 INFO echorelay.transport: session 89d1f9c204e0 opened
+INFO:     127.0.0.1:38186 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:47,058 INFO faster_whisper: Processing audio with duration 00:08.000
+2026-10-16 05:15:47,151 INFO faster_whisper: Processing audio with duration 00:06.000
+2026-10-16 05:15:47,665 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:15:47,699 INFO faster_whisper: Processing audio with duration 00:08.000
+INFO:     127.0.0.1:38196 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:48,057 INFO faster_whisper: Processing audio with duration 00:09.000
+2026-10-16 05:15:48,151 INFO faster_whisper: Processing audio with duration 00:07.000
+2026-10-16 05:15:48,666 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:15:48,703 INFO faster_whisper: Processing audio with duration 00:09.000
+INFO:     127.0.0.1:38202 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:49,057 INFO faster_whisper: Processing audio with duration 00:10.000
+2026-10-16 05:15:49,151 INFO faster_whisper: Processing audio with duration 00:08.000
+2026-10-16 05:15:49,666 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:15:49,711 INFO faster_whisper: Processing audio with duration 00:10.000
+INFO:     127.0.0.1:38216 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:50,058 INFO faster_whisper: Processing audio with duration 00:10.885
+2026-10-16 05:15:50,171 INFO faster_whisper: Processing audio with duration 00:09.000
+2026-10-16 05:15:50,171 INFO echorelay.transport: session c794040435ab completed (10.88s audio)
+2026-10-16 05:15:50,174 INFO echorelay.transport: stream_summary session=c794040435ab outcome=completed audio_s=10.885 partials_scheduled=10 partials_completed=10 partials_sent=10 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.5901 partial_queue_s=0.0002 partial_amplification=5.053 partial_staleness_max_s=0.0 final_wait_partial_s=0.0004 final_queue_s=0.0 final_decode_s=0.1125 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:42418 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:15:50,176 INFO echorelay.transport: session e581f9afd450 opened
+2026-10-16 05:15:50,665 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:15:50,715 INFO faster_whisper: Processing audio with duration 00:11.000
+INFO:     127.0.0.1:42424 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:50,996 INFO faster_whisper: Processing audio with duration 00:11.130
+2026-10-16 05:15:51,109 INFO echorelay.transport: session 123a967862d5 completed (11.13s audio)
+2026-10-16 05:15:51,110 INFO echorelay.transport: stream_summary session=123a967862d5 outcome=completed audio_s=11.13 partials_scheduled=11 partials_completed=11 partials_sent=11 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.7178 partial_queue_s=0.0914 partial_amplification=5.93 partial_staleness_max_s=0.1 final_wait_partial_s=0.0003 final_queue_s=0.0 final_decode_s=0.1131 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+2026-10-16 05:15:51,110 INFO faster_whisper: Processing audio with duration 00:04.225
+INFO:     127.0.0.1:42428 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:15:51,114 INFO echorelay.transport: session 8683cbc2c6a1 opened
+2026-10-16 05:15:51,173 INFO echorelay.transport: session 89d1f9c204e0 completed (4.22s audio)
+2026-10-16 05:15:51,173 INFO echorelay.transport: stream_summary session=89d1f9c204e0 outcome=completed audio_s=4.225 partials_scheduled=4 partials_completed=4 partials_sent=4 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.1641 partial_queue_s=0.0001 partial_amplification=2.367 partial_staleness_max_s=0.0 final_wait_partial_s=0.0001 final_queue_s=0.0431 final_decode_s=0.0623 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+2026-10-16 05:15:51,173 INFO faster_whisper: Processing audio with duration 00:01.000
+INFO:     127.0.0.1:42430 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:15:51,178 INFO echorelay.transport: session fc792df6e6b7 opened
+2026-10-16 05:15:51,209 INFO faster_whisper: Processing audio with duration 00:10.000
+INFO:     127.0.0.1:42444 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:52,016 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:15:52,078 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:15:52,115 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:15:52,151 INFO faster_whisper: Processing audio with duration 00:11.000
+2026-10-16 05:15:52,751 INFO faster_whisper: Processing audio with duration 00:11.475
+2026-10-16 05:15:52,858 INFO echorelay.transport: session c286926c2b25 completed (11.47s audio)
+2026-10-16 05:15:52,859 INFO echorelay.transport: stream_summary session=c286926c2b25 outcome=completed audio_s=11.475 partials_scheduled=11 partials_completed=11 partials_sent=11 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.6672 partial_queue_s=0.0763 partial_amplification=5.752 partial_staleness_max_s=0.1 final_wait_partial_s=0.0004 final_queue_s=0.0 final_decode_s=0.1071 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:42450 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:15:52,862 INFO echorelay.transport: session 3f8cedf31b8d opened
+INFO:     127.0.0.1:42462 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:53,017 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:15:53,079 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:15:53,117 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:15:53,764 INFO faster_whisper: Processing audio with duration 00:01.000
+INFO:     127.0.0.1:42468 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:54,017 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:15:54,078 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:15:54,121 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:15:54,764 INFO faster_whisper: Processing audio with duration 00:02.000
+INFO:     127.0.0.1:42482 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:55,016 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:15:55,078 INFO faster_whisper: Processing audio with duration 00:05.000
+2026-10-16 05:15:55,138 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:15:55,764 INFO faster_whisper: Processing audio with duration 00:03.000
+INFO:     127.0.0.1:42484 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:56,016 INFO faster_whisper: Processing audio with duration 00:05.000
+2026-10-16 05:15:56,086 INFO faster_whisper: Processing audio with duration 00:06.000
+2026-10-16 05:15:56,152 INFO faster_whisper: Processing audio with duration 00:05.000
+2026-10-16 05:15:56,764 INFO faster_whisper: Processing audio with duration 00:04.000
+INFO:     127.0.0.1:42500 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:57,017 INFO faster_whisper: Processing audio with duration 00:06.000
+2026-10-16 05:15:57,093 INFO faster_whisper: Processing audio with duration 00:07.000
+2026-10-16 05:15:57,163 INFO faster_whisper: Processing audio with duration 00:06.000
+2026-10-16 05:15:57,664 INFO faster_whisper: Processing audio with duration 00:04.755
+2026-10-16 05:15:57,740 INFO echorelay.transport: session 3f8cedf31b8d completed (4.75s audio)
+2026-10-16 05:15:57,741 INFO echorelay.transport: stream_summary session=3f8cedf31b8d outcome=completed audio_s=4.755 partials_scheduled=4 partials_completed=4 partials_sent=4 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.1934 partial_queue_s=0.0001 partial_amplification=2.103 partial_staleness_max_s=0.0 final_wait_partial_s=0.0002 final_queue_s=0.0 final_decode_s=0.0762 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:42512 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:15:57,743 INFO echorelay.transport: session 0bd6c2b74c6b opened
+INFO:     127.0.0.1:42522 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:58,016 INFO faster_whisper: Processing audio with duration 00:07.000
+2026-10-16 05:15:58,100 INFO faster_whisper: Processing audio with duration 00:08.000
+2026-10-16 05:15:58,175 INFO faster_whisper: Processing audio with duration 00:07.000
+2026-10-16 05:15:58,645 INFO faster_whisper: Processing audio with duration 00:01.000
+INFO:     127.0.0.1:42524 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:15:59,016 INFO faster_whisper: Processing audio with duration 00:08.000
+2026-10-16 05:15:59,119 INFO faster_whisper: Processing audio with duration 00:09.000
+2026-10-16 05:15:59,204 INFO faster_whisper: Processing audio with duration 00:08.000
+2026-10-16 05:15:59,646 INFO faster_whisper: Processing audio with duration 00:02.000
+INFO:     127.0.0.1:33244 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:00,017 INFO faster_whisper: Processing audio with duration 00:09.000
+2026-10-16 05:16:00,099 INFO faster_whisper: Processing audio with duration 00:10.000
+2026-10-16 05:16:00,203 INFO faster_whisper: Processing audio with duration 00:09.000
+2026-10-16 05:16:00,646 INFO faster_whisper: Processing audio with duration 00:03.000
+INFO:     127.0.0.1:33248 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:01,016 INFO faster_whisper: Processing audio with duration 00:10.000
+2026-10-16 05:16:01,103 INFO faster_whisper: Processing audio with duration 00:10.885
+2026-10-16 05:16:01,244 INFO faster_whisper: Processing audio with duration 00:10.000
+2026-10-16 05:16:01,245 INFO echorelay.transport: session e581f9afd450 completed (10.88s audio)
+2026-10-16 05:16:01,245 INFO echorelay.transport: stream_summary session=e581f9afd450 outcome=completed audio_s=10.885 partials_scheduled=10 partials_completed=10 partials_sent=10 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.607 partial_queue_s=0.1863 partial_amplification=5.053 partial_staleness_max_s=0.1 final_wait_partial_s=0.0003 final_queue_s=0.0241 final_decode_s=0.1389 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+2026-10-16 05:16:01,646 INFO faster_whisper: Processing audio with duration 00:04.000
+INFO:     127.0.0.1:33256 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:02,017 INFO faster_whisper: Processing audio with duration 00:11.000
+2026-10-16 05:16:02,107 INFO faster_whisper: Processing audio with duration 00:04.225
+2026-10-16 05:16:02,164 INFO echorelay.transport: session 0bd6c2b74c6b completed (4.22s audio)
+2026-10-16 05:16:02,165 INFO echorelay.transport: stream_summary session=0bd6c2b74c6b outcome=completed audio_s=4.225 partials_scheduled=4 partials_completed=4 partials_sent=4 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.1755 partial_queue_s=0.0001 partial_amplification=2.367 partial_staleness_max_s=0.0 final_wait_partial_s=0.0002 final_queue_s=0.0586 final_decode_s=0.0572 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+2026-10-16 05:16:02,165 INFO faster_whisper: Processing audio with duration 00:11.000
+2026-10-16 05:16:02,316 INFO faster_whisper: Processing audio with duration 00:11.130
+2026-10-16 05:16:02,426 INFO echorelay.transport: session 8683cbc2c6a1 completed (11.13s audio)
+2026-10-16 05:16:02,426 INFO echorelay.transport: stream_summary session=8683cbc2c6a1 outcome=completed audio_s=11.13 partials_scheduled=11 partials_completed=11 partials_sent=11 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.7508 partial_queue_s=0.0003 partial_amplification=5.93 partial_staleness_max_s=0.1 final_wait_partial_s=0.0003 final_queue_s=0.0 final_decode_s=0.1097 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+2026-10-16 05:16:02,681 INFO faster_whisper: Processing audio with duration 00:11.475
+2026-10-16 05:16:02,791 INFO echorelay.transport: session fc792df6e6b7 completed (11.47s audio)
+2026-10-16 05:16:02,792 INFO echorelay.transport: stream_summary session=fc792df6e6b7 outcome=completed audio_s=11.475 partials_scheduled=11 partials_completed=11 partials_sent=11 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.6948 partial_queue_s=0.8834 partial_amplification=5.752 partial_staleness_max_s=0.2 final_wait_partial_s=0.0003 final_queue_s=0.0 final_decode_s=0.1099 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:33270 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33296 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33282 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:02,838 INFO echorelay.transport: session 4d9c53efabdd opened
+INFO:     127.0.0.1:33300 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:02,842 INFO echorelay.transport: session 18fd4a461b00 opened
+INFO:     127.0.0.1:33306 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:02,842 INFO echorelay.transport: session e8b5c9dd73f1 opened
+INFO:     127.0.0.1:33314 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:02,843 INFO echorelay.transport: session cc7eab0fa3f3 opened
+INFO:     127.0.0.1:33326 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:02,845 INFO echorelay.transport: session e1a82257c3fa opened
+INFO:     127.0.0.1:33342 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:02,846 INFO echorelay.transport: session b57977b37f98 opened
+INFO:     127.0.0.1:33354 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:02,848 INFO echorelay.transport: session 0bd9e4f6455a opened
+INFO:     127.0.0.1:33362 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:02,848 INFO echorelay.transport: session 211aa37f9562 opened
+2026-10-16 05:16:03,742 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:16:03,776 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:16:03,807 INFO faster_whisper: Processing audio with duration 00:01.000
+INFO:     127.0.0.1:33364 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:03,846 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:16:03,882 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:16:03,918 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:16:03,954 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:16:03,984 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:16:04,742 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:16:04,782 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:16:04,820 INFO faster_whisper: Processing audio with duration 00:02.000
+INFO:     127.0.0.1:33366 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:04,874 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:16:04,919 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:16:04,964 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:16:05,003 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:16:05,046 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:16:05,742 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:16:05,781 INFO faster_whisper: Processing audio with duration 00:03.000
+INFO:     127.0.0.1:33380 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:05,842 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:16:05,927 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:16:05,974 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:16:06,022 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:16:06,069 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:16:06,111 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:16:06,742 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:16:06,783 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:16:06,833 INFO faster_whisper: Processing audio with duration 00:04.000
+INFO:     127.0.0.1:33392 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:06,884 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:16:06,955 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:16:07,006 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:16:07,053 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:16:07,104 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:16:07,154 INFO faster_whisper: Processing audio with duration 00:04.225
+2026-10-16 05:16:07,211 INFO echorelay.transport: session e1a82257c3fa completed (4.22s audio)
+2026-10-16 05:16:07,212 INFO echorelay.transport: stream_summary session=e1a82257c3fa outcome=completed audio_s=4.225 partials_scheduled=4 partials_completed=4 partials_sent=4 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.1784 partial_queue_s=0.7287 partial_amplification=2.367 partial_staleness_max_s=0.2 final_wait_partial_s=0.0001 final_queue_s=0.0058 final_decode_s=0.0569 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:33402 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:07,214 INFO echorelay.transport: session 3f57d2b2f238 opened
+2026-10-16 05:16:07,646 INFO faster_whisper: Processing audio with duration 00:04.755
+2026-10-16 05:16:07,714 INFO echorelay.transport: session cc7eab0fa3f3 completed (4.75s audio)
+2026-10-16 05:16:07,715 INFO echorelay.transport: stream_summary session=cc7eab0fa3f3 outcome=completed audio_s=4.755 partials_scheduled=4 partials_completed=4 partials_sent=4 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.1977 partial_queue_s=0.5341 partial_amplification=2.103 partial_staleness_max_s=0.2 final_wait_partial_s=0.0002 final_queue_s=0.0 final_decode_s=0.068 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:33410 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:07,717 INFO echorelay.transport: session d04b23ac1d15 opened
+2026-10-16 05:16:07,741 INFO faster_whisper: Processing audio with duration 00:05.000
+2026-10-16 05:16:07,794 INFO faster_whisper: Processing audio with duration 00:05.000
+INFO:     127.0.0.1:33426 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:07,857 INFO faster_whisper: Processing audio with duration 00:05.000
+2026-10-16 05:16:07,922 INFO faster_whisper: Processing audio with duration 00:05.000
+2026-10-16 05:16:07,973 INFO faster_whisper: Processing audio with duration 00:05.000
+2026-10-16 05:16:08,030 INFO faster_whisper: Processing audio with duration 00:05.000
+2026-10-16 05:16:08,117 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:16:08,620 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:16:08,742 INFO faster_whisper: Processing audio with duration 00:06.000
+2026-10-16 05:16:08,803 INFO faster_whisper: Processing audio with duration 00:06.000
+INFO:     127.0.0.1:33436 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:08,877 INFO faster_whisper: Processing audio with duration 00:06.000
+2026-10-16 05:16:08,939 INFO faster_whisper: Processing audio with duration 00:06.000
+2026-10-16 05:16:08,997 INFO faster_whisper: Processing audio with duration 00:06.000
+2026-10-16 05:16:09,070 INFO faster_whisper: Processing audio with duration 00:06.000
+2026-10-16 05:16:09,119 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:16:09,620 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:16:09,742 INFO faster_whisper: Processing audio with duration 00:07.000
+2026-10-16 05:16:09,807 INFO faster_whisper: Processing audio with duration 00:07.000
+INFO:     127.0.0.1:33442 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:09,886 INFO faster_whisper: Processing audio with duration 00:07.000
+2026-10-16 05:16:09,955 INFO faster_whisper: Processing audio with duration 00:07.000
+2026-10-16 05:16:10,018 INFO faster_whisper: Processing audio with duration 00:07.000
+2026-10-16 05:16:10,090 INFO faster_whisper: Processing audio with duration 00:07.000
+2026-10-16 05:16:10,155 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:16:10,619 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:16:10,741 INFO faster_whisper: Processing audio with duration 00:08.000
+2026-10-16 05:16:10,812 INFO faster_whisper: Processing audio with duration 00:08.000
+INFO:     127.0.0.1:58832 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:10,895 INFO faster_whisper: Processing audio with duration 00:08.000
+2026-10-16 05:16:10,970 INFO faster_whisper: Processing audio with duration 00:08.000
+2026-10-16 05:16:11,040 INFO faster_whisper: Processing audio with duration 00:08.000
+2026-10-16 05:16:11,113 INFO faster_whisper: Processing audio with duration 00:08.000
+2026-10-16 05:16:11,183 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:16:11,620 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:16:11,742 INFO faster_whisper: Processing audio with duration 00:09.000
+2026-10-16 05:16:11,826 INFO faster_whisper: Processing audio with duration 00:09.000
+INFO:     127.0.0.1:58836 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:11,909 INFO faster_whisper: Processing audio with duration 00:09.000
+2026-10-16 05:16:11,989 INFO faster_whisper: Processing audio with duration 00:09.000
+2026-10-16 05:16:12,076 INFO faster_whisper: Processing audio with duration 00:09.000
+2026-10-16 05:16:12,158 INFO faster_whisper: Processing audio with duration 00:09.000
+2026-10-16 05:16:12,233 INFO faster_whisper: Processing audio with duration 00:04.755
+2026-10-16 05:16:12,304 INFO echorelay.transport: session 3f57d2b2f238 completed (4.75s audio)
+2026-10-16 05:16:12,304 INFO faster_whisper: Processing audio with duration 00:04.225
+2026-10-16 05:16:12,304 INFO echorelay.transport: stream_summary session=3f57d2b2f238 outcome=completed audio_s=4.755 partials_scheduled=4 partials_completed=4 partials_sent=4 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.1774 partial_queue_s=0.1068 partial_amplification=2.103 partial_staleness_max_s=0.1 final_wait_partial_s=0.0002 final_queue_s=0.2163 final_decode_s=0.0699 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:58844 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:12,309 INFO echorelay.transport: session 3506f7f5f683 opened
+2026-10-16 05:16:12,369 INFO echorelay.transport: session d04b23ac1d15 completed (4.22s audio)
+2026-10-16 05:16:12,369 INFO echorelay.transport: stream_summary session=d04b23ac1d15 outcome=completed audio_s=4.225 partials_scheduled=4 partials_completed=4 partials_sent=4 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.1668 partial_queue_s=0.0001 partial_amplification=2.367 partial_staleness_max_s=0.0 final_wait_partial_s=0.0001 final_queue_s=0.2839 final_decode_s=0.065 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:58860 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:12,372 INFO echorelay.transport: session 47ca18d412ef opened
+2026-10-16 05:16:12,741 INFO faster_whisper: Processing audio with duration 00:10.000
+2026-10-16 05:16:12,827 INFO faster_whisper: Processing audio with duration 00:10.000
+INFO:     127.0.0.1:58866 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:12,935 INFO faster_whisper: Processing audio with duration 00:10.000
+2026-10-16 05:16:13,023 INFO faster_whisper: Processing audio with duration 00:10.000
+2026-10-16 05:16:13,119 INFO faster_whisper: Processing audio with duration 00:10.000
+2026-10-16 05:16:13,205 INFO faster_whisper: Processing audio with duration 00:10.000
+2026-10-16 05:16:13,291 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:16:13,324 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:16:13,741 INFO faster_whisper: Processing audio with duration 00:10.885
+INFO:     127.0.0.1:58880 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:13,860 INFO echorelay.transport: session 4d9c53efabdd completed (10.88s audio)
+2026-10-16 05:16:13,860 INFO echorelay.transport: stream_summary session=4d9c53efabdd outcome=completed audio_s=10.885 partials_scheduled=10 partials_completed=10 partials_sent=10 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.5698 partial_queue_s=0.0002 partial_amplification=5.053 partial_staleness_max_s=0.0 final_wait_partial_s=0.0003 final_queue_s=0.0 final_decode_s=0.1167 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+2026-10-16 05:16:13,860 INFO faster_whisper: Processing audio with duration 00:11.000
+INFO:     127.0.0.1:58894 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:13,867 INFO echorelay.transport: session 741818b5be43 opened
+2026-10-16 05:16:13,965 INFO faster_whisper: Processing audio with duration 00:11.000
+2026-10-16 05:16:14,064 INFO faster_whisper: Processing audio with duration 00:10.885
+2026-10-16 05:16:14,179 INFO echorelay.transport: session b57977b37f98 completed (10.88s audio)
+2026-10-16 05:16:14,180 INFO echorelay.transport: stream_summary session=b57977b37f98 outcome=completed audio_s=10.885 partials_scheduled=10 partials_completed=10 partials_sent=10 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.5898 partial_queue_s=2.1739 partial_amplification=5.053 partial_staleness_max_s=0.3 final_wait_partial_s=0.0002 final_queue_s=0.3106 final_decode_s=0.1148 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+2026-10-16 05:16:14,180 INFO faster_whisper: Processing audio with duration 00:11.000
+INFO:     127.0.0.1:58896 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:14,185 INFO echorelay.transport: session 6ff4c17efaa1 opened
+2026-10-16 05:16:14,275 INFO faster_whisper: Processing audio with duration 00:11.130
+2026-10-16 05:16:14,392 INFO echorelay.transport: session 18fd4a461b00 completed (11.13s audio)
+2026-10-16 05:16:14,393 INFO echorelay.transport: stream_summary session=18fd4a461b00 outcome=completed audio_s=11.13 partials_scheduled=11 partials_completed=11 partials_sent=11 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.7654 partial_queue_s=0.6234 partial_amplification=5.93 partial_staleness_max_s=0.13 final_wait_partial_s=0.0004 final_queue_s=0.2295 final_decode_s=0.117 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+2026-10-16 05:16:14,393 INFO faster_whisper: Processing audio with duration 00:11.130
+INFO:     127.0.0.1:58898 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:14,397 INFO echorelay.transport: session 89bf2459ed25 opened
+2026-10-16 05:16:14,525 INFO echorelay.transport: session 0bd9e4f6455a completed (11.13s audio)
+2026-10-16 05:16:14,526 INFO echorelay.transport: stream_summary session=0bd9e4f6455a outcome=completed audio_s=11.13 partials_scheduled=11 partials_completed=10 partials_sent=10 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.6006 partial_queue_s=2.7666 partial_amplification=4.942 partial_staleness_max_s=0.4 final_wait_partial_s=0.0004 final_queue_s=0.3404 final_decode_s=0.1314 partial_state_at_end=queued partial_promoted_at_end=False partial_cancelled_at_end=True
+2026-10-16 05:16:14,526 INFO faster_whisper: Processing audio with duration 00:02.000
+INFO:     127.0.0.1:58912 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:14,531 INFO echorelay.transport: session d4b4cdbddbf8 opened
+2026-10-16 05:16:14,568 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:16:14,608 INFO faster_whisper: Processing audio with duration 00:11.475
+2026-10-16 05:16:14,723 INFO echorelay.transport: session e8b5c9dd73f1 completed (11.47s audio)
+2026-10-16 05:16:14,723 INFO echorelay.transport: stream_summary session=e8b5c9dd73f1 outcome=completed audio_s=11.475 partials_scheduled=11 partials_completed=11 partials_sent=11 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.7587 partial_queue_s=1.3937 partial_amplification=5.752 partial_staleness_max_s=0.3 final_wait_partial_s=0.0004 final_queue_s=0.2611 final_decode_s=0.1143 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+2026-10-16 05:16:14,724 INFO faster_whisper: Processing audio with duration 00:11.475
+INFO:     127.0.0.1:58926 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:14,728 INFO echorelay.transport: session 6b83c65db024 opened
+INFO:     127.0.0.1:58936 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:14,856 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:16:14,859 INFO echorelay.transport: session 211aa37f9562 completed (11.47s audio)
+2026-10-16 05:16:14,859 INFO echorelay.transport: stream_summary session=211aa37f9562 outcome=completed audio_s=11.475 partials_scheduled=11 partials_completed=11 partials_sent=11 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.6564 partial_queue_s=3.7928 partial_amplification=5.752 partial_staleness_max_s=0.5 final_wait_partial_s=0.0003 final_queue_s=0.3708 final_decode_s=0.1265 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:58938 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:14,867 INFO echorelay.transport: session 91f946903107 opened
+2026-10-16 05:16:15,089 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:16:15,213 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:16:15,274 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:16:15,314 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:16:15,436 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:16:15,630 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:16:15,769 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:16:15,805 INFO faster_whisper: Processing audio with duration 00:02.000
+INFO:     127.0.0.1:58950 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:16,089 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:16:16,213 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:16:16,274 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:16:16,324 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:16:16,436 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:16:16,630 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:16:16,769 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:16:16,805 INFO faster_whisper: Processing audio with duration 00:03.000
+INFO:     127.0.0.1:58956 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:17,089 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:16:17,213 INFO faster_whisper: Processing audio with duration 00:05.000
+2026-10-16 05:16:17,273 INFO faster_whisper: Processing audio with duration 00:05.000
+2026-10-16 05:16:17,328 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:16:17,436 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:16:17,630 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:16:17,769 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:16:17,809 INFO faster_whisper: Processing audio with duration 00:04.000
+INFO:     127.0.0.1:58960 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:18,089 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:16:18,213 INFO faster_whisper: Processing audio with duration 00:06.000
+2026-10-16 05:16:18,274 INFO faster_whisper: Processing audio with duration 00:06.000
+2026-10-16 05:16:18,341 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:16:18,436 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:16:18,631 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:16:18,701 INFO faster_whisper: Processing audio with duration 00:04.225
+2026-10-16 05:16:18,763 INFO echorelay.transport: session 89bf2459ed25 completed (4.22s audio)
+2026-10-16 05:16:18,763 INFO echorelay.transport: stream_summary session=89bf2459ed25 outcome=completed audio_s=4.225 partials_scheduled=4 partials_completed=4 partials_sent=4 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.167 partial_queue_s=0.0989 partial_amplification=2.367 partial_staleness_max_s=0.0 final_wait_partial_s=0.0001 final_queue_s=0.0 final_decode_s=0.0614 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:58976 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:18,766 INFO echorelay.transport: session 7bff6c4e72ea opened
+2026-10-16 05:16:18,769 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:16:18,816 INFO faster_whisper: Processing audio with duration 00:05.000
+INFO:     127.0.0.1:58986 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:18,989 INFO faster_whisper: Processing audio with duration 00:04.755
+2026-10-16 05:16:19,059 INFO echorelay.transport: session 6ff4c17efaa1 completed (4.75s audio)
+2026-10-16 05:16:19,059 INFO echorelay.transport: stream_summary session=6ff4c17efaa1 outcome=completed audio_s=4.755 partials_scheduled=4 partials_completed=4 partials_sent=4 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.1712 partial_queue_s=0.0001 partial_amplification=2.103 partial_staleness_max_s=0.0 final_wait_partial_s=0.0002 final_queue_s=0.0 final_decode_s=0.0695 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:59002 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:19,062 INFO echorelay.transport: session b76568660d2f opened
+2026-10-16 05:16:19,213 INFO faster_whisper: Processing audio with duration 00:07.000
+2026-10-16 05:16:19,278 INFO faster_whisper: Processing audio with duration 00:07.000
+2026-10-16 05:16:19,436 INFO faster_whisper: Processing audio with duration 00:05.000
+2026-10-16 05:16:19,630 INFO faster_whisper: Processing audio with duration 00:05.000
+2026-10-16 05:16:19,703 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:16:19,769 INFO faster_whisper: Processing audio with duration 00:05.000
+2026-10-16 05:16:19,820 INFO faster_whisper: Processing audio with duration 00:06.000
+INFO:     127.0.0.1:59008 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:19,964 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:16:20,213 INFO faster_whisper: Processing audio with duration 00:08.000
+2026-10-16 05:16:20,286 INFO faster_whisper: Processing audio with duration 00:08.000
+2026-10-16 05:16:20,436 INFO faster_whisper: Processing audio with duration 00:06.000
+2026-10-16 05:16:20,631 INFO faster_whisper: Processing audio with duration 00:06.000
+2026-10-16 05:16:20,697 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:16:20,770 INFO faster_whisper: Processing audio with duration 00:06.000
+2026-10-16 05:16:20,820 INFO faster_whisper: Processing audio with duration 00:07.000
+INFO:     127.0.0.1:35274 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:20,964 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:16:21,213 INFO faster_whisper: Processing audio with duration 00:09.000
+2026-10-16 05:16:21,292 INFO faster_whisper: Processing audio with duration 00:09.000
+2026-10-16 05:16:21,436 INFO faster_whisper: Processing audio with duration 00:07.000
+2026-10-16 05:16:21,631 INFO faster_whisper: Processing audio with duration 00:07.000
+2026-10-16 05:16:21,701 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:16:21,771 INFO faster_whisper: Processing audio with duration 00:07.000
+2026-10-16 05:16:21,843 INFO faster_whisper: Processing audio with duration 00:08.000
+INFO:     127.0.0.1:35286 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:21,965 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:16:22,213 INFO faster_whisper: Processing audio with duration 00:10.000
+2026-10-16 05:16:22,300 INFO faster_whisper: Processing audio with duration 00:10.000
+2026-10-16 05:16:22,436 INFO faster_whisper: Processing audio with duration 00:08.000
+2026-10-16 05:16:22,631 INFO faster_whisper: Processing audio with duration 00:08.000
+2026-10-16 05:16:22,702 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:16:22,769 INFO faster_whisper: Processing audio with duration 00:08.000
+2026-10-16 05:16:22,847 INFO faster_whisper: Processing audio with duration 00:09.000
+INFO:     127.0.0.1:35290 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:22,965 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:16:23,212 INFO faster_whisper: Processing audio with duration 00:10.885
+2026-10-16 05:16:23,320 INFO faster_whisper: Processing audio with duration 00:11.000
+2026-10-16 05:16:23,320 INFO echorelay.transport: session 3506f7f5f683 completed (10.88s audio)
+2026-10-16 05:16:23,321 INFO echorelay.transport: stream_summary session=3506f7f5f683 outcome=completed audio_s=10.885 partials_scheduled=10 partials_completed=10 partials_sent=10 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.5603 partial_queue_s=0.3906 partial_amplification=5.053 partial_staleness_max_s=0.3 final_wait_partial_s=0.0003 final_queue_s=0.0 final_decode_s=0.1072 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+2026-10-16 05:16:23,408 INFO faster_whisper: Processing audio with duration 00:04.225
+2026-10-16 05:16:23,466 INFO faster_whisper: Processing audio with duration 00:09.000
+2026-10-16 05:16:23,466 INFO echorelay.transport: session b76568660d2f completed (4.22s audio)
+2026-10-16 05:16:23,467 INFO echorelay.transport: stream_summary session=b76568660d2f outcome=completed audio_s=4.225 partials_scheduled=4 partials_completed=4 partials_sent=4 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.1682 partial_queue_s=0.0001 partial_amplification=2.367 partial_staleness_max_s=0.0 final_wait_partial_s=0.0002 final_queue_s=0.0438 final_decode_s=0.0578 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+2026-10-16 05:16:23,568 INFO faster_whisper: Processing audio with duration 00:04.755
+2026-10-16 05:16:23,640 INFO echorelay.transport: session 7bff6c4e72ea completed (4.75s audio)
+2026-10-16 05:16:23,640 INFO echorelay.transport: stream_summary session=7bff6c4e72ea outcome=completed audio_s=4.755 partials_scheduled=4 partials_completed=4 partials_sent=4 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.1803 partial_queue_s=0.1296 partial_amplification=2.103 partial_staleness_max_s=0.0 final_wait_partial_s=0.0002 final_queue_s=0.0 final_decode_s=0.0717 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+2026-10-16 05:16:23,640 INFO faster_whisper: Processing audio with duration 00:11.130
+2026-10-16 05:16:23,756 INFO echorelay.transport: session 47ca18d412ef completed (11.13s audio)
+2026-10-16 05:16:23,757 INFO echorelay.transport: stream_summary session=47ca18d412ef outcome=completed audio_s=11.13 partials_scheduled=11 partials_completed=11 partials_sent=11 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.6757 partial_queue_s=0.4437 partial_amplification=5.93 partial_staleness_max_s=0.3 final_wait_partial_s=0.0003 final_queue_s=0.0648 final_decode_s=0.1153 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+2026-10-16 05:16:23,757 INFO faster_whisper: Processing audio with duration 00:09.000
+2026-10-16 05:16:23,836 INFO faster_whisper: Processing audio with duration 00:09.000
+INFO:     127.0.0.1:35304 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:23,947 INFO faster_whisper: Processing audio with duration 00:10.000
+2026-10-16 05:16:24,436 INFO faster_whisper: Processing audio with duration 00:10.000
+2026-10-16 05:16:24,631 INFO faster_whisper: Processing audio with duration 00:10.000
+2026-10-16 05:16:24,769 INFO faster_whisper: Processing audio with duration 00:10.000
+2026-10-16 05:16:24,852 INFO faster_whisper: Processing audio with duration 00:11.000
+INFO:     127.0.0.1:35314 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:25,372 INFO faster_whisper: Processing audio with duration 00:11.475
+2026-10-16 05:16:25,480 INFO faster_whisper: Processing audio with duration 00:10.885
+2026-10-16 05:16:25,480 INFO echorelay.transport: session 741818b5be43 completed (11.47s audio)
+2026-10-16 05:16:25,480 INFO echorelay.transport: stream_summary session=741818b5be43 outcome=completed audio_s=11.475 partials_scheduled=11 partials_completed=11 partials_sent=11 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.7785 partial_queue_s=0.7112 partial_amplification=5.752 partial_staleness_max_s=0.2 final_wait_partial_s=0.0003 final_queue_s=0.0 final_decode_s=0.1075 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+2026-10-16 05:16:25,590 INFO echorelay.transport: session d4b4cdbddbf8 completed (10.88s audio)
+2026-10-16 05:16:25,590 INFO echorelay.transport: stream_summary session=d4b4cdbddbf8 outcome=completed audio_s=10.885 partials_scheduled=10 partials_completed=10 partials_sent=10 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.5635 partial_queue_s=0.0288 partial_amplification=5.053 partial_staleness_max_s=0.1 final_wait_partial_s=0.0003 final_queue_s=0.0441 final_decode_s=0.1099 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+2026-10-16 05:16:25,630 INFO faster_whisper: Processing audio with duration 00:11.000
+2026-10-16 05:16:25,769 INFO faster_whisper: Processing audio with duration 00:11.000
+INFO:     127.0.0.1:35326 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:25,931 INFO faster_whisper: Processing audio with duration 00:11.130
+2026-10-16 05:16:26,107 INFO echorelay.transport: session 6b83c65db024 completed (11.13s audio)
+2026-10-16 05:16:26,107 INFO echorelay.transport: stream_summary session=6b83c65db024 outcome=completed audio_s=11.13 partials_scheduled=11 partials_completed=11 partials_sent=11 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.6717 partial_queue_s=0.1252 partial_amplification=5.93 partial_staleness_max_s=0.2 final_wait_partial_s=0.0004 final_queue_s=0.0 final_decode_s=0.175 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+2026-10-16 05:16:26,369 INFO faster_whisper: Processing audio with duration 00:11.475
+2026-10-16 05:16:26,477 INFO echorelay.transport: session 91f946903107 completed (11.47s audio)
+2026-10-16 05:16:26,478 INFO echorelay.transport: stream_summary session=91f946903107 outcome=completed audio_s=11.475 partials_scheduled=11 partials_completed=11 partials_sent=11 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.6902 partial_queue_s=0.0641 partial_amplification=5.752 partial_staleness_max_s=0.1 final_wait_partial_s=0.0003 final_queue_s=0.0 final_decode_s=0.1076 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:35336 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35376 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35346 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:26,501 INFO echorelay.transport: session 7159ab6719bb opened
+INFO:     127.0.0.1:35354 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:26,502 INFO echorelay.transport: session fed76ab15a92 opened
+INFO:     127.0.0.1:35362 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:26,503 INFO echorelay.transport: session 8cd4ba7c12c5 opened
+INFO:     127.0.0.1:35366 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:26,503 INFO echorelay.transport: session 47f01d1cd390 opened
+2026-10-16 05:16:27,406 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:16:27,438 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:16:27,467 INFO faster_whisper: Processing audio with duration 00:01.000
+INFO:     127.0.0.1:35392 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:27,506 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:16:28,406 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:16:28,443 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:16:28,479 INFO faster_whisper: Processing audio with duration 00:02.000
+INFO:     127.0.0.1:35408 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:28,532 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:16:29,405 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:16:29,444 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:16:29,483 INFO faster_whisper: Processing audio with duration 00:03.000
+INFO:     127.0.0.1:35420 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:29,539 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:16:30,406 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:16:30,450 INFO faster_whisper: Processing audio with duration 00:04.000
+INFO:     127.0.0.1:33344 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:30,506 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:16:30,573 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:16:31,309 INFO faster_whisper: Processing audio with duration 00:04.755
+2026-10-16 05:16:31,380 INFO echorelay.transport: session 47f01d1cd390 completed (4.75s audio)
+2026-10-16 05:16:31,381 INFO echorelay.transport: stream_summary session=47f01d1cd390 outcome=completed audio_s=4.755 partials_scheduled=4 partials_completed=4 partials_sent=4 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.1901 partial_queue_s=0.5089 partial_amplification=2.103 partial_staleness_max_s=0.2 final_wait_partial_s=0.0003 final_queue_s=0.0 final_decode_s=0.0715 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:33358 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:31,384 INFO echorelay.transport: session 4aa8e8f98cbc opened
+2026-10-16 05:16:31,407 INFO faster_whisper: Processing audio with duration 00:05.000
+2026-10-16 05:16:31,458 INFO faster_whisper: Processing audio with duration 00:05.000
+INFO:     127.0.0.1:33372 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:31,534 INFO faster_whisper: Processing audio with duration 00:05.000
+2026-10-16 05:16:32,286 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:16:32,407 INFO faster_whisper: Processing audio with duration 00:06.000
+2026-10-16 05:16:32,465 INFO faster_whisper: Processing audio with duration 00:06.000
+INFO:     127.0.0.1:33376 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:32,537 INFO faster_whisper: Processing audio with duration 00:06.000
+2026-10-16 05:16:33,286 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:16:33,407 INFO faster_whisper: Processing audio with duration 00:07.000
+2026-10-16 05:16:33,471 INFO faster_whisper: Processing audio with duration 00:07.000
+INFO:     127.0.0.1:33388 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:33,548 INFO faster_whisper: Processing audio with duration 00:07.000
+2026-10-16 05:16:34,287 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:16:34,407 INFO faster_whisper: Processing audio with duration 00:08.000
+2026-10-16 05:16:34,475 INFO faster_whisper: Processing audio with duration 00:08.000
+INFO:     127.0.0.1:33392 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:34,554 INFO faster_whisper: Processing audio with duration 00:08.000
+2026-10-16 05:16:35,286 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:16:35,407 INFO faster_whisper: Processing audio with duration 00:09.000
+2026-10-16 05:16:35,483 INFO faster_whisper: Processing audio with duration 00:09.000
+INFO:     127.0.0.1:33396 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:35,564 INFO faster_whisper: Processing audio with duration 00:09.000
+2026-10-16 05:16:35,686 INFO faster_whisper: Processing audio with duration 00:04.225
+2026-10-16 05:16:35,744 INFO echorelay.transport: session 4aa8e8f98cbc completed (4.22s audio)
+2026-10-16 05:16:35,744 INFO echorelay.transport: stream_summary session=4aa8e8f98cbc outcome=completed audio_s=4.225 partials_scheduled=4 partials_completed=4 partials_sent=4 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.1599 partial_queue_s=0.0001 partial_amplification=2.367 partial_staleness_max_s=0.0 final_wait_partial_s=0.0002 final_queue_s=0.0 final_decode_s=0.0575 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:33410 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:35,747 INFO echorelay.transport: session 57d109d4aae7 opened
+2026-10-16 05:16:36,406 INFO faster_whisper: Processing audio with duration 00:10.000
+2026-10-16 05:16:36,503 INFO faster_whisper: Processing audio with duration 00:10.000
+INFO:     127.0.0.1:33424 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:36,641 INFO faster_whisper: Processing audio with duration 00:10.000
+2026-10-16 05:16:36,725 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:16:37,406 INFO faster_whisper: Processing audio with duration 00:10.885
+INFO:     127.0.0.1:33434 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:37,514 INFO faster_whisper: Processing audio with duration 00:11.000
+2026-10-16 05:16:37,515 INFO echorelay.transport: session 7159ab6719bb completed (10.88s audio)
+2026-10-16 05:16:37,516 INFO echorelay.transport: stream_summary session=7159ab6719bb outcome=completed audio_s=10.885 partials_scheduled=10 partials_completed=10 partials_sent=10 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.5563 partial_queue_s=0.0002 partial_amplification=5.053 partial_staleness_max_s=0.0 final_wait_partial_s=0.0004 final_queue_s=0.0 final_decode_s=0.1078 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:33446 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:37,523 INFO echorelay.transport: session 975dc2151763 opened
+2026-10-16 05:16:37,622 INFO faster_whisper: Processing audio with duration 00:11.000
+2026-10-16 05:16:37,711 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:16:37,748 INFO faster_whisper: Processing audio with duration 00:11.130
+2026-10-16 05:16:37,861 INFO echorelay.transport: session fed76ab15a92 completed (11.13s audio)
+2026-10-16 05:16:37,861 INFO echorelay.transport: stream_summary session=fed76ab15a92 outcome=completed audio_s=11.13 partials_scheduled=11 partials_completed=11 partials_sent=11 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.786 partial_queue_s=0.6493 partial_amplification=5.93 partial_staleness_max_s=0.2 final_wait_partial_s=0.0003 final_queue_s=0.041 final_decode_s=0.1131 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:33450 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:37,864 INFO echorelay.transport: session 3eb2936bb03f opened
+2026-10-16 05:16:38,007 INFO faster_whisper: Processing audio with duration 00:11.475
+2026-10-16 05:16:38,117 INFO echorelay.transport: session 8cd4ba7c12c5 completed (11.47s audio)
+2026-10-16 05:16:38,117 INFO echorelay.transport: stream_summary session=8cd4ba7c12c5 outcome=completed audio_s=11.475 partials_scheduled=11 partials_completed=11 partials_sent=11 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.7207 partial_queue_s=1.4404 partial_amplification=5.752 partial_staleness_max_s=0.3 final_wait_partial_s=0.0003 final_queue_s=0.0 final_decode_s=0.1099 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:33454 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:38,120 INFO echorelay.transport: session 8560d645045d opened
+2026-10-16 05:16:38,429 INFO faster_whisper: Processing audio with duration 00:01.000
+INFO:     127.0.0.1:33468 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:38,649 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:16:38,765 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:16:39,022 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:16:39,429 INFO faster_whisper: Processing audio with duration 00:02.000
+INFO:     127.0.0.1:33478 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:39,649 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:16:39,766 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:16:40,022 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:16:40,429 INFO faster_whisper: Processing audio with duration 00:03.000
+INFO:     127.0.0.1:43376 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:40,650 INFO faster_whisper: Processing audio with duration 00:05.000
+2026-10-16 05:16:40,766 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:16:41,022 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:16:41,429 INFO faster_whisper: Processing audio with duration 00:04.000
+INFO:     127.0.0.1:43386 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:41,649 INFO faster_whisper: Processing audio with duration 00:06.000
+2026-10-16 05:16:41,766 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:16:42,022 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:16:42,429 INFO faster_whisper: Processing audio with duration 00:05.000
+INFO:     127.0.0.1:43394 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:42,649 INFO faster_whisper: Processing audio with duration 00:07.000
+2026-10-16 05:16:42,765 INFO faster_whisper: Processing audio with duration 00:05.000
+2026-10-16 05:16:42,922 INFO faster_whisper: Processing audio with duration 00:04.755
+2026-10-16 05:16:42,991 INFO echorelay.transport: session 8560d645045d completed (4.75s audio)
+2026-10-16 05:16:42,991 INFO echorelay.transport: stream_summary session=8560d645045d outcome=completed audio_s=4.755 partials_scheduled=4 partials_completed=4 partials_sent=4 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.1974 partial_queue_s=0.0001 partial_amplification=2.103 partial_staleness_max_s=0.0 final_wait_partial_s=0.0002 final_queue_s=0.0 final_decode_s=0.0692 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:43400 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:42,994 INFO echorelay.transport: session c4c24d4fc872 opened
+2026-10-16 05:16:43,429 INFO faster_whisper: Processing audio with duration 00:06.000
+INFO:     127.0.0.1:43414 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:43,650 INFO faster_whisper: Processing audio with duration 00:08.000
+2026-10-16 05:16:43,766 INFO faster_whisper: Processing audio with duration 00:06.000
+2026-10-16 05:16:43,896 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:16:44,429 INFO faster_whisper: Processing audio with duration 00:07.000
+INFO:     127.0.0.1:43422 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:44,649 INFO faster_whisper: Processing audio with duration 00:09.000
+2026-10-16 05:16:44,766 INFO faster_whisper: Processing audio with duration 00:07.000
+2026-10-16 05:16:44,896 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:16:45,429 INFO faster_whisper: Processing audio with duration 00:08.000
+INFO:     127.0.0.1:43428 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:45,649 INFO faster_whisper: Processing audio with duration 00:10.000
+2026-10-16 05:16:45,766 INFO faster_whisper: Processing audio with duration 00:08.000
+2026-10-16 05:16:45,897 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:16:46,429 INFO faster_whisper: Processing audio with duration 00:09.000
+INFO:     127.0.0.1:43442 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:46,650 INFO faster_whisper: Processing audio with duration 00:10.885
+2026-10-16 05:16:46,759 INFO echorelay.transport: session 57d109d4aae7 completed (10.88s audio)
+2026-10-16 05:16:46,760 INFO echorelay.transport: stream_summary session=57d109d4aae7 outcome=completed audio_s=10.885 partials_scheduled=10 partials_completed=10 partials_sent=10 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.5789 partial_queue_s=0.1359 partial_amplification=5.053 partial_staleness_max_s=0.1 final_wait_partial_s=0.0004 final_queue_s=0.0 final_decode_s=0.1094 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:43448 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:46,762 INFO echorelay.transport: session a6d020c8b7fa opened
+2026-10-16 05:16:46,766 INFO faster_whisper: Processing audio with duration 00:09.000
+2026-10-16 05:16:46,896 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:16:47,296 INFO faster_whisper: Processing audio with duration 00:04.225
+2026-10-16 05:16:47,354 INFO echorelay.transport: session c4c24d4fc872 completed (4.22s audio)
+2026-10-16 05:16:47,354 INFO echorelay.transport: stream_summary session=c4c24d4fc872 outcome=completed audio_s=4.225 partials_scheduled=4 partials_completed=4 partials_sent=4 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.1654 partial_queue_s=0.0001 partial_amplification=2.367 partial_staleness_max_s=0.0 final_wait_partial_s=0.0001 final_queue_s=0.0 final_decode_s=0.0578 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:43456 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:47,356 INFO echorelay.transport: session 1c315fa28227 opened
+2026-10-16 05:16:47,429 INFO faster_whisper: Processing audio with duration 00:10.000
+INFO:     127.0.0.1:43470 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:47,665 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:16:47,766 INFO faster_whisper: Processing audio with duration 00:10.000
+2026-10-16 05:16:48,259 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:16:48,429 INFO faster_whisper: Processing audio with duration 00:11.000
+INFO:     127.0.0.1:43474 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:48,664 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:16:48,730 INFO faster_whisper: Processing audio with duration 00:11.130
+2026-10-16 05:16:48,856 INFO echorelay.transport: session 975dc2151763 completed (11.13s audio)
+2026-10-16 05:16:48,856 INFO echorelay.transport: stream_summary session=975dc2151763 outcome=completed audio_s=11.13 partials_scheduled=11 partials_completed=11 partials_sent=11 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.7341 partial_queue_s=0.0002 partial_amplification=5.93 partial_staleness_max_s=0.1 final_wait_partial_s=0.0003 final_queue_s=0.0 final_decode_s=0.1257 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+2026-10-16 05:16:48,856 INFO faster_whisper: Processing audio with duration 00:11.000
+INFO:     127.0.0.1:43478 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:48,863 INFO echorelay.transport: session 29a6935a2310 opened
+2026-10-16 05:16:49,259 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:16:49,366 INFO faster_whisper: Processing audio with duration 00:11.475
+2026-10-16 05:16:49,475 INFO echorelay.transport: session 3eb2936bb03f completed (11.47s audio)
+2026-10-16 05:16:49,475 INFO echorelay.transport: stream_summary session=3eb2936bb03f outcome=completed audio_s=11.475 partials_scheduled=11 partials_completed=11 partials_sent=11 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.6923 partial_queue_s=0.09 partial_amplification=5.752 partial_staleness_max_s=0.1 final_wait_partial_s=0.0003 final_queue_s=0.0 final_decode_s=0.1089 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:43484 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:49,478 INFO echorelay.transport: session 5dcf8a297549 opened
+INFO:     127.0.0.1:43494 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:49,664 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:16:49,765 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:16:50,258 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:16:50,380 INFO faster_whisper: Processing audio with duration 00:01.000
+INFO:     127.0.0.1:45040 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:50,665 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:16:50,766 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:16:51,259 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:16:51,380 INFO faster_whisper: Processing audio with duration 00:02.000
+INFO:     127.0.0.1:45046 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:51,665 INFO faster_whisper: Processing audio with duration 00:05.000
+2026-10-16 05:16:51,766 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:16:52,259 INFO faster_whisper: Processing audio with duration 00:05.000
+2026-10-16 05:16:52,380 INFO faster_whisper: Processing audio with duration 00:03.000
+INFO:     127.0.0.1:45054 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:52,665 INFO faster_whisper: Processing audio with duration 00:06.000
+2026-10-16 05:16:52,766 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:16:53,259 INFO faster_whisper: Processing audio with duration 00:06.000
+2026-10-16 05:16:53,381 INFO faster_whisper: Processing audio with duration 00:04.000
+INFO:     127.0.0.1:45064 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:53,665 INFO faster_whisper: Processing audio with duration 00:07.000
+2026-10-16 05:16:53,765 INFO faster_whisper: Processing audio with duration 00:05.000
+2026-10-16 05:16:54,259 INFO faster_whisper: Processing audio with duration 00:07.000
+2026-10-16 05:16:54,341 INFO faster_whisper: Processing audio with duration 00:04.755
+2026-10-16 05:16:54,431 INFO echorelay.transport: session 5dcf8a297549 completed (4.75s audio)
+2026-10-16 05:16:54,431 INFO echorelay.transport: stream_summary session=5dcf8a297549 outcome=completed audio_s=4.755 partials_scheduled=4 partials_completed=4 partials_sent=4 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.2183 partial_queue_s=0.0001 partial_amplification=2.103 partial_staleness_max_s=0.0 final_wait_partial_s=0.0002 final_queue_s=0.06 final_decode_s=0.0892 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:45072 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:54,434 INFO echorelay.transport: session 33bd0f31aa13 opened
+INFO:     127.0.0.1:45088 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:54,664 INFO faster_whisper: Processing audio with duration 00:08.000
+2026-10-16 05:16:54,766 INFO faster_whisper: Processing audio with duration 00:06.000
+2026-10-16 05:16:55,259 INFO faster_whisper: Processing audio with duration 00:08.000
+2026-10-16 05:16:55,339 INFO faster_whisper: Processing audio with duration 00:01.000
+INFO:     127.0.0.1:45102 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:55,666 INFO faster_whisper: Processing audio with duration 00:09.000
+2026-10-16 05:16:55,767 INFO faster_whisper: Processing audio with duration 00:07.000
+2026-10-16 05:16:56,259 INFO faster_whisper: Processing audio with duration 00:09.000
+2026-10-16 05:16:56,386 INFO faster_whisper: Processing audio with duration 00:02.000
+INFO:     127.0.0.1:45112 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:56,665 INFO faster_whisper: Processing audio with duration 00:10.000
+2026-10-16 05:16:56,775 INFO faster_whisper: Processing audio with duration 00:08.000
+2026-10-16 05:16:57,259 INFO faster_whisper: Processing audio with duration 00:10.000
+2026-10-16 05:16:57,345 INFO faster_whisper: Processing audio with duration 00:03.000
+INFO:     127.0.0.1:45126 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:57,665 INFO faster_whisper: Processing audio with duration 00:10.885
+2026-10-16 05:16:57,804 INFO echorelay.transport: session a6d020c8b7fa completed (10.88s audio)
+2026-10-16 05:16:57,805 INFO echorelay.transport: stream_summary session=a6d020c8b7fa outcome=completed audio_s=10.885 partials_scheduled=10 partials_completed=10 partials_sent=10 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.6545 partial_queue_s=0.0002 partial_amplification=5.053 partial_staleness_max_s=0.1 final_wait_partial_s=0.0003 final_queue_s=0.0 final_decode_s=0.1393 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+2026-10-16 05:16:57,805 INFO faster_whisper: Processing audio with duration 00:09.000
+INFO:     127.0.0.1:45128 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:57,808 INFO echorelay.transport: session be55dbbd1d9f opened
+2026-10-16 05:16:58,258 INFO faster_whisper: Processing audio with duration 00:11.000
+2026-10-16 05:16:58,349 INFO faster_whisper: Processing audio with duration 00:04.000
+INFO:     127.0.0.1:45140 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:58,558 INFO faster_whisper: Processing audio with duration 00:11.130
+2026-10-16 05:16:58,671 INFO echorelay.transport: session 1c315fa28227 completed (11.13s audio)
+2026-10-16 05:16:58,671 INFO echorelay.transport: stream_summary session=1c315fa28227 outcome=completed audio_s=11.13 partials_scheduled=11 partials_completed=11 partials_sent=11 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.7833 partial_queue_s=0.0002 partial_amplification=5.93 partial_staleness_max_s=0.1 final_wait_partial_s=0.0003 final_queue_s=0.0 final_decode_s=0.1118 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:45154 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:58,673 INFO echorelay.transport: session 6759826b4452 opened
+2026-10-16 05:16:58,712 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:16:58,747 INFO faster_whisper: Processing audio with duration 00:04.225
+2026-10-16 05:16:58,811 INFO echorelay.transport: session 33bd0f31aa13 completed (4.22s audio)
+2026-10-16 05:16:58,811 INFO echorelay.transport: stream_summary session=33bd0f31aa13 outcome=completed audio_s=4.225 partials_scheduled=4 partials_completed=4 partials_sent=4 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.1902 partial_queue_s=0.0668 partial_amplification=2.367 partial_staleness_max_s=0.0 final_wait_partial_s=0.0001 final_queue_s=0.0098 final_decode_s=0.0637 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+2026-10-16 05:16:58,811 INFO faster_whisper: Processing audio with duration 00:10.000
+INFO:     127.0.0.1:45160 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:16:58,818 INFO echorelay.transport: session 1aec547f631e opened
+INFO:     127.0.0.1:45168 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:16:59,576 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:16:59,711 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:16:59,747 INFO faster_whisper: Processing audio with duration 00:01.000
+2026-10-16 05:16:59,780 INFO faster_whisper: Processing audio with duration 00:11.000
+2026-10-16 05:17:00,366 INFO faster_whisper: Processing audio with duration 00:11.475
+2026-10-16 05:17:00,478 INFO echorelay.transport: session 29a6935a2310 completed (11.47s audio)
+2026-10-16 05:17:00,479 INFO echorelay.transport: stream_summary session=29a6935a2310 outcome=completed audio_s=11.475 partials_scheduled=11 partials_completed=11 partials_sent=11 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.7621 partial_queue_s=0.1024 partial_amplification=5.752 partial_staleness_max_s=0.1 final_wait_partial_s=0.0003 final_queue_s=0.0 final_decode_s=0.1118 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:36492 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:17:00,481 INFO echorelay.transport: session e0d4991b8f48 opened
+INFO:     127.0.0.1:36496 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:17:00,577 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:17:00,710 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:17:00,747 INFO faster_whisper: Processing audio with duration 00:02.000
+2026-10-16 05:17:01,383 INFO faster_whisper: Processing audio with duration 00:01.000
+INFO:     127.0.0.1:36506 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:17:01,576 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:17:01,711 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:17:01,752 INFO faster_whisper: Processing audio with duration 00:03.000
+2026-10-16 05:17:02,384 INFO faster_whisper: Processing audio with duration 00:02.000
+INFO:     127.0.0.1:36514 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:17:02,576 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:17:02,711 INFO faster_whisper: Processing audio with duration 00:05.000
+2026-10-16 05:17:02,775 INFO faster_whisper: Processing audio with duration 00:04.000
+2026-10-16 05:17:03,383 INFO faster_whisper: Processing audio with duration 00:03.000
+INFO:     127.0.0.1:36522 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:17:03,575 INFO faster_whisper: Processing audio with duration 00:05.000
+2026-10-16 05:17:03,711 INFO faster_whisper: Processing audio with duration 00:06.000
+2026-10-16 05:17:03,773 INFO faster_whisper: Processing audio with duration 00:05.000
+2026-10-16 05:17:04,383 INFO faster_whisper: Processing audio with duration 00:04.000
+INFO:     127.0.0.1:36528 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:17:04,576 INFO faster_whisper: Processing audio with duration 00:06.000
+2026-10-16 05:17:04,711 INFO faster_whisper: Processing audio with duration 00:07.000
+2026-10-16 05:17:04,778 INFO faster_whisper: Processing audio with duration 00:06.000
+2026-10-16 05:17:05,283 INFO faster_whisper: Processing audio with duration 00:04.755
+2026-10-16 05:17:05,352 INFO echorelay.transport: session e0d4991b8f48 completed (4.75s audio)
+2026-10-16 05:17:05,353 INFO echorelay.transport: stream_summary session=e0d4991b8f48 outcome=completed audio_s=4.755 partials_scheduled=4 partials_completed=4 partials_sent=4 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.1915 partial_queue_s=0.0001 partial_amplification=2.103 partial_staleness_max_s=0.0 final_wait_partial_s=0.0002 final_queue_s=0.0 final_decode_s=0.0691 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:36538 - "WebSocket /ws/transcribe" [accepted]
+INFO:     connection open
+2026-10-16 05:17:05,355 INFO echorelay.transport: session 2addd4ed4c00 opened
+INFO:     127.0.0.1:36542 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:17:05,576 INFO faster_whisper: Processing audio with duration 00:07.000
+2026-10-16 05:17:05,710 INFO faster_whisper: Processing audio with duration 00:08.000
+2026-10-16 05:17:05,781 INFO faster_whisper: Processing audio with duration 00:07.000
+2026-10-16 05:17:06,258 INFO faster_whisper: Processing audio with duration 00:01.000
+INFO:     127.0.0.1:36546 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:17:06,575 INFO faster_whisper: Processing audio with duration 00:08.000
+2026-10-16 05:17:06,711 INFO faster_whisper: Processing audio with duration 00:09.000
+2026-10-16 05:17:06,798 INFO faster_whisper: Processing audio with duration 00:08.000
+2026-10-16 05:17:07,258 INFO faster_whisper: Processing audio with duration 00:02.000
+INFO:     127.0.0.1:36552 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:17:07,576 INFO faster_whisper: Processing audio with duration 00:09.000
+2026-10-16 05:17:07,711 INFO faster_whisper: Processing audio with duration 00:10.000
+2026-10-16 05:17:07,799 INFO faster_whisper: Processing audio with duration 00:09.000
+2026-10-16 05:17:08,258 INFO faster_whisper: Processing audio with duration 00:03.000
+INFO:     127.0.0.1:36562 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:17:08,576 INFO faster_whisper: Processing audio with duration 00:10.000
+2026-10-16 05:17:08,711 INFO faster_whisper: Processing audio with duration 00:10.885
+2026-10-16 05:17:08,821 INFO echorelay.transport: session be55dbbd1d9f completed (10.88s audio)
+2026-10-16 05:17:08,822 INFO echorelay.transport: stream_summary session=be55dbbd1d9f outcome=completed audio_s=10.885 partials_scheduled=10 partials_completed=10 partials_sent=10 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.5835 partial_queue_s=0.0002 partial_amplification=5.053 partial_staleness_max_s=0.0 final_wait_partial_s=0.0003 final_queue_s=0.0 final_decode_s=0.1101 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+2026-10-16 05:17:08,822 INFO faster_whisper: Processing audio with duration 00:10.000
+2026-10-16 05:17:09,258 INFO faster_whisper: Processing audio with duration 00:04.000
+INFO:     127.0.0.1:36568 - "GET /metrics HTTP/1.1" 200 OK
+2026-10-16 05:17:09,576 INFO faster_whisper: Processing audio with duration 00:11.000
+2026-10-16 05:17:09,659 INFO faster_whisper: Processing audio with duration 00:04.225
+2026-10-16 05:17:09,719 INFO echorelay.transport: session 2addd4ed4c00 completed (4.22s audio)
+2026-10-16 05:17:09,719 INFO echorelay.transport: stream_summary session=2addd4ed4c00 outcome=completed audio_s=4.225 partials_scheduled=4 partials_completed=4 partials_sent=4 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.163 partial_queue_s=0.0001 partial_amplification=2.367 partial_staleness_max_s=0.0 final_wait_partial_s=0.0002 final_queue_s=0.0016 final_decode_s=0.0593 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+2026-10-16 05:17:09,720 INFO faster_whisper: Processing audio with duration 00:11.000
+2026-10-16 05:17:09,876 INFO faster_whisper: Processing audio with duration 00:11.130
+2026-10-16 05:17:09,984 INFO echorelay.transport: session 6759826b4452 completed (11.13s audio)
+2026-10-16 05:17:09,985 INFO echorelay.transport: stream_summary session=6759826b4452 outcome=completed audio_s=11.13 partials_scheduled=11 partials_completed=11 partials_sent=11 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.6897 partial_queue_s=0.0002 partial_amplification=5.93 partial_staleness_max_s=0.0 final_wait_partial_s=0.0003 final_queue_s=0.0 final_decode_s=0.1084 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+2026-10-16 05:17:10,321 INFO faster_whisper: Processing audio with duration 00:11.475
+2026-10-16 05:17:10,430 INFO echorelay.transport: session 1aec547f631e completed (11.47s audio)
+2026-10-16 05:17:10,430 INFO echorelay.transport: stream_summary session=1aec547f631e outcome=completed audio_s=11.475 partials_scheduled=11 partials_completed=11 partials_sent=11 partials_skipped_empty=0 partials_skipped_duplicate=0 partials_deferred=0 partial_decode_s=0.6887 partial_queue_s=0.5485 partial_amplification=5.752 partial_staleness_max_s=0.1 final_wait_partial_s=0.0003 final_queue_s=0.0 final_decode_s=0.1083 partial_state_at_end=done partial_promoted_at_end=False partial_cancelled_at_end=False
+INFO:     127.0.0.1:48682 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48692 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [8184]

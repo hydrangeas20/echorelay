@@ -223,3 +223,8 @@ __marimo__/
 eval_audio/
 results/
 .cache/
+
+# Benchmark evidence: server logs inside committed raw/ evidence directories
+# are listed in SHA256SUMS and must be committed. Without this exception the
+# *.log rule above drops them silently. Other logs stay ignored.
+!docs/benchmarks/*/raw/**/server.log

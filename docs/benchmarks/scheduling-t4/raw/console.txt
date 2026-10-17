@@ -1,0 +1,195 @@
+commit 53161b588a71; 8 runs: r1:base r1:prio r1:cancel r1:both r2:both r2:cancel r2:prio r2:base
+
+=== run 1/8: round 1, policy base {'final_priority': False, 'cancel_queued_partial_on_end': False}
+server stopped; port 8000 free
+server up (pid 4469, port 8000); log: /content/echorelay/results/sched/01_r1_base/server.log
+  active_streams               0
+  backend                      whisper
+  cancel_queued_partial_on_end False
+  compute_type                 float16
+  device                       cuda
+  event_timing                 True
+  final_beam_size              5
+  final_priority               False
+  inference_timeout_s          30.0
+  max_concurrent_inference     1
+  max_concurrent_streams       8
+  min_partial_audio_s          0.5
+  model                        base.en
+  partial_beam_size            1
+  partial_interval_s           1.0
+  version                      0.1.0
+server configuration verified
+wrote /content/echorelay/results/sched/01_r1_base/provenance.json
+server stopped; port 8000 free
+stress exit 0; 10/10 checks passed; 114 s
+
+=== run 2/8: round 1, policy prio {'final_priority': True, 'cancel_queued_partial_on_end': False}
+server stopped; port 8000 free
+server up (pid 5240, port 8000); log: /content/echorelay/results/sched/02_r1_prio/server.log
+  active_streams               0
+  backend                      whisper
+  cancel_queued_partial_on_end False
+  compute_type                 float16
+  device                       cuda
+  event_timing                 True
+  final_beam_size              5
+  final_priority               True
+  inference_timeout_s          30.0
+  max_concurrent_inference     1
+  max_concurrent_streams       8
+  min_partial_audio_s          0.5
+  model                        base.en
+  partial_beam_size            1
+  partial_interval_s           1.0
+  version                      0.1.0
+server configuration verified
+wrote /content/echorelay/results/sched/02_r1_prio/provenance.json
+server stopped; port 8000 free
+stress exit 0; 10/10 checks passed; 114 s
+
+=== run 3/8: round 1, policy cancel {'final_priority': False, 'cancel_queued_partial_on_end': True}
+server stopped; port 8000 free
+server up (pid 5981, port 8000); log: /content/echorelay/results/sched/03_r1_cancel/server.log
+  active_streams               0
+  backend                      whisper
+  cancel_queued_partial_on_end True
+  compute_type                 float16
+  device                       cuda
+  event_timing                 True
+  final_beam_size              5
+  final_priority               False
+  inference_timeout_s          30.0
+  max_concurrent_inference     1
+  max_concurrent_streams       8
+  min_partial_audio_s          0.5
+  model                        base.en
+  partial_beam_size            1
+  partial_interval_s           1.0
+  version                      0.1.0
+server configuration verified
+wrote /content/echorelay/results/sched/03_r1_cancel/provenance.json
+server stopped; port 8000 free
+stress exit 0; 10/10 checks passed; 114 s
+
+=== run 4/8: round 1, policy both {'final_priority': True, 'cancel_queued_partial_on_end': True}
+server stopped; port 8000 free
+server up (pid 6719, port 8000); log: /content/echorelay/results/sched/04_r1_both/server.log
+  active_streams               0
+  backend                      whisper
+  cancel_queued_partial_on_end True
+  compute_type                 float16
+  device                       cuda
+  event_timing                 True
+  final_beam_size              5
+  final_priority               True
+  inference_timeout_s          30.0
+  max_concurrent_inference     1
+  max_concurrent_streams       8
+  min_partial_audio_s          0.5
+  model                        base.en
+  partial_beam_size            1
+  partial_interval_s           1.0
+  version                      0.1.0
+server configuration verified
+wrote /content/echorelay/results/sched/04_r1_both/provenance.json
+server stopped; port 8000 free
+stress exit 0; 10/10 checks passed; 114 s
+
+=== run 5/8: round 2, policy both {'final_priority': True, 'cancel_queued_partial_on_end': True}
+server stopped; port 8000 free
+server up (pid 7448, port 8000); log: /content/echorelay/results/sched/05_r2_both/server.log
+  active_streams               0
+  backend                      whisper
+  cancel_queued_partial_on_end True
+  compute_type                 float16
+  device                       cuda
+  event_timing                 True
+  final_beam_size              5
+  final_priority               True
+  inference_timeout_s          30.0
+  max_concurrent_inference     1
+  max_concurrent_streams       8
+  min_partial_audio_s          0.5
+  model                        base.en
+  partial_beam_size            1
+  partial_interval_s           1.0
+  version                      0.1.0
+server configuration verified
+wrote /content/echorelay/results/sched/05_r2_both/provenance.json
+server stopped; port 8000 free
+stress exit 0; 10/10 checks passed; 114 s
+
+=== run 6/8: round 2, policy cancel {'final_priority': False, 'cancel_queued_partial_on_end': True}
+server stopped; port 8000 free
+server up (pid 8184, port 8000); log: /content/echorelay/results/sched/06_r2_cancel/server.log
+  active_streams               0
+  backend                      whisper
+  cancel_queued_partial_on_end True
+  compute_type                 float16
+  device                       cuda
+  event_timing                 True
+  final_beam_size              5
+  final_priority               False
+  inference_timeout_s          30.0
+  max_concurrent_inference     1
+  max_concurrent_streams       8
+  min_partial_audio_s          0.5
+  model                        base.en
+  partial_beam_size            1
+  partial_interval_s           1.0
+  version                      0.1.0
+server configuration verified
+wrote /content/echorelay/results/sched/06_r2_cancel/provenance.json
+server stopped; port 8000 free
+stress exit 0; 10/10 checks passed; 114 s
+
+=== run 7/8: round 2, policy prio {'final_priority': True, 'cancel_queued_partial_on_end': False}
+server stopped; port 8000 free
+server up (pid 8920, port 8000); log: /content/echorelay/results/sched/07_r2_prio/server.log
+  active_streams               0
+  backend                      whisper
+  cancel_queued_partial_on_end False
+  compute_type                 float16
+  device                       cuda
+  event_timing                 True
+  final_beam_size              5
+  final_priority               True
+  inference_timeout_s          30.0
+  max_concurrent_inference     1
+  max_concurrent_streams       8
+  min_partial_audio_s          0.5
+  model                        base.en
+  partial_beam_size            1
+  partial_interval_s           1.0
+  version                      0.1.0
+server configuration verified
+wrote /content/echorelay/results/sched/07_r2_prio/provenance.json
+server stopped; port 8000 free
+stress exit 0; 10/10 checks passed; 114 s
+
+=== run 8/8: round 2, policy base {'final_priority': False, 'cancel_queued_partial_on_end': False}
+server stopped; port 8000 free
+server up (pid 9648, port 8000); log: /content/echorelay/results/sched/08_r2_base/server.log
+  active_streams               0
+  backend                      whisper
+  cancel_queued_partial_on_end False
+  compute_type                 float16
+  device                       cuda
+  event_timing                 True
+  final_beam_size              5
+  final_priority               False
+  inference_timeout_s          30.0
+  max_concurrent_inference     1
+  max_concurrent_streams       8
+  min_partial_audio_s          0.5
+  model                        base.en
+  partial_beam_size            1
+  partial_interval_s           1.0
+  version                      0.1.0
+server configuration verified
+wrote /content/echorelay/results/sched/08_r2_base/provenance.json
+server stopped; port 8000 free
+stress exit 0; 10/10 checks passed; 115 s
+
+wrote /content/echorelay/results/sched/manifest.json

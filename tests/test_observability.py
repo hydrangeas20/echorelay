@@ -175,7 +175,10 @@ def test_inference_does_not_lag_event_loop_under_load(make_client):
     """Several streams with slow (thread-blocking) decodes: no lag sample
     comes anywhere near one decode's duration."""
     fake = FakeTranscriber(delay_s=DECODE_S)
-    client = make_client(fake, max_concurrent_inference=2, max_concurrent_streams=6)
+    # Cancellation would skip end-of-stream partials and starve the
+    # precondition below of decodes; this test is about lag, not policy.
+    client = make_client(fake, max_concurrent_inference=2, max_concurrent_streams=6,
+                         cancel_queued_partial_on_end=False)
     threads = [threading.Thread(target=_stream, args=(client, 2.0)) for _ in range(4)]
     for t in threads:
         t.start()

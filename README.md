@@ -91,6 +91,8 @@ Environment variables (prefix `ECHORELAY_`):
 | `INFERENCE_TIMEOUT_S` | `30` | queueing + decode limit per job |
 | `SEND_TIMEOUT_S` | `10` | limit on any single send to a client (client stopped reading) |
 | `EVENT_TIMING` | `false` | add per-event `timing` (queue / decode / staleness) for profiling |
+| `FINAL_PRIORITY` | `false` | experiment: serve waiting finals before waiting partials ([design](docs/scheduling-design.md)) |
+| `CANCEL_QUEUED_PARTIAL_ON_END` | `false` | experiment: cancel a stream's not-yet-started partial at end of stream |
 | `PARTIAL_INTERVAL_S` | `1.0` | new audio between partial decodes |
 | `MIN_PARTIAL_AUDIO_S` | `0.5` | audio required before the first partial |
 | `PARTIAL_BEAM_SIZE` / `FINAL_BEAM_SIZE` | `1` / `5` | greedy partials, beam-search final |

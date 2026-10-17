@@ -74,6 +74,7 @@ def record_stream_end(metrics: Metrics, session: StreamSession, outcome: str) ->
         metrics.observe("stream.partial_amplification", summary["partial_amplification"])
     for v in session.stats.partial_staleness_s:
         metrics.observe("stream.partial_staleness_s", v)
+    metrics.inc(f"stream.partial_at_end.{summary['partial_state_at_end']}")
     for key in ("final_wait_partial_s", "final_queue_s", "final_decode_s"):
         if summary[key] is not None:
             metrics.observe(f"stream.{key}", summary[key])

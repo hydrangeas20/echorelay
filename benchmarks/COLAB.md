@@ -363,3 +363,58 @@ save provenance.
 * **E4:** `--concat-seconds 60 --streams 8 --concurrency 1 2 4 --burst-extra 0 --stream-timeout-s 600`.
 * **E6:** `load_test --speed 0 --concurrency 4 --streams 40`.
 * **E8:** `max_concurrent_inference=2`, `--concurrency 4 8 --burst-extra 0`.
+
+---
+
+# Scheduling experiment: matched baseline vs candidate
+
+Design, invariants, predictions and adoption criteria:
+[`docs/scheduling-design.md`](../docs/scheduling-design.md). One Colab T4
+session, about 20–25 minutes of GPU time. All four policies run on the
+**same commit** with the same audio and the unchanged measurement code; only
+the two policy flags differ. The order is counterbalanced:
+base, prio, cancel, both, then both, cancel, prio, base.
+
+**S0. Setup.** Use the P0 cells above with two changes in P0.2: clone
+`-b feat/scheduling-experiment` and set `PHASE2_SHA` to the scheduling
+commit. Then run P0.3 (install + `verify_commit`), P0.4 (the same five files,
+PCM-hash verified) and P0.5 (GPU smoke gate) as before.
+
+**S1. Run the matched comparison** (8 server restarts, each verified via
+`/metrics` and recorded with provenance):
+
+```python
+os.makedirs("/content/echorelay/results/sched", exist_ok=True)
+!python -m benchmarks.matched_comparison --audio-dir /content/echorelay/eval_audio5 \
+    --out /content/echorelay/results/sched --rounds 2 2>&1 | tee /content/echorelay/results/sched/console.txt
+```
+
+Every run prints `stress exit 0; 10/10 checks passed`. A failed check is a
+finding: keep going and report it.
+
+**S2. Compare** (WER uses the reference transcripts in `eval_audio5`):
+
+```python
+!python -m benchmarks.compare_policies /content/echorelay/results/sched \
+    --audio-dir /content/echorelay/eval_audio5 \
+    --output /content/echorelay/results/sched/comparison.json \
+    --markdown /content/echorelay/results/sched/comparison.md
+```
+
+**S3. Save** (also captures every run's server log and provenance):
+
+```python
+import shutil
+from google.colab import files
+shutil.make_archive("/content/echorelay_sched_results", "zip", "/content/echorelay/results/sched")
+files.download("/content/echorelay_sched_results.zip")
+```
+
+What to check first in `comparison.md`:
+* **Final text = base** is 100 % for every policy. If not, stop; that is a
+  correctness bug, not a performance result.
+* **Final decode (control)** is the same across policies. If not, GPU state
+  differed between runs.
+* Final latency and final queue p95 at c=8, their bootstrap intervals, and
+  whether the per-round values agree.
+* TTFP and partial queue p95: the fairness cost of final priority.
