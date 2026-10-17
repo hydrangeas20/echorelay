@@ -68,6 +68,19 @@ Distributions (`distributions.<name>`) keep the most recent `metrics_window`
 observations (default 10,000) for percentiles, plus a lifetime `count`, `sum`
 and `max`. Memory is bounded regardless of uptime.
 
+Each distribution summary mixes two scopes:
+
+| Field | Scope | Meaning |
+|---|---|---|
+| `mean`, `p50`, `p95`, `p99` | rolling window | computed over the most recent `window` observations only |
+| `window` | rolling window | number of observations those statistics use (≤ `metrics_window`) |
+| `count`, `sum`, `max` | lifetime | every observation since the server started |
+
+Until `count` exceeds `metrics_window`, the window holds every observation,
+so the two scopes agree. After that they diverge. In particular, `sum / count`
+is the lifetime mean and generally differs from the windowed `mean`, and the
+lifetime `max` can come from an observation that is no longer in the window.
+
 | Name | Unit | Definition |
 |---|---|---|
 | `inference.{partial,final}.queue_wait_s` | s | request → slot acquired |
