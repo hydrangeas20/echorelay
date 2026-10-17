@@ -161,6 +161,13 @@ transcripts under both versions without re-running a model.
   expected value is 100 %.
 * **Final decode (control)**: scheduling must not change decode time; a
   shift means GPU state differed between runs.
+* **Final queue across policies**: `timing.queue_ms` of the final runs from
+  *submission* to slot. Without `FINAL_PRIORITY` the final is submitted
+  after the stream's own partial finishes; with it, at `end`, so the final's
+  queue time includes waiting behind its own still-pending partial and
+  overlaps `wait_partial_ms`. Final-queue differences between policies with
+  and without `FINAL_PRIORITY` are therefore descriptive, not like-for-like.
+  Final latency (client side, §1) has one definition under every policy.
 * **Bootstrap interval**: percentile bootstrap of the difference in p95
   (candidate − baseline), resampling streams within each arm, 2,000
   resamples, seed 0. Optimistic, because streams within a run are correlated.

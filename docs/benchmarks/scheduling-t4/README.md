@@ -11,6 +11,17 @@ All numbers come from [`raw/`](raw/), the Colab output byte-for-byte
 `benchmarks/compare_policies.py` reproduces the Colab output exactly,
 including the bootstrap intervals (fixed seed).
 
+> **Evidence correction.** The first version of this PR committed 52 of
+> the 60 listed files. The repository's `*.log` ignore rule silently
+> dropped the eight `*/server.log` files, which the post-hoc end-state
+> analysis below reads. They are now committed unmodified, taken from the
+> original Colab archive (`echorelay_sched_results.zip`, SHA-256
+> `0aebbd35406552ed92a54e69ea53766e6ade2713933cfe6b139785422e2f497b`),
+> and match the SHA-256 values that `SHA256SUMS` has listed since that
+> first version. No result changed. `python -m benchmarks.verify_evidence`
+> (also run by the test suite) now checks that every listed file is
+> present, matches its hash, and is tracked by git.
+
 ## Configuration
 
 | | |
@@ -43,6 +54,25 @@ Difference in p95 from `base`, with bootstrap 95 % interval:
 | prio | −173 [−307, +72] | −64 [−241, +80] | +33 [−28, +89] | −8 [−22, +18] |
 | cancel | −87 [−179, +73] | +11 [−97, +66] | +15 [−67, +75] | −8 [−22, +53] |
 | **both** | **−296 [−358, −142]** | **−183 [−294, −119]** | +29 [−29, +86] | −11 [−25, +17] |
+
+**Reading the final-queue column across policies.** "Final queue" is the
+server's `queue_ms` for the final decode: from submitting the final to
+acquiring an inference slot. *When* the final is submitted depends on the
+policy, so this column does not measure the same interval in every row:
+
+* `base` and `cancel` submit the final after the stream's own partial has
+  finished (or been cancelled). Final queue is the wait for a slot after
+  that point.
+* `prio` and `both` submit the final as soon as `end` is processed. If the
+  stream's own partial is still queued or running, the final waits behind
+  it, and that time counts as final queue. It also overlaps
+  `wait_partial_ms`, so the two do not add up to the final latency.
+
+Final-queue differences between a priority policy and `base` therefore mix
+a change in queueing with a change in what is being timed. They are
+descriptive, not a like-for-like comparison. The primary outcome, final
+latency (client: `end` sent → `final` received), has the same definition
+under every policy. The values above are unchanged, as recorded.
 
 The p95 per round is consistent for every policy. c=8 final latency:
 base 563 / 560, prio 376 / 391, cancel 474 / 475, both 253 / 268 ms.
@@ -111,7 +141,7 @@ experiment tests.
 
 | Prediction (written before the run) | Observed | Verdict |
 |---|---|---|
-| prio c=8 final queue p95 336 → 100–250 ms | 268 ms | slightly above range |
+| prio c=8 final queue p95 336 → 100–250 ms | 268 ms | slightly above range (final queue is timed from a different point under `prio`; see Results) |
 | prio c=8 final latency p95 → 250–400 ms | 390 ms; interval includes 0 | at the edge; not significant |
 | prio c=4: small, possibly noise | −10 ms [−32, +11] | as predicted |
 | cancel alone: p95 change not detectable | −87 ms in both rounds; interval includes 0 | underestimated tail leverage |
@@ -161,6 +191,11 @@ result is shown to generalize beyond synchronized starts.
 * Re-derive from the committed files (no GPU needed):
 
 ```bash
+python -m benchmarks.verify_evidence      # every listed file present, hash-matched, tracked by git
 python -m benchmarks.compare_policies docs/benchmarks/scheduling-t4/raw --audio-dir eval_audio5
 python -m benchmarks.end_state_breakdown docs/benchmarks/scheduling-t4/raw --scenario c8
 ```
+
+`compare_policies` needs the five reference transcripts (`eval_audio5/*.txt`,
+produced by `benchmarks.prepare_audio`) to score WER; they are not
+committed on this branch. `end_state_breakdown` needs only `raw/`.
