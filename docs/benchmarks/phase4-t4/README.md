@@ -113,6 +113,33 @@ The following checks were completed before this report was written:
   and HTTP-access noise. The registered analysis needs the logs: it joins
   each stream's `stream_summary` end state to the client records.
 
+> **Evidence correction.** The first version of this PR committed only 93
+> of the 105 listed files. The repository's `*.log` ignore rule silently
+> dropped all 12 `server.log` files. The checks above had passed only
+> because ignored copies were present in the author's working tree. On a
+> fresh clone, `sha256sum -c` failed, and the analysis ran without the
+> end-state join, exited 0 and produced a different `analysis.json`.
+> The 12 logs are now committed unmodified, taken from the original archive
+> (SHA-256 above), and match the hashes that `raw/SHA256SUMS` has listed
+> since the first version. The verification was repeated on a fresh clone:
+> all 105 files match, and the registered analysis reproduces
+> `analysis.json` and `analysis.md` byte for byte. No result changed.
+>
+> **Change to analysis code after data collection.** To prevent a repeat,
+> `benchmarks/analyze_arrival.py` now stops with an error (exit status 1)
+> instead of silently continuing when any of these is missing:
+>
+> * a run's `server.log`;
+> * a `stream_summary` line for a stream that received a session;
+> * a block result file;
+> * a reference transcript for a played utterance, when `--audio-dir` is
+>   given.
+>
+> Without `--audio-dir` it prints a warning that WER is not computed.
+> These checks add no computation and alter no statistic, criterion or
+> output. With complete evidence, the outputs are byte-identical to those
+> of the registration commit `b9e8634`.
+
 **Display rounding.** `raw/phase4_results/analysis.md` rounds intervals to
 whole milliseconds. It therefore shows the stagger `both` decision interval
 as `[-28, +0]`. The unrounded values in `analysis.json` are
@@ -400,11 +427,13 @@ Block ranges (min–max): sync base 0.8402–0.8426, sync both 0.8506–0.8542.
 
 ## Reproduction
 
-From the repository root, at this branch (the registered analysis code is
-unchanged from `b9e8634`):
+From the repository root, on a fresh clone of this branch. The registered
+computation is unchanged from `b9e8634`; only the fail-fast evidence checks
+described above were added.
 
 ```bash
-# Verify the committed evidence
+# Verify the committed evidence (run on a fresh clone: an ignored local copy
+# of a file would also pass this check)
 (cd docs/benchmarks/phase4-t4/raw && sha256sum -c SHA256SUMS)
 
 # Registered analysis. Writes nothing into raw/ unless --output/--markdown is given.

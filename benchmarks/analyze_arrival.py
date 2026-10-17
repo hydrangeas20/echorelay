@@ -30,6 +30,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
@@ -161,18 +162,51 @@ def describe_block(block: dict, scheduled: int = 8) -> dict:
 
 
 # -------------------------------------------------------------- loading
+class MissingEvidence(RuntimeError):
+    """Required raw evidence is absent. The analysis refuses to run on an
+    incomplete set rather than silently dropping the affected measurements
+    (end states, workload blocks, WER)."""
+
+
 def attach_end_states(streams, log: Path | None) -> None:
-    if log is None or not log.exists():
-        return
+    # Fail-fast checks added after data collection (evidence repair). They
+    # change no computed value when the evidence is complete.
+    if log is None or not log.is_file():
+        raise MissingEvidence(f"server log not found: {log}")
     summ = summaries(log)
+    unmatched = []
     for s in streams:
-        k = summ.get((s.get("ready") or {}).get("session_id", ""))
-        if k:
-            w = k.get("inference_waiting_at_end")
-            s["_end"] = {"state": k.get("partial_state_at_end"),
-                         "promoted": k.get("partial_promoted_at_end") == "True",
-                         "cancelled": k.get("partial_cancelled_at_end") == "True",
-                         "waiting_at_end": int(w) if w not in (None, "None") else None}
+        sid = (s.get("ready") or {}).get("session_id", "")
+        k = summ.get(sid)
+        if not k:
+            if sid:  # a stream that got a session must have a stream_summary line
+                unmatched.append(sid)
+            continue
+        w = k.get("inference_waiting_at_end")
+        s["_end"] = {"state": k.get("partial_state_at_end"),
+                     "promoted": k.get("partial_promoted_at_end") == "True",
+                     "cancelled": k.get("partial_cancelled_at_end") == "True",
+                     "waiting_at_end": int(w) if w not in (None, "None") else None}
+    if unmatched:
+        raise MissingEvidence(f"{log}: no stream_summary for {len(unmatched)} session(s), "
+                              f"e.g. {unmatched[:3]}")
+
+
+def load_references(audio_dir: Path, root: Path) -> dict[str, str]:
+    """Reference transcripts, ``<audio_dir>/<utterance>.txt``. Every utterance
+    played in the experiment must have one, or WER would silently cover only
+    a subset (or nothing) and C4's WER comparison would be vacuous."""
+    if not audio_dir.is_dir():
+        raise MissingEvidence(f"--audio-dir not found: {audio_dir}")
+    refs = {f.stem: f.read_text().strip() for f in audio_dir.glob("*.txt")}
+    manifest = json.loads((root / "manifest.json").read_text())
+    used = {s["utterance"] for e in manifest["order"] for name in BLOCKS
+            if (root / e["dir"] / f"{name}.json").is_file()
+            for s in json.loads((root / e["dir"] / f"{name}.json").read_text())["streams"]}
+    missing = sorted(used - refs.keys())
+    if missing:
+        raise MissingEvidence(f"no reference transcript in {audio_dir} for {missing}")
+    return refs
 
 
 def load(root: Path) -> tuple[dict, list[dict]]:
@@ -183,8 +217,8 @@ def load(root: Path) -> tuple[dict, list[dict]]:
         d = root / e["dir"]
         for pos, name in enumerate(BLOCKS, 1):
             f = d / f"{name}.json"
-            if not f.exists():
-                continue
+            if not f.is_file():
+                raise MissingEvidence(f"block result not found: {f}")
             blk = json.loads(f.read_text())
             attach_end_states(blk["streams"], d / "server.log")
             blocks.append({**blk, "arrival": e.get("arrival", "sync"), "policy": e["policy"],
@@ -497,8 +531,14 @@ def main() -> None:
     p.add_argument("--output")
     p.add_argument("--markdown")
     a = p.parse_args()
-    refs = {f.stem: f.read_text().strip() for f in Path(a.audio_dir).glob("*.txt")} if a.audio_dir else None
-    r = analyze(Path(a.root), refs)
+    try:
+        refs = load_references(Path(a.audio_dir), Path(a.root)) if a.audio_dir else None
+        if refs is None:
+            print("warning: no --audio-dir; WER is not computed and the C4 WER-equality check "
+                  "has nothing to compare", file=sys.stderr)
+        r = analyze(Path(a.root), refs)
+    except MissingEvidence as exc:
+        sys.exit(f"error: incomplete evidence: {exc}")
     md = to_markdown(r)
     print(md)
     if a.output:
