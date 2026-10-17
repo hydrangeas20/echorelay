@@ -63,6 +63,28 @@ def load_audio_dir(path: str | Path) -> list[Utterance]:
     return out
 
 
+def concatenate(utts: list[Utterance], target_s: float) -> list[Utterance]:
+    """Build long utterances (>= target_s) by joining whole evaluation files.
+
+    Deterministic: utterance i starts at file i (sorted order) and appends
+    the following files cyclically until it reaches ``target_s``. Whole files
+    are joined (no truncation) so the concatenated reference stays exact.
+    """
+    out = []
+    n = len(utts)
+    for i in range(n):
+        parts, dur, j = [], 0.0, i
+        while dur < target_s:
+            parts.append(utts[j % n])
+            dur += utts[j % n].duration_s
+            j += 1
+        pcm = b"".join(u.pcm16 for u in parts)
+        refs = [u.reference for u in parts]
+        ref = " ".join(refs) if all(r is not None for r in refs) else None
+        out.append(Utterance(f"concat{target_s:g}s_{i:02d}", pcm, ref, hashlib.sha256(pcm).hexdigest()))
+    return out
+
+
 def audio_manifest(utts: list[Utterance]) -> dict:
     return {
         "num_files": len(utts),
@@ -107,7 +129,21 @@ def environment() -> dict:
         env["ctranslate2_cuda_devices"] = ctranslate2.get_cuda_device_count()
     except Exception:  # pragma: no cover
         pass
+    env["git"] = git_revision()
     return env
+
+
+def git_revision() -> dict | None:
+    """Commit of the code that produced a result, and whether it had local edits."""
+    root = Path(__file__).resolve().parents[1]
+    try:
+        commit = subprocess.run(["git", "rev-parse", "HEAD"], cwd=root, capture_output=True,
+                                text=True, timeout=5, check=True).stdout.strip()
+        dirty = subprocess.run(["git", "status", "--porcelain", "--untracked-files=no"], cwd=root,
+                               capture_output=True, text=True, timeout=5, check=True).stdout.strip()
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return {"commit": commit, "dirty": bool(dirty)}
 
 
 def percentiles(values: list[float]) -> dict:
@@ -126,23 +162,44 @@ def percentiles(values: list[float]) -> dict:
 
 _PUNCT = re.compile(r"[^\w\s']")
 _SPACE = re.compile(r"\s+")
+_QUOTES = str.maketrans({"\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"'})
+
+DEFAULT_NORMALIZER = "v2"
+NORMALIZERS = ("v1", "v2")
 
 
-def normalize_text(text: str) -> str:
+def normalize_text(text: str, version: str = DEFAULT_NORMALIZER) -> str:
     """WER normalization used by every benchmark in this repo.
 
-    Lowercase; hyphens -> spaces; drop punctuation except apostrophes;
-    collapse whitespace. Deliberately simple and fixed so FP16/INT8 runs are
-    scored identically. (No number or spelling normalization.)
+    v1 (Phase 1): lowercase; hyphens -> spaces; drop punctuation except
+    apostrophes; collapse whitespace. Bug: an apostrophe used as a quotation
+    mark stays attached to the word ("'he", "good'") and scores as an error.
+
+    v2 (default): as v1, plus typographic quotes mapped to ASCII and
+    apostrophes stripped from the start and end of each word. Word-internal
+    apostrophes are kept ("it's", "o'er"). A trailing possessive apostrophe
+    ("students'") is stripped on both reference and hypothesis.
+
+    Deliberately simple and fixed so every configuration is scored
+    identically. No number or spelling normalization.
     """
+    if version not in NORMALIZERS:
+        raise ValueError(f"unknown normalizer {version!r}; expected one of {NORMALIZERS}")
+    if version == "v2":
+        text = text.translate(_QUOTES)
     text = text.lower().replace("-", " ")
     text = _PUNCT.sub("", text)
+    if version == "v2":
+        text = " ".join(w.strip("'") for w in text.split())
     return _SPACE.sub(" ", text).strip()
 
 
-def corpus_wer(references: list[str], hypotheses: list[str]) -> float | None:
+def corpus_wer(
+    references: list[str], hypotheses: list[str], normalizer: str = DEFAULT_NORMALIZER
+) -> float | None:
     """Corpus-level WER (total edits / total reference words) after normalization."""
-    pairs = [(normalize_text(r), normalize_text(h)) for r, h in zip(references, hypotheses)]
+    pairs = [(normalize_text(r, normalizer), normalize_text(h, normalizer))
+             for r, h in zip(references, hypotheses)]
     pairs = [(r, h) for r, h in pairs if r]
     if not pairs:
         return None

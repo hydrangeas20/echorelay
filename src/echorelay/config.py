@@ -43,10 +43,19 @@ class Settings(BaseSettings):
     max_frame_bytes: int = Field(default=256 * 1024, gt=0)
     idle_timeout_s: float = Field(default=15.0, gt=0)
     inference_timeout_s: float = Field(default=30.0, gt=0)
+    # Bound on any single send to the client. A client that stops reading
+    # (full TCP window) would otherwise hold its stream slot indefinitely.
+    send_timeout_s: float = Field(default=10.0, gt=0)
 
     # --- partial hypotheses ------------------------------------------------
     partial_interval_s: float = Field(default=1.0, gt=0)
     min_partial_audio_s: float = Field(default=0.5, ge=0)
+
+    # --- observability -----------------------------------------------------
+    # Add a "timing" object (queue wait, decode, wait-for-partial) to partial
+    # and final events. Off by default so the Phase 1 wire format is unchanged.
+    event_timing: bool = False
+    metrics_window: int = Field(default=10_000, ge=100)  # observations kept per distribution
 
     log_level: str = "INFO"
 

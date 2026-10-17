@@ -68,7 +68,20 @@ async def test_runner_wraps_unexpected_exceptions():
             raise ValueError("bad")
 
     runner = InferenceRunner(Boom(), max_concurrency=1, timeout_s=1)
+    audio = np.zeros(10, dtype=np.float32)
     with pytest.raises(InferenceError, match="ValueError: bad"):
-        await runner.transcribe(np.zeros(10, dtype=np.float32), final=False)
-    assert runner.in_flight == 0
+        await runner.transcribe(audio, final=False)
+    # The slot is released by the executor future's done callback. Whether
+    # that callback runs before or after the caller resumes is not specified
+    # (it runs first on 3.11, one loop iteration later on 3.13), so wait for
+    # the release, with a bound, instead of assuming it already happened.
+    async with asyncio.timeout(1.0):
+        while runner.in_flight:
+            assert runner.in_flight <= runner.max_concurrency
+            await asyncio.sleep(0)
+    assert runner.in_flight == 0 and runner.waiting == 0
+    # The semaphore was released too: a second call gets the slot at once
+    # (it would raise InferenceTimeout, not InferenceError, if the slot leaked).
+    with pytest.raises(InferenceError, match="ValueError: bad"):
+        await runner.transcribe(audio, final=False)
     runner.shutdown()

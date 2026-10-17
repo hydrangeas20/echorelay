@@ -33,6 +33,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import resource
 import time
 import urllib.request
 from collections import Counter
@@ -41,10 +42,14 @@ from datetime import datetime, timezone
 
 import websockets
 
+from . import sampler
 from .common import (
     SAMPLE_RATE,
     Utterance,
     audio_manifest,
+    concatenate,
+    DEFAULT_NORMALIZER,
+    NORMALIZERS,
     corpus_wer,
     environment,
     load_audio_dir,
@@ -85,6 +90,9 @@ class StreamRecord:
     final_audio_s: float | None = None
     partial_inference_ms: list[float] = field(default_factory=list)
     partial_audio_s: list[float] = field(default_factory=list)
+    # Present only when the server runs with ECHORELAY_EVENT_TIMING=true.
+    partial_timing: list[dict] = field(default_factory=list)
+    final_timing: dict | None = None
     ready: dict | None = None
 
 
@@ -153,6 +161,8 @@ async def _stream(url: str, utt: Utterance, chunk_ms: int, speed: float, rec: St
                     rec.num_partials += 1
                     rec.partial_inference_ms.append(ev["inference_ms"])
                     rec.partial_audio_s.append(ev["audio_duration_s"])
+                    if "timing" in ev:
+                        rec.partial_timing.append(ev["timing"])
                     if ev["text"].strip() and rec.t_first_partial is None:
                         rec.t_first_partial = now
                 elif ev["type"] == "final":
@@ -160,6 +170,7 @@ async def _stream(url: str, utt: Utterance, chunk_ms: int, speed: float, rec: St
                     rec.final_text = ev["text"]
                     rec.final_inference_ms = ev["inference_ms"]
                     rec.final_audio_s = ev["audio_duration_s"]
+                    rec.final_timing = ev.get("timing")
                     rec.ok = True
                 elif ev["type"] == "error":
                     rec.error = ev["code"]
@@ -187,7 +198,25 @@ async def run_load(url: str, utts: list[Utterance], n: int, concurrency: int,
     return list(records), time.monotonic() - t0
 
 
-def summarize(records: list[StreamRecord], wall_s: float, utts: list[Utterance]) -> dict:
+def _timing_summary(ok: list[StreamRecord]) -> dict | None:
+    """Server-side latency decomposition, when events carry timing."""
+    finals = [r.final_timing for r in ok if r.final_timing]
+    partials = [t for r in ok for t in r.partial_timing]
+    if not finals and not partials:
+        return None
+    sec = lambda rows, key: percentiles([t[key] / 1000 for t in rows if key in t])  # noqa: E731
+    return {
+        "final_wait_partial_s": sec(finals, "wait_partial_ms"),
+        "final_queue_s": sec(finals, "queue_ms"),
+        "final_decode_s": sec(finals, "decode_ms"),
+        "partial_queue_s": sec(partials, "queue_ms"),
+        "partial_decode_s": sec(partials, "decode_ms"),
+        "partial_staleness_s": sec(partials, "staleness_ms"),
+    }
+
+
+def summarize(records: list[StreamRecord], wall_s: float, utts: list[Utterance],
+              wer_normalizer: str = DEFAULT_NORMALIZER) -> dict:
     ok = [r for r in records if r.ok]
     ttfp = [r.t_first_partial - r.t_first_audio for r in ok if r.t_first_partial and r.t_first_audio]
     final_lat = [r.t_final - r.t_end_sent for r in ok if r.t_final and r.t_end_sent]
@@ -214,7 +243,9 @@ def summarize(records: list[StreamRecord], wall_s: float, utts: list[Utterance])
         "wall_clock_s": wall_s,
         "throughput_streams_per_s": len(ok) / wall_s if wall_s else None,
         "throughput_audio_s_per_s": sum(r.audio_s for r in ok) / wall_s if wall_s else None,
-        "wer": corpus_wer(refs, hyps),
+        "server_timing": _timing_summary(ok),
+        "wer": corpus_wer(refs, hyps, wer_normalizer),
+        "wer_normalizer": wer_normalizer,
         "wer_num_utterances": len(refs),
     }
 
@@ -232,6 +263,13 @@ def main() -> None:
     p.add_argument("--stream-timeout-s", type=float, default=120.0,
                    help="overall deadline per stream (connect -> final); exceeded streams are "
                         "recorded as stream_timeout failures")
+    p.add_argument("--wer-normalizer", choices=NORMALIZERS, default=DEFAULT_NORMALIZER,
+                   help="v1 reproduces Phase 1 scoring (quote-mark bug); v2 is the fixed default")
+    p.add_argument("--concat-seconds", type=float, default=0.0,
+                   help="long-stream mode: concatenate evaluation files into utterances of at "
+                        "least this many seconds (references concatenated too)")
+    p.add_argument("--sample-interval-s", type=float, default=1.0,
+                   help="poll /metrics and nvidia-smi this often during the run; 0 disables")
     p.add_argument("--label", default="")
     p.add_argument("--output", required=True)
     a = p.parse_args()
@@ -240,12 +278,34 @@ def main() -> None:
     health = json.loads(urllib.request.urlopen(health_url, timeout=10).read())
     utts = load_audio_dir(a.audio_dir)
 
-    if a.warmup:
-        warm, _ = asyncio.run(run_load(a.url, utts, a.warmup, 1, a.chunk_ms, 0.0, a.stream_timeout_s))
-        print(f"warm-up: {sum(r.ok for r in warm)}/{len(warm)} ok")
-    records, wall = asyncio.run(run_load(a.url, utts, a.streams, a.concurrency, a.chunk_ms, a.speed,
-                                         a.stream_timeout_s))
-    summary = summarize(records, wall, utts)
+    if a.concat_seconds:
+        utts = concatenate(utts, a.concat_seconds)
+        print(f"long-stream mode: {len(utts)} utterances of "
+              f"{min(u.duration_s for u in utts):.1f}-{max(u.duration_s for u in utts):.1f} s")
+    metrics_url = health_url.rsplit("/health", 1)[0] + "/metrics"
+
+    async def run_all():
+        if a.warmup:
+            warm, _ = await run_load(a.url, utts, a.warmup, 1, a.chunk_ms, 0.0, a.stream_timeout_s)
+            print(f"warm-up: {sum(r.ok for r in warm)}/{len(warm)} ok")
+        before = await asyncio.to_thread(sampler.fetch_json, metrics_url)
+        stop = asyncio.Event()
+        sampling = (asyncio.create_task(sampler.sample(metrics_url, a.sample_interval_s, stop))
+                    if a.sample_interval_s > 0 else None)
+        cpu0 = resource.getrusage(resource.RUSAGE_SELF)
+        records, wall = await run_load(a.url, utts, a.streams, a.concurrency, a.chunk_ms, a.speed,
+                                       a.stream_timeout_s)
+        cpu1 = resource.getrusage(resource.RUSAGE_SELF)
+        stop.set()
+        samples = await sampling if sampling else []
+        after = await asyncio.to_thread(sampler.fetch_json, metrics_url)
+        client_cpu = (cpu1.ru_utime + cpu1.ru_stime) - (cpu0.ru_utime + cpu0.ru_stime)
+        return records, wall, samples, before, after, client_cpu
+
+    records, wall, samples, metrics_before, metrics_after, client_cpu_s = asyncio.run(run_all())
+    summary = summarize(records, wall, utts, a.wer_normalizer)
+    summary["resources"] = sampler.summarize_samples(samples) if samples else None
+    summary["load_generator_cpu_cores_mean"] = client_cpu_s / wall if wall else None
     ready = next((r.ready for r in records if r.ready), None)
 
     result = {
@@ -256,11 +316,16 @@ def main() -> None:
         "run_config": {
             "url": a.url, "streams": a.streams, "concurrency": a.concurrency, "warmup": a.warmup,
             "chunk_ms": a.chunk_ms, "speed": a.speed, "stream_timeout_s": a.stream_timeout_s,
+            "concat_seconds": a.concat_seconds, "sample_interval_s": a.sample_interval_s,
+            "wer_normalizer": a.wer_normalizer,
         },
         "metric_definitions": METRIC_DEFINITIONS,
         "environment_client": environment(),
         "audio": audio_manifest(utts),
         "summary": summary,
+        "server_metrics_before": metrics_before,
+        "server_metrics_after": metrics_after,
+        "resource_samples": samples,
         "streams": [asdict(r) for r in records],
     }
     if health["model"]["backend"] == "fake":
@@ -279,6 +344,16 @@ def main() -> None:
         v = s[key]
         if v["n"]:
             print(f"{key}: p50={v['p50']:.3f} p95={v['p95']:.3f} (n={v['n']})")
+    if s.get("server_timing"):
+        t = s["server_timing"]
+        print("server timing p95 (s): " + ", ".join(
+            f"{k}={v['p95']:.3f}" for k, v in t.items() if v and v.get("n")))
+    if s.get("resources"):
+        r = s["resources"]
+        for key in ("waiting", "in_flight", "gpu_util_pct", "sm_clock_mhz", "gpu_mem_used_mib"):
+            if r.get(key):
+                print(f"{key}: min={r[key]['min']:.0f} p50={r[key]['p50']:.0f} max={r[key]['max']:.0f}")
+    print(f"load generator CPU: {s['load_generator_cpu_cores_mean']:.2f} cores (mean)")
     print(f"throughput: {s['throughput_streams_per_s']:.3f} streams/s, "
           f"{s['throughput_audio_s_per_s']:.2f} audio-s/s; WER={s['wer']}")
     print(f"wrote {a.output}")

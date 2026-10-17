@@ -1,0 +1,836 @@
+{
+  "docs/benchmarks/phase1-t4/raw/stream_fp16_c4.json": {
+    "label": "T4 FP16 c=4",
+    "model": {
+      "backend": "whisper",
+      "name": "base.en",
+      "device": "cuda",
+      "compute_type": "float16"
+    },
+    "run_config": {
+      "url": "ws://127.0.0.1:8000/ws/transcribe",
+      "streams": 20,
+      "concurrency": 4,
+      "warmup": 2,
+      "chunk_ms": 100,
+      "speed": 1.0,
+      "stream_timeout_s": 120.0
+    },
+    "streams_ok": 20,
+    "partial_cost": {
+      "buckets": [
+        {
+          "audio_s": [
+            0,
+            2
+          ],
+          "n": 20,
+          "p50_ms": 32.6,
+          "mean_ms": 33.794999999999995,
+          "max_ms": 45.8
+        },
+        {
+          "audio_s": [
+            2,
+            4
+          ],
+          "n": 40,
+          "p50_ms": 46.55,
+          "mean_ms": 47.152499999999996,
+          "max_ms": 70.3
+        },
+        {
+          "audio_s": [
+            4,
+            6
+          ],
+          "n": 32,
+          "p50_ms": 57.400000000000006,
+          "mean_ms": 59.496874999999996,
+          "max_ms": 83.8
+        },
+        {
+          "audio_s": [
+            6,
+            8
+          ],
+          "n": 24,
+          "p50_ms": 76.15,
+          "mean_ms": 73.29583333333333,
+          "max_ms": 89.6
+        },
+        {
+          "audio_s": [
+            8,
+            10
+          ],
+          "n": 24,
+          "p50_ms": 82.65,
+          "mean_ms": 82.55,
+          "max_ms": 98.9
+        },
+        {
+          "audio_s": [
+            10,
+            12
+          ],
+          "n": 20,
+          "p50_ms": 92.0,
+          "mean_ms": 93.32000000000001,
+          "max_ms": 106.7
+        }
+      ],
+      "linear_fit": {
+        "n": 160,
+        "intercept_ms": 30.998284297842005,
+        "slope_ms_per_audio_s": 6.174969217808305,
+        "r": 0.9225935946644285,
+        "x_min_s": 1.0,
+        "x_max_s": 11.0
+      }
+    },
+    "final_cost_fit": {
+      "n": 20,
+      "intercept_ms": 40.822890765012865,
+      "slope_ms_per_audio_s": 7.185320135976822,
+      "r": 0.9076704473667945,
+      "x_min_s": 4.225,
+      "x_max_s": 11.475
+    },
+    "utilization": {
+      "partial_decode_s": 10.072599999999998,
+      "final_decode_s": 2.0370999999999997,
+      "partial_share": 0.8317794825635648,
+      "wall_clock_s": 43.954836475000775,
+      "inference_workers": 1,
+      "busy_fraction": 0.27550324312746255,
+      "busy_fraction_per_concurrent_stream": 0.06887581078186564,
+      "note": "busy_fraction = total decode time / (wall clock x workers); concurrency ramps down at the end of a run, so per-stream load is slightly underestimated"
+    },
+    "per_utterance": [
+      {
+        "utterance": "1272-135031-0000",
+        "audio_s": 10.885,
+        "runs": 4,
+        "partials": 10,
+        "partial_decode_ms_median": 623.5999999999999,
+        "final_decode_ms_median": 116.45,
+        "partial_to_final_ratio": 5.355088020609703,
+        "amplification": 5.052824988516307
+      },
+      {
+        "utterance": "1272-135031-0001",
+        "audio_s": 11.13,
+        "runs": 4,
+        "partials": 11,
+        "partial_decode_ms_median": 754.9499999999999,
+        "final_decode_ms_median": 126.1,
+        "partial_to_final_ratio": 5.986915146708961,
+        "amplification": 5.929919137466307
+      },
+      {
+        "utterance": "1272-135031-0002",
+        "audio_s": 11.475,
+        "runs": 4,
+        "partials": 11,
+        "partial_decode_ms_median": 723.05,
+        "final_decode_ms_median": 117.4,
+        "partial_to_final_ratio": 6.158858603066439,
+        "amplification": 5.751633986928105
+      },
+      {
+        "utterance": "1272-135031-0003",
+        "audio_s": 4.755,
+        "runs": 4,
+        "partials": 4,
+        "partial_decode_ms_median": 207.39999999999998,
+        "final_decode_ms_median": 80.30000000000001,
+        "partial_to_final_ratio": 2.5828144458281437,
+        "amplification": 2.1030494216614093
+      },
+      {
+        "utterance": "1272-135031-0004",
+        "audio_s": 4.225,
+        "runs": 4,
+        "partials": 4,
+        "partial_decode_ms_median": 181.1,
+        "final_decode_ms_median": 64.1,
+        "partial_to_final_ratio": 2.825273010920437,
+        "amplification": 2.366863905325444
+      }
+    ],
+    "time_to_first_partial": {
+      "pacing_floor_s": 0.9,
+      "ttfp_s": {
+        "n": 20,
+        "p50": 0.9422537345008095,
+        "p95": 1.027436786799899,
+        "mean": 0.9545928139998978,
+        "min": 0.929320203998941,
+        "max": 1.044005333998939
+      },
+      "first_partial_decode_s": {
+        "n": 20,
+        "p50": 0.032600000000000004,
+        "p95": 0.04133500000000001,
+        "mean": 0.033795000000000006,
+        "min": 0.028,
+        "max": 0.0458
+      },
+      "remainder_s": {
+        "n": 20,
+        "p50": 0.004309221500622495,
+        "p95": 0.09612678679989897,
+        "mean": 0.02079781399989775,
+        "min": 0.001320203998940974,
+        "max": 0.108705333998939
+      },
+      "remainder_definition": "ttfp - pacing floor - first partial decode = queue + network + scheduling"
+    },
+    "final_latency": {
+      "final_latency_s": {
+        "n": 20,
+        "p50": 0.11905373650006368,
+        "p95": 0.14566279634991589,
+        "mean": 0.11020985684990592,
+        "min": 0.06087164299970027,
+        "max": 0.15811534599924926
+      },
+      "final_decode_s": {
+        "n": 20,
+        "p50": 0.11125,
+        "p95": 0.134705,
+        "mean": 0.101855,
+        "min": 0.0596,
+        "max": 0.1348
+      },
+      "remainder_s": {
+        "n": 20,
+        "p50": 0.001441012000259069,
+        "p95": 0.042754597299302415,
+        "mean": 0.008354856849905917,
+        "min": 0.000756589999684365,
+        "max": 0.06060037200031221
+      },
+      "remainder_definition": "final latency - final decode = wait for in-flight partial + queue + network"
+    },
+    "projections": {
+      "label": "PROJECTION (not measured)",
+      "saturation_concurrency_same_audio_mix": 14.518885348109626,
+      "saturation_assumption": "decode cost per stream unchanged as concurrency grows; queueing delay rises well before this point",
+      "by_stream_length": [
+        {
+          "stream_audio_s": 5,
+          "partials": 5,
+          "partial_compute_s": 0.24761595975633457,
+          "final_compute_s": 0.07674949144489697,
+          "worker_load_per_stream": 0.06487309024024632,
+          "saturation_streams_per_worker": 15.41471195986922,
+          "extrapolated": false
+        },
+        {
+          "stream_audio_s": 10,
+          "partials": 10,
+          "partial_compute_s": 0.6496061499578767,
+          "final_compute_s": 0.1126760921247811,
+          "worker_load_per_stream": 0.07622822420826578,
+          "saturation_streams_per_worker": 13.11850053423605,
+          "extrapolated": false
+        },
+        {
+          "stream_audio_s": 20,
+          "partials": 20,
+          "partial_compute_s": 1.916709221696584,
+          "final_compute_s": 0.1845292934845493,
+          "worker_load_per_stream": 0.10506192575905667,
+          "saturation_streams_per_worker": 9.51819598560706,
+          "extrapolated": true
+        },
+        {
+          "stream_audio_s": 30,
+          "partials": 30,
+          "partial_compute_s": 3.801309215216121,
+          "final_compute_s": 0.2563824948443175,
+          "worker_load_per_stream": 0.13525639033534798,
+          "saturation_streams_per_worker": 7.393366017832131,
+          "extrapolated": true
+        },
+        {
+          "stream_audio_s": 60,
+          "partials": 60,
+          "partial_compute_s": 13.160090726459718,
+          "final_compute_s": 0.47194209892362216,
+          "worker_load_per_stream": 0.22720054708972232,
+          "saturation_streams_per_worker": 4.401397852290806,
+          "extrapolated": true
+        },
+        {
+          "stream_audio_s": 120,
+          "partials": 120,
+          "partial_compute_s": 48.550070637029336,
+          "final_compute_s": 0.9030613070822314,
+          "worker_load_per_stream": 0.4121094328675963,
+          "saturation_streams_per_worker": 2.4265399436301736,
+          "extrapolated": true
+        }
+      ],
+      "by_stream_length_assumption": "linear partial cost fitted on 1.0-11.0 s; rows marked extrapolated go beyond the data, and above 30 s Whisper decodes in multiple windows, which this linear model does not capture"
+    }
+  },
+  "docs/benchmarks/phase1-t4/raw/stream_fp16_pilot.json": {
+    "label": "T4 FP16 baseline c=1",
+    "model": {
+      "backend": "whisper",
+      "name": "base.en",
+      "device": "cuda",
+      "compute_type": "float16"
+    },
+    "run_config": {
+      "url": "ws://127.0.0.1:8000/ws/transcribe",
+      "streams": 5,
+      "concurrency": 1,
+      "warmup": 2,
+      "chunk_ms": 100,
+      "speed": 1.0,
+      "stream_timeout_s": 120.0
+    },
+    "streams_ok": 5,
+    "partial_cost": {
+      "buckets": [
+        {
+          "audio_s": [
+            0,
+            2
+          ],
+          "n": 5,
+          "p50_ms": 38.8,
+          "mean_ms": 38.72,
+          "max_ms": 44.6
+        },
+        {
+          "audio_s": [
+            2,
+            4
+          ],
+          "n": 10,
+          "p50_ms": 58.65,
+          "mean_ms": 70.55000000000001,
+          "max_ms": 165.3
+        },
+        {
+          "audio_s": [
+            4,
+            6
+          ],
+          "n": 8,
+          "p50_ms": 73.94999999999999,
+          "mean_ms": 87.4125,
+          "max_ms": 167.4
+        },
+        {
+          "audio_s": [
+            6,
+            8
+          ],
+          "n": 6,
+          "p50_ms": 88.6,
+          "mean_ms": 86.03333333333335,
+          "max_ms": 92.3
+        },
+        {
+          "audio_s": [
+            8,
+            10
+          ],
+          "n": 6,
+          "p50_ms": 94.69999999999999,
+          "mean_ms": 96.13333333333334,
+          "max_ms": 106.0
+        },
+        {
+          "audio_s": [
+            10,
+            12
+          ],
+          "n": 5,
+          "p50_ms": 104.8,
+          "mean_ms": 107.46000000000001,
+          "max_ms": 117.2
+        }
+      ],
+      "linear_fit": {
+        "n": 40,
+        "intercept_ms": 51.25541442550707,
+        "slope_ms_per_audio_s": 5.693156632752249,
+        "r": 0.6084378282734416,
+        "x_min_s": 1.0,
+        "x_max_s": 11.0
+      }
+    },
+    "final_cost_fit": {
+      "n": 5,
+      "intercept_ms": 66.98903840336985,
+      "slope_ms_per_audio_s": 6.702491358209339,
+      "r": 0.8806329802616292,
+      "x_min_s": 4.225,
+      "x_max_s": 11.475
+    },
+    "utilization": {
+      "partial_decode_s": 3.2287,
+      "final_decode_s": 0.6196,
+      "partial_share": 0.8389938414364784,
+      "wall_clock_s": 43.34628681000049,
+      "inference_workers": 1,
+      "busy_fraction": 0.08878038427762519,
+      "busy_fraction_per_concurrent_stream": 0.08878038427762519,
+      "note": "busy_fraction = total decode time / (wall clock x workers); concurrency ramps down at the end of a run, so per-stream load is slightly underestimated"
+    },
+    "per_utterance": [
+      {
+        "utterance": "1272-135031-0000",
+        "audio_s": 10.885,
+        "runs": 1,
+        "partials": 10,
+        "partial_decode_ms_median": 809.0,
+        "final_decode_ms_median": 161.0,
+        "partial_to_final_ratio": 5.024844720496894,
+        "amplification": 5.052824988516307
+      },
+      {
+        "utterance": "1272-135031-0001",
+        "audio_s": 11.13,
+        "runs": 1,
+        "partials": 11,
+        "partial_decode_ms_median": 882.0,
+        "final_decode_ms_median": 134.2,
+        "partial_to_final_ratio": 6.572280178837556,
+        "amplification": 5.929919137466307
+      },
+      {
+        "utterance": "1272-135031-0002",
+        "audio_s": 11.475,
+        "runs": 1,
+        "partials": 11,
+        "partial_decode_ms_median": 867.0999999999999,
+        "final_decode_ms_median": 131.3,
+        "partial_to_final_ratio": 6.603960396039603,
+        "amplification": 5.751633986928105
+      },
+      {
+        "utterance": "1272-135031-0003",
+        "audio_s": 4.755,
+        "runs": 1,
+        "partials": 4,
+        "partial_decode_ms_median": 428.0,
+        "final_decode_ms_median": 102.9,
+        "partial_to_final_ratio": 4.159378036929057,
+        "amplification": 2.1030494216614093
+      },
+      {
+        "utterance": "1272-135031-0004",
+        "audio_s": 4.225,
+        "runs": 1,
+        "partials": 4,
+        "partial_decode_ms_median": 242.60000000000002,
+        "final_decode_ms_median": 90.2,
+        "partial_to_final_ratio": 2.689578713968958,
+        "amplification": 2.366863905325444
+      }
+    ],
+    "time_to_first_partial": {
+      "pacing_floor_s": 0.9,
+      "ttfp_s": {
+        "n": 5,
+        "p50": 0.9410810780000247,
+        "p95": 0.9453265939999256,
+        "mean": 0.9410945560000983,
+        "min": 0.935494897999888,
+        "max": 0.9461390759997812
+      },
+      "first_partial_decode_s": {
+        "n": 5,
+        "p50": 0.038799999999999994,
+        "p95": 0.04374,
+        "mean": 0.03872,
+        "min": 0.033100000000000004,
+        "max": 0.0446
+      },
+      "remainder_s": {
+        "n": 5,
+        "p50": 0.0022810780000247013,
+        "p95": 0.0035838292002130538,
+        "mean": 0.0023745560000982156,
+        "min": 0.0015390759997811754,
+        "max": 0.003881062000294311
+      },
+      "remainder_definition": "ttfp - pacing floor - first partial decode = queue + network + scheduling"
+    },
+    "final_latency": {
+      "final_latency_s": {
+        "n": 5,
+        "p50": 0.1324598840001272,
+        "p95": 0.15676272340042488,
+        "mean": 0.12496677460021602,
+        "min": 0.0910228709999501,
+        "max": 0.16213057700042555
+      },
+      "final_decode_s": {
+        "n": 5,
+        "p50": 0.1313,
+        "p95": 0.15564,
+        "mean": 0.12391999999999999,
+        "min": 0.0902,
+        "max": 0.161
+      },
+      "remainder_s": {
+        "n": 5,
+        "p50": 0.0010913090004222026,
+        "p95": 0.0011540226001868713,
+        "mean": 0.0010467746002160133,
+        "min": 0.0008228709999500983,
+        "max": 0.0011598840001272037
+      },
+      "remainder_definition": "final latency - final decode = wait for in-flight partial + queue + network"
+    },
+    "projections": {
+      "label": "PROJECTION (not measured)",
+      "saturation_concurrency_same_audio_mix": 11.2637493984358,
+      "saturation_assumption": "decode cost per stream unchanged as concurrency grows; queueing delay rises well before this point",
+      "by_stream_length": [
+        {
+          "stream_audio_s": 5,
+          "partials": 5,
+          "partial_compute_s": 0.3416744216188191,
+          "final_compute_s": 0.10050149519441655,
+          "worker_load_per_stream": 0.08843518336264714,
+          "saturation_streams_per_worker": 11.30771670251747,
+          "extrapolated": false
+        },
+        {
+          "stream_audio_s": 10,
+          "partials": 10,
+          "partial_compute_s": 0.8256777590564442,
+          "final_compute_s": 0.13401395198546323,
+          "worker_load_per_stream": 0.09596917110419076,
+          "saturation_streams_per_worker": 10.420012890538889,
+          "extrapolated": false
+        },
+        {
+          "stream_audio_s": 20,
+          "partials": 20,
+          "partial_compute_s": 2.2206711813881133,
+          "final_compute_s": 0.20103886556755662,
+          "worker_load_per_stream": 0.12108550234778351,
+          "saturation_streams_per_worker": 8.258627008275406,
+          "extrapolated": true
+        },
+        {
+          "stream_audio_s": 30,
+          "partials": 30,
+          "partial_compute_s": 4.184980266995008,
+          "final_compute_s": 0.26806377914965,
+          "worker_load_per_stream": 0.14843480153815528,
+          "saturation_streams_per_worker": 6.736964577292538,
+          "extrapolated": true
+        },
+        {
+          "stream_audio_s": 60,
+          "partials": 60,
+          "partial_compute_s": 13.493801503467038,
+          "final_compute_s": 0.46913851989593014,
+          "worker_load_per_stream": 0.23271566705604949,
+          "saturation_streams_per_worker": 4.297089287757967,
+          "extrapolated": true
+        },
+        {
+          "stream_audio_s": 120,
+          "partials": 120,
+          "partial_compute_s": 47.48296688484218,
+          "final_compute_s": 0.8712880013884905,
+          "worker_load_per_stream": 0.40295212405192227,
+          "saturation_streams_per_worker": 2.4816843994874818,
+          "extrapolated": true
+        }
+      ],
+      "by_stream_length_assumption": "linear partial cost fitted on 1.0-11.0 s; rows marked extrapolated go beyond the data, and above 30 s Whisper decodes in multiple windows, which this linear model does not capture"
+    }
+  },
+  "docs/benchmarks/phase1-t4/raw/stream_int8_c4.json": {
+    "label": "T4 INT8-FP16 c=4",
+    "model": {
+      "backend": "whisper",
+      "name": "base.en",
+      "device": "cuda",
+      "compute_type": "int8_float16"
+    },
+    "run_config": {
+      "url": "ws://127.0.0.1:8000/ws/transcribe",
+      "streams": 20,
+      "concurrency": 4,
+      "warmup": 2,
+      "chunk_ms": 100,
+      "speed": 1.0,
+      "stream_timeout_s": 120.0
+    },
+    "streams_ok": 20,
+    "partial_cost": {
+      "buckets": [
+        {
+          "audio_s": [
+            0,
+            2
+          ],
+          "n": 20,
+          "p50_ms": 34.599999999999994,
+          "mean_ms": 34.49999999999999,
+          "max_ms": 42.4
+        },
+        {
+          "audio_s": [
+            2,
+            4
+          ],
+          "n": 40,
+          "p50_ms": 46.15,
+          "mean_ms": 49.875,
+          "max_ms": 78.7
+        },
+        {
+          "audio_s": [
+            4,
+            6
+          ],
+          "n": 32,
+          "p50_ms": 65.15,
+          "mean_ms": 66.42500000000001,
+          "max_ms": 93.8
+        },
+        {
+          "audio_s": [
+            6,
+            8
+          ],
+          "n": 24,
+          "p50_ms": 78.75,
+          "mean_ms": 79.79166666666667,
+          "max_ms": 102.3
+        },
+        {
+          "audio_s": [
+            8,
+            10
+          ],
+          "n": 24,
+          "p50_ms": 89.65,
+          "mean_ms": 90.8625,
+          "max_ms": 106.1
+        },
+        {
+          "audio_s": [
+            10,
+            12
+          ],
+          "n": 20,
+          "p50_ms": 104.9,
+          "mean_ms": 105.295,
+          "max_ms": 113.6
+        }
+      ],
+      "linear_fit": {
+        "n": 160,
+        "intercept_ms": 31.4574411898127,
+        "slope_ms_per_audio_s": 7.221025857041019,
+        "r": 0.9342337658932641,
+        "x_min_s": 1.0,
+        "x_max_s": 11.0
+      }
+    },
+    "final_cost_fit": {
+      "n": 20,
+      "intercept_ms": 40.04516741039454,
+      "slope_ms_per_audio_s": 8.098638166894917,
+      "r": 0.9418672050913814,
+      "x_min_s": 4.225,
+      "x_max_s": 11.475
+    },
+    "utilization": {
+      "partial_decode_s": 11.0122,
+      "final_decode_s": 2.1767,
+      "partial_share": 0.8349597009606563,
+      "wall_clock_s": 44.11119399499876,
+      "inference_workers": 1,
+      "busy_fraction": 0.29899213341392056,
+      "busy_fraction_per_concurrent_stream": 0.07474803335348014,
+      "note": "busy_fraction = total decode time / (wall clock x workers); concurrency ramps down at the end of a run, so per-stream load is slightly underestimated"
+    },
+    "per_utterance": [
+      {
+        "utterance": "1272-135031-0000",
+        "audio_s": 10.885,
+        "runs": 4,
+        "partials": 10,
+        "partial_decode_ms_median": 702.65,
+        "final_decode_ms_median": 122.55,
+        "partial_to_final_ratio": 5.733578131374949,
+        "amplification": 5.052824988516307
+      },
+      {
+        "utterance": "1272-135031-0001",
+        "audio_s": 11.13,
+        "runs": 4,
+        "partials": 11,
+        "partial_decode_ms_median": 826.55,
+        "final_decode_ms_median": 132.10000000000002,
+        "partial_to_final_ratio": 6.257002271006812,
+        "amplification": 5.929919137466307
+      },
+      {
+        "utterance": "1272-135031-0002",
+        "audio_s": 11.475,
+        "runs": 4,
+        "partials": 11,
+        "partial_decode_ms_median": 784.7,
+        "final_decode_ms_median": 130.75,
+        "partial_to_final_ratio": 6.001529636711282,
+        "amplification": 5.751633986928105
+      },
+      {
+        "utterance": "1272-135031-0003",
+        "audio_s": 4.755,
+        "runs": 4,
+        "partials": 4,
+        "partial_decode_ms_median": 218.2,
+        "final_decode_ms_median": 80.5,
+        "partial_to_final_ratio": 2.71055900621118,
+        "amplification": 2.1030494216614093
+      },
+      {
+        "utterance": "1272-135031-0004",
+        "audio_s": 4.225,
+        "runs": 4,
+        "partials": 4,
+        "partial_decode_ms_median": 184.8,
+        "final_decode_ms_median": 68.6,
+        "partial_to_final_ratio": 2.6938775510204085,
+        "amplification": 2.366863905325444
+      }
+    ],
+    "time_to_first_partial": {
+      "pacing_floor_s": 0.9,
+      "ttfp_s": {
+        "n": 20,
+        "p50": 0.93770666599994,
+        "p95": 1.009908051250477,
+        "mean": 0.9539124724000431,
+        "min": 0.9319276109999919,
+        "max": 1.0402691819999745
+      },
+      "first_partial_decode_s": {
+        "n": 20,
+        "p50": 0.0346,
+        "p95": 0.038505,
+        "mean": 0.034499999999999996,
+        "min": 0.0303,
+        "max": 0.0424
+      },
+      "remainder_s": {
+        "n": 20,
+        "p50": 0.0021513465002862865,
+        "p95": 0.07375805125047699,
+        "mean": 0.01941247240004302,
+        "min": 0.0012717959992412722,
+        "max": 0.1050691819999745
+      },
+      "remainder_definition": "ttfp - pacing floor - first partial decode = queue + network + scheduling"
+    },
+    "final_latency": {
+      "final_latency_s": {
+        "n": 20,
+        "p50": 0.1298596335000184,
+        "p95": 0.17751283969901127,
+        "mean": 0.12888820984999255,
+        "min": 0.06743435700082046,
+        "max": 0.2251508310000645
+      },
+      "final_decode_s": {
+        "n": 20,
+        "p50": 0.12254999999999999,
+        "p95": 0.14337,
+        "mean": 0.10883500000000002,
+        "min": 0.0664,
+        "max": 0.1561
+      },
+      "remainder_s": {
+        "n": 20,
+        "p50": 0.0011710965001388088,
+        "p95": 0.08626936855029213,
+        "mean": 0.02005320984999257,
+        "min": 0.0008138339996337923,
+        "max": 0.0933508310000645
+      },
+      "remainder_definition": "final latency - final decode = wait for in-flight partial + queue + network"
+    },
+    "projections": {
+      "label": "PROJECTION (not measured)",
+      "saturation_concurrency_same_audio_mix": 13.378278399259607,
+      "saturation_assumption": "decode cost per stream unchanged as concurrency grows; queueing delay rises well before this point",
+      "by_stream_length": [
+        {
+          "stream_audio_s": 5,
+          "partials": 5,
+          "partial_compute_s": 0.2656025938046788,
+          "final_compute_s": 0.08053835824486913,
+          "worker_load_per_stream": 0.06922819040990959,
+          "saturation_streams_per_worker": 14.44498251476549,
+          "extrapolated": false
+        },
+        {
+          "stream_audio_s": 10,
+          "partials": 10,
+          "partial_compute_s": 0.711730834035383,
+          "final_compute_s": 0.1210315490793437,
+          "worker_load_per_stream": 0.08327623831147266,
+          "saturation_streams_per_worker": 12.008227320016132,
+          "extrapolated": false
+        },
+        {
+          "stream_audio_s": 20,
+          "partials": 20,
+          "partial_compute_s": 2.145564253774867,
+          "final_compute_s": 0.20201793074829288,
+          "worker_load_per_stream": 0.11737910922615802,
+          "saturation_streams_per_worker": 8.519403551387228,
+          "extrapolated": true
+        },
+        {
+          "stream_audio_s": 30,
+          "partials": 30,
+          "partial_compute_s": 4.301500259218454,
+          "final_compute_s": 0.28300431241724205,
+          "worker_load_per_stream": 0.15281681905452318,
+          "saturation_streams_per_worker": 6.543782328326126,
+          "extrapolated": true
+        },
+        {
+          "stream_audio_s": 60,
+          "partials": 60,
+          "partial_compute_s": 15.101923789773824,
+          "final_compute_s": 0.5259634574240896,
+          "worker_load_per_stream": 0.26046478745329854,
+          "saturation_streams_per_worker": 3.839290561221449,
+          "extrapolated": true
+        },
+        {
+          "stream_audio_s": 120,
+          "partials": 120,
+          "partial_compute_s": 56.19954066489532,
+          "final_compute_s": 1.0118817474377846,
+          "worker_load_per_stream": 0.4767618534361092,
+          "saturation_streams_per_worker": 2.097483246180076,
+          "extrapolated": true
+        }
+      ],
+      "by_stream_length_assumption": "linear partial cost fitted on 1.0-11.0 s; rows marked extrapolated go beyond the data, and above 30 s Whisper decodes in multiple windows, which this linear model does not capture"
+    }
+  }
+}

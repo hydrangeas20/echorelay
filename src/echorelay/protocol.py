@@ -64,8 +64,14 @@ def ready_event(session_id: str, limits: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def partial_event(seq: int, text: str, audio_s: float, inference_s: float) -> dict[str, Any]:
-    return {
+def _ms(seconds: float) -> float:
+    return round(seconds * 1000, 1)
+
+
+def partial_event(
+    seq: int, text: str, audio_s: float, inference_s: float, timing: dict[str, float] | None = None
+) -> dict[str, Any]:
+    event = {
         "type": "partial",
         "provisional": True,  # may change or disappear in later partials / the final
         "seq": seq,
@@ -73,16 +79,24 @@ def partial_event(seq: int, text: str, audio_s: float, inference_s: float) -> di
         "audio_duration_s": round(audio_s, 3),
         "inference_ms": round(inference_s * 1000, 1),
     }
+    if timing is not None:  # only when ECHORELAY_EVENT_TIMING is enabled
+        event["timing"] = {f"{k}_ms": _ms(v) for k, v in timing.items()}
+    return event
 
 
-def final_event(text: str, audio_s: float, inference_s: float) -> dict[str, Any]:
-    return {
+def final_event(
+    text: str, audio_s: float, inference_s: float, timing: dict[str, float] | None = None
+) -> dict[str, Any]:
+    event = {
         "type": "final",
         "provisional": False,
         "text": text,
         "audio_duration_s": round(audio_s, 3),
         "inference_ms": round(inference_s * 1000, 1),
     }
+    if timing is not None:
+        event["timing"] = {f"{k}_ms": _ms(v) for k, v in timing.items()}
+    return event
 
 
 def error_event(code: str, message: str) -> dict[str, Any]:

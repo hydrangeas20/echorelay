@@ -77,6 +77,26 @@ Sent once after `end`, decoded over the full stream with final-quality
 settings (beam search). Always after every partial. The server then closes
 with code 1000. An empty stream produces `"text": ""`.
 
+### Optional `timing` object
+
+When the server runs with `ECHORELAY_EVENT_TIMING=true` (default **off**, so
+the v1 wire format above is unchanged), `partial` and `final` events carry an
+extra `timing` object. Clients must ignore it if they don't use it.
+
+```json
+{"type": "partial", ..., "timing": {"queue_ms": 12.4, "decode_ms": 61.0, "staleness_ms": 100.0}}
+{"type": "final",   ..., "timing": {"wait_partial_ms": 35.2, "queue_ms": 0.1, "decode_ms": 118.7}}
+```
+
+| Field | Meaning |
+|---|---|
+| `queue_ms` | decode requested → inference slot acquired |
+| `decode_ms` | model call inside the worker thread (equals `inference_ms`) |
+| `staleness_ms` | audio received after this partial's snapshot was taken, at send time |
+| `wait_partial_ms` | `end` processed → in-flight partial for this stream finished |
+
+Definitions and measurement boundaries: [measurements.md](measurements.md).
+
 ### `error`
 ```json
 {"type": "error", "code": "audio_too_large", "message": "..."}
@@ -92,6 +112,7 @@ Always the last message; the server closes immediately afterwards.
 | `frame_too_large` | 1009 | Single frame exceeds `max_frame_bytes` |
 | `audio_too_large` | 1009 | Stream audio would exceed `max_audio_seconds` |
 | `idle_timeout` | 1008 | No frame received for `idle_timeout_s` |
+| `send_timeout` | 1008 | Client did not accept a server message within `send_timeout_s` (stopped reading) |
 | `server_busy` | 1013 | `max_concurrent_streams` already active; retry later |
 | `inference_error` | 1011 | Model raised during a partial or final decode |
 | `inference_timeout` | 1011 | Queueing + decode exceeded `inference_timeout_s` |
