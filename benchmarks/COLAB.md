@@ -418,3 +418,54 @@ What to check first in `comparison.md`:
 * Final latency and final queue p95 at c=8, their bootstrap intervals, and
   whether the per-round values agree.
 * TTFP and partial queue p95: the fairness cost of final priority.
+
+---
+
+# Phase 4: staggered arrival (registered)
+
+Registration (design, predictions, decision rules):
+[`docs/experiments/phase4-staggered-arrival.md`](../docs/experiments/phase4-staggered-arrival.md).
+Do not run it until the registration commit is approved. One T4 session,
+about 30–35 minutes: 12 runs in the fixed order, each with four 20-stream
+c=8 blocks.
+
+**P4.0 Setup.** Use the P0 cells above, changing P0.2 to clone
+`-b exp/staggered-arrival` and set `PHASE2_SHA` to the registration commit.
+Then run P0.3 (install + `verify_commit`), P0.4 (the five files,
+PCM-hash verified) and P0.5 (GPU smoke gate).
+
+**P4.1 Run the registered plan.** Pass no other options: overrides are
+recorded as deviations.
+
+```python
+os.makedirs("/content/echorelay/results/phase4", exist_ok=True)
+!python -m benchmarks.matched_comparison --plan phase4 --audio-dir /content/echorelay/eval_audio5 \
+    --out /content/echorelay/results/phase4 2>&1 | tee /content/echorelay/results/phase4/console.txt
+```
+
+The first output line lists the 12 runs. It must not start with
+`WARNING: NOT the registered configuration`. Each run prints
+`13/13 checks passed` or the failed checks; a failure is data, so let the
+plan continue.
+
+**P4.2 Analyze** (registered analysis):
+
+```python
+!python -m benchmarks.analyze_arrival /content/echorelay/results/phase4 \
+    --audio-dir /content/echorelay/eval_audio5 \
+    --output /content/echorelay/results/phase4/analysis.json \
+    --markdown /content/echorelay/results/phase4/analysis.md
+```
+
+**P4.3 Save**
+
+```python
+import shutil
+from google.colab import files
+shutil.make_archive("/content/echorelay_phase4_results", "zip", "/content/echorelay/results/phase4")
+files.download("/content/echorelay_phase4_results.zip")
+```
+
+If Colab disconnects mid-plan, keep the partial folder and report it.
+Under the registration, only a run that produced no data may be repeated,
+once, at the end.

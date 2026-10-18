@@ -94,6 +94,11 @@ class StreamRecord:
     partial_timing: list[dict] = field(default_factory=list)
     final_timing: dict | None = None
     ready: dict | None = None
+    # Arrival bookkeeping (client monotonic clock). start_delay_s is the
+    # intentional first-wave offset under --arrival stagger (0 otherwise);
+    # t_done is when the stream finished, failed or timed out.
+    start_delay_s: float = 0.0
+    t_done: float | None = None
 
 
 async def run_stream(url: str, utt: Utterance, index: int, chunk_ms: int, speed: float,
@@ -122,10 +127,14 @@ async def run_stream(url: str, utt: Utterance, index: int, chunk_ms: int, speed:
         if rec.error is None:
             rec.error = f"connection:{type(exc).__name__}"
             rec.error_detail = str(exc) or type(exc).__name__
+    except asyncio.CancelledError:  # run aborted: still record when it ended
+        rec.t_done = time.monotonic()
+        raise
     except Exception as exc:  # never let one stream abort the whole run
         if rec.error is None:
             rec.error = f"client:{type(exc).__name__}"
             rec.error_detail = str(exc) or type(exc).__name__
+    rec.t_done = time.monotonic()
     return rec
 
 
@@ -183,15 +192,49 @@ async def _stream(url: str, utt: Utterance, chunk_ms: int, speed: float, rec: St
             rec.error_detail = f"close code {ws.close_code}"
 
 
+ARRIVALS = ("sync", "stagger")
+
+
+def first_wave_offsets(concurrency: int, arrival: str = "sync", stagger_s: float = 0.0) -> list[float]:
+    """Start offset of each slot's first stream, relative to the run start.
+
+    sync:    every slot starts at 0 (the original behaviour).
+    stagger: slot k starts at k * stagger_s.
+    In both modes every later stream starts as soon as a slot frees (closed
+    loop), so only the first wave's start times differ between modes.
+    """
+    if arrival not in ARRIVALS:
+        raise ValueError(f"arrival must be one of {ARRIVALS}, got {arrival!r}")
+    if arrival == "sync":
+        return [0.0] * concurrency
+    if stagger_s <= 0:
+        raise ValueError("--arrival stagger needs a positive --stagger-s")
+    return [k * stagger_s for k in range(concurrency)]
+
+
 async def run_load(url: str, utts: list[Utterance], n: int, concurrency: int,
                    chunk_ms: int, speed: float, timeout_s: float,
-                   offset: int = 0) -> tuple[list[StreamRecord], float]:
+                   offset: int = 0, arrival: str = "sync",
+                   stagger_s: float = 0.0) -> tuple[list[StreamRecord], float]:
+    """Run ``n`` streams, at most ``concurrency`` at once. Stream i always
+    plays ``utts[(offset + i) % len(utts)]``, so the audio assignment is
+    identical across arrival modes and policies."""
+    offsets = first_wave_offsets(concurrency, arrival, stagger_s)
     sem = asyncio.Semaphore(concurrency)
 
     async def one(i: int) -> StreamRecord:
         async with sem:
-            return await run_stream(url, utts[(offset + i) % len(utts)], offset + i, chunk_ms, speed,
-                                    timeout_s)
+            # Tasks acquire the semaphore in creation order, so streams
+            # 0..concurrency-1 are the first wave and hold one slot each. A
+            # delayed first-wave stream keeps its slot while it waits.
+            delay = 0.0
+            if i < concurrency and offsets[i] > 0:
+                delay = offsets[i]
+                await asyncio.sleep(max(0.0, t0 + delay - time.monotonic()))
+            rec = await run_stream(url, utts[(offset + i) % len(utts)], offset + i, chunk_ms, speed,
+                                   timeout_s)
+            rec.start_delay_s = delay
+            return rec
 
     t0 = time.monotonic()
     records = await asyncio.gather(*(one(i) for i in range(n)))
@@ -270,6 +313,10 @@ def main() -> None:
                         "least this many seconds (references concatenated too)")
     p.add_argument("--sample-interval-s", type=float, default=1.0,
                    help="poll /metrics and nvidia-smi this often during the run; 0 disables")
+    p.add_argument("--arrival", choices=ARRIVALS, default="sync",
+                   help="sync: all first-wave streams start together (default, unchanged); "
+                        "stagger: slot k's first stream starts k * --stagger-s later")
+    p.add_argument("--stagger-s", type=float, default=0.0)
     p.add_argument("--label", default="")
     p.add_argument("--output", required=True)
     a = p.parse_args()
@@ -294,7 +341,7 @@ def main() -> None:
                     if a.sample_interval_s > 0 else None)
         cpu0 = resource.getrusage(resource.RUSAGE_SELF)
         records, wall = await run_load(a.url, utts, a.streams, a.concurrency, a.chunk_ms, a.speed,
-                                       a.stream_timeout_s)
+                                       a.stream_timeout_s, arrival=a.arrival, stagger_s=a.stagger_s)
         cpu1 = resource.getrusage(resource.RUSAGE_SELF)
         stop.set()
         samples = await sampling if sampling else []
@@ -317,6 +364,7 @@ def main() -> None:
             "url": a.url, "streams": a.streams, "concurrency": a.concurrency, "warmup": a.warmup,
             "chunk_ms": a.chunk_ms, "speed": a.speed, "stream_timeout_s": a.stream_timeout_s,
             "concat_seconds": a.concat_seconds, "sample_interval_s": a.sample_interval_s,
+            "arrival": a.arrival, "stagger_s": a.stagger_s,
             "wer_normalizer": a.wer_normalizer,
         },
         "metric_definitions": METRIC_DEFINITIONS,

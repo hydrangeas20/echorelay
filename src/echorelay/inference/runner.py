@@ -23,7 +23,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from ..config import SAMPLE_RATE_HZ
-from ..metrics import Metrics
+from ..metrics import LevelTracker, Metrics
 from .base import InferenceError, Transcriber
 from .scheduler import PRIORITY_FINAL, PRIORITY_PARTIAL, Job, SlotScheduler
 
@@ -55,6 +55,7 @@ class InferenceRunner:
         self._pool = ThreadPoolExecutor(max_workers=max_concurrency, thread_name_prefix="infer")
         self.scheduler = SlotScheduler(max_concurrency, prioritize=final_priority)
         self.in_flight = 0  # jobs holding a slot (running in a worker thread)
+        self.in_flight_level = LevelTracker()  # time at each in-flight count
 
     @property
     def waiting(self) -> int:
@@ -85,6 +86,7 @@ class InferenceRunner:
                 await self.scheduler.acquire(job)
                 queue_s = time.monotonic() - t_call
                 self.in_flight += 1
+                self.in_flight_level.set(self.in_flight)
                 fut = loop.run_in_executor(self._pool, self._run, audio, final)
                 fut.add_done_callback(lambda _f, j=job: self._release(j))
                 # shield: cancelling the caller must not "cancel" the executor
@@ -125,6 +127,7 @@ class InferenceRunner:
         # Runs on the loop (future done-callback) once the worker thread is done.
         job.state = "done"
         self.in_flight -= 1
+        self.in_flight_level.set(self.in_flight)
         self.scheduler.release()
 
     def snapshot(self) -> dict:

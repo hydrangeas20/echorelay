@@ -184,3 +184,43 @@ transcripts under both versions without re-running a model.
 * **Bootstrap interval**: percentile bootstrap of the difference in p95
   (candidate − baseline), resampling streams within each arm, 2,000
   resamples, seed 0. Optimistic, because streams within a run are correlated.
+
+## 10. Arrival schedules and workload descriptors (added for Phase 4, before data)
+
+**Arrival schedules** (`load_test --arrival`, `stress --arrival`):
+`sync` (default, unchanged) starts every first-wave stream at once;
+`stagger` starts slot k's first stream k × `--stagger-s` after the run
+starts (absolute offsets). Later streams start when a slot frees in both
+modes. Records carry `start_delay_s` (the intentional offset) and `t_done`
+(when the stream finished, failed, timed out or was cancelled). TTFP and
+final latency start at the stream's own first frame and end message, so
+the offset is excluded. Throughput's wall clock includes the stagger ramp;
+compare it only within an arrival mode.
+
+**Blocks:** a repeated concurrency value in `stress --concurrency` runs
+one block per repeat (`c8`, `c8_2`, `c8_3`), plus `recovery`. Each block
+starts from an idle server and records `/metrics` before and after.
+
+**Level distributions** (`/metrics` → `levels`): for `streams.active`,
+`inference.waiting` (queue depth) and `inference.in_flight`, the time spent
+at each integer level since start. Differencing the before and after
+snapshots gives a block's time-weighted distribution: mean, share at each
+level, share at or above, and highest level held. The window includes the
+short idle wait after the block.
+
+**Queue depth at end** (`stream_summary`: `inference_waiting_at_end`,
+`inference_in_flight_at_end`): observed when `end` is processed, before
+the stream's final is submitted or its partial promoted/cancelled.
+
+**Workload descriptors** (`benchmarks/analyze_arrival.py`, per block):
+
+| Descriptor | Definition |
+|---|---|
+| Observed active (client) | streams whose [t_connect, t_done] interval covers time t; time-weighted mean over [first connect, last done]; share of time at the scheduled concurrency; mean count at each stream's end |
+| End-time synchronization | per stream, other streams in the block with \|Δ t_end_sent\| ≤ 250 ms; share with ≥ 1, mean |
+| Partial request time | first frame + (round(audio / chunk) − 1) × chunk / speed, for each sent partial (cancelled or skipped partials are not sent, so not counted) |
+| Phase alignment | per partial request, other streams' requests within ±50 ms (mean, share ≥ 3); R = \|mean(exp(2πi · t / P))\| with P = 1.0 s / speed (1 = all requests on one phase, ≈ 0 = evenly spread) |
+
+**Phase 4 intervals:** the block bootstrap resamples whole blocks within
+each arm (10,000 resamples, seed 0). The Phase 3 stream bootstrap is
+reported alongside. Both are exploratory; see the registration.
