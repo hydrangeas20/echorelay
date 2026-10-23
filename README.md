@@ -51,11 +51,11 @@ When several streams compete for a constrained inference worker, a request may s
 **Engineering for the tail means identifying those delays, testing targeted changes, and understanding the conditions under which the changes succeed or fail.**
 
 ---
-## Visualizing Tail Latency
+### Visualizing Tail Latency
 
 ![Illustrative latency distribution highlighting p50, p95, p99, and the long tail](assets/Understanding%20Tail%20Latency.png)
 
-### *Conceptual illustration only. The latency values shown are not EchoRelay benchmark measurements.*
+*Conceptual illustration only. The latency values shown are not EchoRelay benchmark measurements.*
 ---
 
 ## Architecture
@@ -151,7 +151,7 @@ These mechanisms can be enabled independently and are **disabled by default**.
 
 The following measurements were collected on an NVIDIA T4 GPU, using Whisper `base.en` with FP16 inference.
 
-**p95 final-transcript latency at eight concurrent streams**
+**p95 final-transcript latency — concurrency target of eight streams**
 
 | Experiment | Baseline | Priority + cancellation | Change |
 |---|---:|---:|---:|
