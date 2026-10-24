@@ -2,15 +2,15 @@
 
 <div align="center">
 
-![EchoRelay — streaming speech recognition, engineered for the tail](assets/echorelay-hero.svg)
+![EchoRelay — Streaming Speech Recognition](assets/echorelay-hero.svg)
 
 ### Engineering for the Tail
 
-**A streaming speech-to-text server and empirical investigation into GPU inference scheduling and tail latency.**
+**Streaming Speech Recognition · GPU Inference Scheduling · Tail Latency**
 
-Python · FastAPI · WebSockets · faster-whisper / CTranslate2 · Whisper `base.en` · NVIDIA T4
+Python · FastAPI · WebSockets · faster-whisper / CTranslate2 · NVIDIA T4
 
-[Architecture](#architecture) · [Experimental Findings](#experimental-findings) · [Research Phases](#research-phases) · [Reproducibility](#reproducibility) · [Quick Start](#quick-start-local-cpu)
+[Architecture](#architecture) · [Results](#experimental-findings) · [Quick Start](#quick-start-local-cpu) · [Reproducibility](#reproducibility)
 
 </div>
 
@@ -18,72 +18,39 @@ Python · FastAPI · WebSockets · faster-whisper / CTranslate2 · Whisper `base
 
 ## Overview
 
-EchoRelay is a Python-based streaming speech recognition service built to investigate a systems-engineering question:
+EchoRelay is a streaming speech-to-text service built with FastAPI and faster-whisper. It implements bounded WebSocket sessions, admission control, inference scheduling, and runtime observability.
 
-> **Can we reduce high-percentile inference latency by changing how work is scheduled, without changing the underlying speech recognition model?**
+**Research question:** Can scheduling changes reduce final-transcript tail latency without changing the underlying speech recognition model?
 
-The system accepts audio over WebSockets, generates provisional transcripts while audio arrives, and delivers one final transcript when a client explicitly ends the stream.
+## Key Experimental Findings
 
-Beyond implementing a working inference API, EchoRelay examines how concurrent audio streams compete for limited GPU capacity, how scheduling decisions affect request latency, and whether observed performance improvements generalize across workload patterns.
+**p95 final-transcript latency — target concurrency of eight streams**
 
-The project combines **software engineering, production-oriented reliability mechanisms, GPU profiling, and reproducible experimentation**.
+| Workload               | Baseline | Priority + Cancellation | Finding              |
+| ---------------------- | -------: | ----------------------: | -------------------- |
+| Phase 3 — Synchronized |   562 ms |                  266 ms | **52.7% lower**      |
+| Phase 4 — Synchronized | 618.9 ms |                291.4 ms | **52.9% lower**      |
+| Phase 4 — Staggered    | 183.4 ms |                163.8 ms | **Criteria not met** |
 
-## Why Engineering for the Tail?
+_Measurements were collected on one NVIDIA T4 using Whisper `base.en` with FP16 inference. The staggered workload showed a 10.7% observed reduction, but the preregistered improvement criteria were not demonstrated._
 
-A service can have excellent average latency and still feel slow to users whose requests experience long delays.
+**What worked:** Final-request priority and obsolete-partial cancellation substantially reduced measured p95 latency under synchronized contention.
 
-**Tail latency** describes the slower portion of a request-latency distribution.
+**Generalization remains unproven:** Under staggered arrivals, the observed p95 reduction was 10.7%, but the preregistered improvement criteria were not met. The exploratory block-bootstrap interval included zero.
 
-| Metric | Interpretation |
-|---|---|
-| **p50** | Half of requests finish within this latency |
-| **p95** | 95% of requests finish within this latency; 5% take longer |
-| **p99** | 99% of requests finish within this latency; 1% take longer |
+**Known trade-off:** Strict final-request priority can starve partial requests under sustained contention. Both experimental scheduling flags remain disabled by default.
 
-For an interactive speech recognition service, the delay between finishing an utterance and receiving the final transcript directly affects perceived responsiveness.
+**Measurement:** Final-transcript latency is measured from the client's `end` message to receipt of the `final` event, including queue wait, decoding, and delivery.
 
-EchoRelay measures **final-transcript latency** from the client's `end` message to receipt of its `final` event. This includes time spent waiting for inference capacity, decoding the audio, and delivering the result.
+For full methodology, raw evidence, and limitations, see the [Phase 3 report](docs/benchmarks/scheduling-t4/README.md) and [Phase 4 results](docs/benchmarks/phase4-t4/README.md).
 
-The distinction matters because faster model execution is not the only way to improve response time.
-
-When several streams compete for a constrained inference worker, a request may spend more time waiting than executing.
-
-**Engineering for the tail means identifying those delays, testing targeted changes, and understanding the conditions under which the changes succeed or fail.**
-
----
-### Visualizing Tail Latency
-
-![Illustrative latency distribution highlighting p50, p95, p99, and the long tail](assets/Understanding%20Tail%20Latency.png)
-
-*Conceptual illustration only. The latency values shown are not EchoRelay benchmark measurements.*
 ---
 
 ## Architecture
 
 EchoRelay separates network transport, session management, inference scheduling, model execution, and observability.
 
-```mermaid
-flowchart TD
-    A["Audio client<br/>16 kHz mono PCM16"] --> B["FastAPI WebSocket transport"]
-    B --> C["Admission control<br/>Frame validation and stream limits"]
-    C --> D["Session state machine<br/>Bounded audio buffer"]
-
-    D --> E["Partial inference<br/>Provisional transcript"]
-    D --> F["Final inference<br/>Full audio buffer"]
-
-    E --> G["SlotScheduler<br/>Bounded inference capacity"]
-    F --> G
-
-    G --> H["Inference runner<br/>Worker threads"]
-    H --> I["faster-whisper / CTranslate2<br/>Whisper base.en"]
-
-    I --> J["Transcript events"]
-    J --> B
-
-    D -.-> K["Metrics and stream summaries"]
-    G -.-> K
-    H -.-> K
-```
+![EchoRelay system architecture](assets/mermaid-diagram.png)
 
 ### Streaming lifecycle
 
@@ -105,15 +72,15 @@ Partial events are therefore marked `"provisional": true`. Only the final event 
 
 ### Engineering decisions
 
-| Component | Responsibility | Key consideration |
-|---|---|---|
-| **WebSocket transport** | Audio ingestion and transcript delivery | Admission limits, validation, disconnects, bounded sends |
-| **Session state machine** | Audio buffering and transcript lifecycle | Ordering, one final per successful stream |
-| **Audio buffer** | Retains PCM16 audio | Maximum duration and bounded memory |
-| **Slot scheduler** | Grants inference execution capacity | FIFO by default; experimental priority and cancellation |
-| **Inference runner** | Executes decoding outside the event loop | Worker threads, timeouts, slot conservation |
-| **Model adapter** | Connects to faster-whisper | Configurable device and compute type |
-| **Observability** | Records latency, queueing, and resource behavior | Distinguishing waiting time from execution time |
+| Component                 | Responsibility                                   | Key consideration                                        |
+| ------------------------- | ------------------------------------------------ | -------------------------------------------------------- |
+| **WebSocket transport**   | Audio ingestion and transcript delivery          | Admission limits, validation, disconnects, bounded sends |
+| **Session state machine** | Audio buffering and transcript lifecycle         | Ordering, one final per successful stream                |
+| **Audio buffer**          | Retains PCM16 audio                              | Maximum duration and bounded memory                      |
+| **Slot scheduler**        | Grants inference execution capacity              | FIFO by default; experimental priority and cancellation  |
+| **Inference runner**      | Executes decoding outside the event loop         | Worker threads, timeouts, slot conservation              |
+| **Model adapter**         | Connects to faster-whisper                       | Configurable device and compute type                     |
+| **Observability**         | Records latency, queueing, and resource behavior | Distinguishing waiting time from execution time          |
 
 ### Why scheduling matters
 
@@ -131,33 +98,16 @@ See [Scheduling Design](docs/scheduling-design.md), [Protocol Specification](doc
 
 ## Experimental Findings
 
-### Research question
+EchoRelay evaluates two experimental scheduling mechanisms:
 
-Can scheduling changes reduce final-transcript tail latency while preserving transcript correctness?
+- **Final-request priority:** Serves waiting final inference requests before partial requests, retaining FIFO order within each class.
+- **Obsolete-partial cancellation:** Cancels queued partial work when a stream ends, without interrupting an already-running decode.
 
-EchoRelay evaluates two mechanisms:
+Both mechanisms are disabled by default because strict final priority does not guarantee fairness for partial requests.
 
-**Final-transcript priority**
+The experiments compare these policies under synchronized and staggered arrivals, using p95 final-transcript latency as a primary performance measure.
 
-Waiting final inference requests are served ahead of waiting partial requests. FIFO ordering is retained within each priority class.
-
-**Obsolete-partial cancellation**
-
-When a stream ends, a partial inference job that has not started executing can be cancelled, avoiding unnecessary work. A decode already running in a worker thread is not interrupted.
-
-These mechanisms can be enabled independently and are **disabled by default**.
-
-### Measured results
-
-The following measurements were collected on an NVIDIA T4 GPU, using Whisper `base.en` with FP16 inference.
-
-**p95 final-transcript latency — concurrency target of eight streams**
-
-| Experiment | Baseline | Priority + cancellation | Change |
-|---|---:|---:|---:|
-| Phase 3 — synchronized arrivals | 562 ms | 266 ms | **−52.7%** |
-| Phase 4 — synchronized arrivals | 618.9 ms | 291.4 ms | **−52.9%** |
-| Phase 4 — staggered arrivals | 183.4 ms | 163.8 ms | **−10.7%** |
+---
 
 ### Phase 4 synchronized-arrival comparison
 
@@ -169,7 +119,7 @@ xychart-beta
     bar [618.9, 419.4, 291.4]
 ```
 
-*Phase 4, synchronized arrivals, NVIDIA T4, eight concurrent streams. Lower is better. The combined policy includes final priority and obsolete-partial cancellation.*
+_Phase 4, synchronized arrivals, NVIDIA T4, eight concurrent streams. Lower is better. The combined policy includes final priority and obsolete-partial cancellation._
 
 Under synchronized arrivals, the combined scheduling policy reduced measured p95 final-transcript latency by **52.9%** relative to baseline.
 
@@ -197,13 +147,13 @@ The workloads also differed in observed average concurrency, so arrival timing c
 
 Across the Phase 4 experiment:
 
-| Measure | Result |
-|---|---|
-| Streams completed | **960 / 960** |
+| Measure                   | Result                            |
+| ------------------------- | --------------------------------- |
+| Streams completed         | **960 / 960**                     |
 | Final transcript identity | **100% across compared policies** |
-| Word error rate | **5.31%** |
-| Stress health checks | **155 / 156 passed** |
-| GPU environment | **One NVIDIA T4 session** |
+| Word error rate           | **5.31%**                         |
+| Stress health checks      | **155 / 156 passed**              |
+| GPU environment           | **One NVIDIA T4 session**         |
 
 One recovery time-to-first-partial check exceeded its tolerance. Its cause was not established.
 
@@ -211,13 +161,11 @@ The results support the scheduling hypothesis under the tested synchronized work
 
 ### Interpretation
 
-**What the experiments support:** Scheduling policy can materially affect tail latency when final requests compete with queued partial inference work.
+Scheduling changes substantially reduced measured final-transcript tail latency under synchronized contention. The staggered-arrival experiment did not demonstrate the preregistered improvement criteria, so the benefit cannot be assumed to generalize across workload patterns.
 
-**What remains uncertain:** How large those benefits would be across different arrival distributions, hardware, models, inference-worker counts, and sustained production traffic.
+Strict final-request priority has no fairness guarantee: sustained final-request traffic can starve partial requests. Both experimental scheduling flags therefore remain disabled by default.
 
-**Why the flags remain off:** Final-priority scheduling has no aging or fairness guarantee. Under sustained final-request traffic, partial requests can starve or time out.
-
-Read the [Phase 3 Scheduling Report](docs/benchmarks/scheduling-t4/README.md), [Phase 4 Preregistration](docs/experiments/phase4-staggered-arrival.md), and [Phase 4 Results](docs/benchmarks/phase4-t4/README.md).
+These findings are limited to the tested workloads, model, and NVIDIA T4 environment. Broader replication is needed before drawing production-level conclusions.
 
 ---
 
@@ -232,23 +180,23 @@ flowchart LR
     C --> D["Phase 4<br/>Challenge"]
 ```
 
-| Phase | Question | Engineering outcome |
-|---|---|---|
-| **1 — Foundation** | Can we build a bounded streaming inference service? | WebSocket server, audio buffering, model adapter, lifecycle handling, initial GPU evaluation |
-| **2 — Measurement** | Where does latency originate under concurrency? | Queue/decode instrumentation, resource metrics, profiling, workload analysis |
-| **3 — Scheduling** | Can inference scheduling reduce final latency? | Experimental priority and cancellation policies, correctness tests, synchronized GPU comparisons |
-| **4 — Generalization** | Do the improvements persist with staggered arrivals? | Preregistered experiment, preserved GPU evidence, qualified findings |
+| Phase                  | Question                                             | Engineering outcome                                                                              |
+| ---------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| **1 — Foundation**     | Can we build a bounded streaming inference service?  | WebSocket server, audio buffering, model adapter, lifecycle handling, initial GPU evaluation     |
+| **2 — Measurement**    | Where does latency originate under concurrency?      | Queue/decode instrumentation, resource metrics, profiling, workload analysis                     |
+| **3 — Scheduling**     | Can inference scheduling reduce final latency?       | Experimental priority and cancellation policies, correctness tests, synchronized GPU comparisons |
+| **4 — Generalization** | Do the improvements persist with staggered arrivals? | Preregistered experiment, preserved GPU evidence, qualified findings                             |
 
 ### Engineering Evolution
 
 The merged pull requests preserve the progression from implementation to experimental evaluation.
 
-| Pull request | Focus |
-|---|---|
-| [PR #1](https://github.com/hydrangeas20/echorelay/pull/1) | Initial streaming service |
-| [PR #2](https://github.com/hydrangeas20/echorelay/pull/2) | Measurement and observability |
-| [PR #3](https://github.com/hydrangeas20/echorelay/pull/3) | Experimental inference scheduling |
-| [PR #4](https://github.com/hydrangeas20/echorelay/pull/4) | Phase 4 experimental design and preregistration |
+| Pull request                                              | Focus                                              |
+| --------------------------------------------------------- | -------------------------------------------------- |
+| [PR #1](https://github.com/hydrangeas20/echorelay/pull/1) | Initial streaming service                          |
+| [PR #2](https://github.com/hydrangeas20/echorelay/pull/2) | Measurement and observability                      |
+| [PR #3](https://github.com/hydrangeas20/echorelay/pull/3) | Experimental inference scheduling                  |
+| [PR #4](https://github.com/hydrangeas20/echorelay/pull/4) | Phase 4 experimental design and preregistration    |
 | [PR #5](https://github.com/hydrangeas20/echorelay/pull/5) | Phase 4 results, evidence, and analysis validation |
 
 The engineering history illustrates a repeatable process:
@@ -265,14 +213,14 @@ The goal is to make reported findings independently inspectable rather than rely
 
 ### Evidence inventory
 
-The final post-merge audit verified the following committed evidence:
+The repository contains the following benchmark evidence, with checksums recorded in the corresponding manifests:
 
 | Collection | Verified files |
-|---|---:|
-| Phase 1 | 5 |
-| Phase 3 | 60 |
-| Phase 4 | 105 |
-| **Total** | **170** |
+| ---------- | -------------: |
+| Phase 1    |              5 |
+| Phase 3    |             60 |
+| Phase 4    |            105 |
+| **Total**  |        **170** |
 
 All three expected manifests were present, and the referenced files matched their recorded checksums.
 
@@ -286,7 +234,7 @@ The verifier checks the manifests that exist. A complete repository audit should
 
 ### Test validation
 
-The final post-merge audit ran the default test suite under:
+The recorded test validation covered:
 
 - Python 3.11 and Python 3.13.
 - All four combinations of the two experimental scheduling flags.
@@ -294,7 +242,7 @@ The final post-merge audit ran the default test suite under:
 
 **Result: 209 tests passed per configuration, with one real-model test deselected.**
 
-The audit also confirmed baseline compatibility with scheduling flags disabled, including deterministic inference-order traces and WebSocket protocol probes.
+The recorded validation included baseline compatibility checks with scheduling flags disabled, deterministic inference-order traces, and WebSocket protocol tests.
 
 ### Reproducing the analyses
 
@@ -332,7 +280,7 @@ pip install -e ".[dev]"
 pytest
 ```
 
-The default suite uses fake or gated inference backends and does not require downloading Whisper model weights.
+The default test suite uses fake or gated inference backends and does not download Whisper model weights. Real-model tests are excluded from the default run.
 
 ### Run with the real model
 
@@ -375,7 +323,7 @@ The fake adapter emits synthetic transcript tokens and is useful for exercising 
 pytest -m whisper
 ```
 
-This test requires access to the actual Whisper model weights and was not verified during the final post-merge audit because the model download was blocked.
+This test requires access to the actual Whisper model weights and may download them on first use. It was excluded from the recorded validation because model downloads were unavailable in that environment. A successful real-model smoke test should be confirmed separately before claiming end-to-end model validation.
 
 ### Docker
 
@@ -440,27 +388,27 @@ tests/                Automated test suite
 
 All environment variables use the `ECHORELAY_` prefix.
 
-| Variable | Default | Purpose |
-|---|---|---|
-| `BACKEND` | `whisper` | `whisper` or `fake` |
-| `MODEL_NAME` | `base.en` | faster-whisper model |
-| `DEVICE` | `cpu` | `cpu`, `cuda`, or `auto` |
-| `COMPUTE_TYPE` | `int8` | CTranslate2 compute type; GPU options include `float16` and `int8_float16` |
-| `MODEL_DIR` | — | Model weights cache |
-| `MAX_CONCURRENT_STREAMS` | `8` | Maximum admitted streams |
-| `MAX_CONCURRENT_INFERENCE` | `1` | Maximum simultaneous inference decodes |
-| `MAX_AUDIO_SECONDS` | `120` | Per-stream audio duration limit |
-| `MAX_FRAME_BYTES` | `262144` | Maximum audio frame size |
-| `IDLE_TIMEOUT_S` | `15` | Inactive stream timeout |
-| `INFERENCE_TIMEOUT_S` | `30` | Queueing and decode timeout per job |
-| `SEND_TIMEOUT_S` | `10` | Maximum duration of a client send operation |
-| `EVENT_TIMING` | `false` | Include optional event timing data |
-| `FINAL_PRIORITY` | `false` | Experimental final-priority scheduling |
-| `CANCEL_QUEUED_PARTIAL_ON_END` | `false` | Experimental obsolete-partial cancellation |
-| `PARTIAL_INTERVAL_S` | `1.0` | Audio interval between partial requests |
-| `MIN_PARTIAL_AUDIO_S` | `0.5` | Minimum audio for first partial |
-| `PARTIAL_BEAM_SIZE` | `1` | Partial decoding beam size |
-| `FINAL_BEAM_SIZE` | `5` | Final decoding beam size |
+| Variable                       | Default   | Purpose                                                                    |
+| ------------------------------ | --------- | -------------------------------------------------------------------------- |
+| `BACKEND`                      | `whisper` | `whisper` or `fake`                                                        |
+| `MODEL_NAME`                   | `base.en` | faster-whisper model                                                       |
+| `DEVICE`                       | `cpu`     | `cpu`, `cuda`, or `auto`                                                   |
+| `COMPUTE_TYPE`                 | `int8`    | CTranslate2 compute type; GPU options include `float16` and `int8_float16` |
+| `MODEL_DIR`                    | —         | Model weights cache                                                        |
+| `MAX_CONCURRENT_STREAMS`       | `8`       | Maximum admitted streams                                                   |
+| `MAX_CONCURRENT_INFERENCE`     | `1`       | Maximum simultaneous inference decodes                                     |
+| `MAX_AUDIO_SECONDS`            | `120`     | Per-stream audio duration limit                                            |
+| `MAX_FRAME_BYTES`              | `262144`  | Maximum audio frame size                                                   |
+| `IDLE_TIMEOUT_S`               | `15`      | Inactive stream timeout                                                    |
+| `INFERENCE_TIMEOUT_S`          | `30`      | Queueing and decode timeout per job                                        |
+| `SEND_TIMEOUT_S`               | `10`      | Maximum duration of a client send operation                                |
+| `EVENT_TIMING`                 | `false`   | Include optional event timing data                                         |
+| `FINAL_PRIORITY`               | `false`   | Experimental final-priority scheduling                                     |
+| `CANCEL_QUEUED_PARTIAL_ON_END` | `false`   | Experimental obsolete-partial cancellation                                 |
+| `PARTIAL_INTERVAL_S`           | `1.0`     | Audio interval between partial requests                                    |
+| `MIN_PARTIAL_AUDIO_S`          | `0.5`     | Minimum audio for first partial                                            |
+| `PARTIAL_BEAM_SIZE`            | `1`       | Partial decoding beam size                                                 |
+| `FINAL_BEAM_SIZE`              | `5`       | Final decoding beam size                                                   |
 
 ### Experimental scheduling flags
 
@@ -496,7 +444,7 @@ Audio received while a partial decode is running remains buffered for a later pa
 
 Partials re-decode buffered audio. This is straightforward for short utterances but increases compute cost as the buffer grows.
 
-The maximum audio duration limits this behavior.
+The configured maximum audio duration bounds the amount of audio retained and re-decoded per stream, but does not eliminate the increasing computational cost of successive partial decodes.
 
 ### Transcript ordering
 
@@ -516,12 +464,12 @@ See [Protocol Specification](docs/protocol.md).
 
 EchoRelay exposes runtime measurements for investigating performance and reliability.
 
-| Interface | Purpose |
-|---|---|
-| `GET /health` | Liveness, model information, and stream counts |
-| `GET /metrics` | JSON metrics covering streams, inference, queueing, process resources, and distributions |
-| `ECHORELAY_EVENT_TIMING=true` | Optional timing information in transcript events |
-| `stream_summary` logs | Per-stream operational summaries without transcript text |
+| Interface                     | Purpose                                                                                  |
+| ----------------------------- | ---------------------------------------------------------------------------------------- |
+| `GET /health`                 | Liveness, model information, and stream counts                                           |
+| `GET /metrics`                | JSON metrics covering streams, inference, queueing, process resources, and distributions |
+| `ECHORELAY_EVENT_TIMING=true` | Optional timing information in transcript events                                         |
+| `stream_summary` logs         | Per-stream operational summaries without transcript text                                 |
 
 Available measurements include:
 
@@ -586,17 +534,17 @@ These limitations are part of the engineering record and inform the next researc
 
 ## Benchmarks and Research Documentation
 
-| Resource | Contents |
-|---|---|
-| [Phase 1 T4 Pilot](docs/benchmarks/phase1-t4/README.md) | Initial GPU evaluation, methodology, and results |
-| [Phase 2 Plan](docs/phase2-plan.md) | Bottleneck hypotheses and measurement plan |
-| [Phase 3 Scheduling Results](docs/benchmarks/scheduling-t4/README.md) | Scheduling experiments, analysis, and evidence |
-| [Phase 4 Preregistration](docs/experiments/phase4-staggered-arrival.md) | Registered hypotheses and methodology |
-| [Phase 4 Results](docs/benchmarks/phase4-t4/README.md) | Synchronized and staggered workload comparisons |
-| [Scheduling Design](docs/scheduling-design.md) | Scheduler mechanics, invariants, and race conditions |
-| [Measurement Definitions](docs/measurements.md) | Metrics, timing boundaries, and analysis methodology |
-| [GPU Workflow](benchmarks/COLAB.md) | Colab experiment execution |
-| [Protocol](docs/protocol.md) | WebSocket messages and error behavior |
+| Resource                                                                | Contents                                             |
+| ----------------------------------------------------------------------- | ---------------------------------------------------- |
+| [Phase 1 T4 Pilot](docs/benchmarks/phase1-t4/README.md)                 | Initial GPU evaluation, methodology, and results     |
+| [Phase 2 Plan](docs/phase2-plan.md)                                     | Bottleneck hypotheses and measurement plan           |
+| [Phase 3 Scheduling Results](docs/benchmarks/scheduling-t4/README.md)   | Scheduling experiments, analysis, and evidence       |
+| [Phase 4 Preregistration](docs/experiments/phase4-staggered-arrival.md) | Registered hypotheses and methodology                |
+| [Phase 4 Results](docs/benchmarks/phase4-t4/README.md)                  | Synchronized and staggered workload comparisons      |
+| [Scheduling Design](docs/scheduling-design.md)                          | Scheduler mechanics, invariants, and race conditions |
+| [Measurement Definitions](docs/measurements.md)                         | Metrics, timing boundaries, and analysis methodology |
+| [GPU Workflow](benchmarks/COLAB.md)                                     | Colab experiment execution                           |
+| [Protocol](docs/protocol.md)                                            | WebSocket messages and error behavior                |
 
 ---
 
@@ -625,4 +573,4 @@ Improving those requests requires understanding the full path from arrival to co
 
 **Build the system. Measure the bottleneck. Test the hypothesis. Preserve the evidence. Challenge the result.**
 
-*Engineering for the Tail.*
+_Engineering for the Tail._
