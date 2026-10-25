@@ -125,9 +125,10 @@ Use the two cells in [docs/whisper-verification.md](../docs/whisper-verification
 They prepare `eval_audio5`, fix the cuBLAS/cuDNN library path, and run
 `python -m benchmarks.whisper_verification --device cuda` **with Colab's
 default `PYTHONPATH=/env/python` removed**. The recorder rejects any
-`PYTHONPATH` or `PYTEST_ADDOPTS` override as an evidence-integrity violation,
-so a plain `!python -m …` in Colab reports `NOT COMPLETE` even when all tests
-pass.
+`PYTHONPATH`, `PYTEST_ADDOPTS` or `PYTEST_PLUGINS` override, and any untracked
+file in the checkout, as evidence-integrity violations. So a plain
+`!python -m …` in Colab, or a clone with extra files added, reports
+`NOT COMPLETE` even when all tests pass.
 
 Pass criterion: the last line starts with `COMPLETE: 8 passed, 0 failed, 0
 errors, 0 skipped` and the exit code is 0. Otherwise the recorder prints

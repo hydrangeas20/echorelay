@@ -97,7 +97,8 @@ existing = os.environ.get("LD_LIBRARY_PATH", "")
 os.environ["LD_LIBRARY_PATH"] = ":".join(dirs + ([existing] if existing else []))
 
 env = os.environ.copy()
-env.pop("PYTHONPATH", None)  # Colab sets /env/python; the recorder rejects any PYTHONPATH
+for var in ("PYTHONPATH", "PYTEST_ADDOPTS", "PYTEST_PLUGINS"):  # the recorder rejects all three
+    env.pop(var, None)                                          # (Colab sets PYTHONPATH=/env/python)
 result = subprocess.run(
     ["python", "-m", "benchmarks.whisper_verification", "--audio-dir", "/content/eval_audio5",
      "--device", "cuda", "--out", "/content/whisper_verification"],
@@ -136,26 +137,44 @@ not treated as evidence. `complete` is true only if `problems` is empty, i.e.:
   English-only model;
 * on CUDA, `nvidia-smi` lists a GPU containing `T4` (`--expect-gpu`);
 * `PYTEST_ADDOPTS`, `PYTEST_PLUGINS` and `PYTHONPATH` are unset, so no plugin
-  or module was injected, and the checkout had no local edits.
-  `PYTEST_PLUGINS` was added in PR #10; the `096a034` run predates that check.
+  or module was injected, and the checkout had no local edits;
+* **the checkout audit finds nothing untracked that could run in the test
+  process.** It runs before pytest starts, with
+  `git status --porcelain --untracked-files=all --ignored=matching`, and the
+  run fails if:
+  * **any untracked, non-ignored file exists anywhere** in the repository.
+    `git status --untracked-files=no` (the dirty check) does not see these,
+    yet pytest loads any `conftest.py` from the repository root down to
+    `tests/`, and the root is on the import path;
+  * **any ignored file that Python or pytest would load** sits directly in
+    the repository root, `tests/` or `src/`: `*.py`, `*.pyc`, `*.pyo`,
+    `*.pth`, `*.so`, or a configuration file (`conftest.py`, `pytest.ini`,
+    `.pytest.ini`, `tox.ini`, `setup.cfg`, `pyproject.toml`,
+    `sitecustomize.py`, `usercustomize.py`). Ignored *directories*, such as
+    `__pycache__/`, `.cache/` or `*.egg-info/`, are allowed;
+  * the audit itself fails (fail closed);
+* every provenance section (below) was collected. A section that raises is
+  recorded as `collection_error` and makes the run incomplete, instead of
+  aborting the record.
 
-`tests/test_whisper_verification.py` (offline, in CI) checks each of these
-rules. The `model.bin` hash is recorded for traceability; there is no
+`PYTEST_PLUGINS`, the checkout audit and the provenance rule were added in
+PR #10, so the `096a034` run predates them. `tests/test_whisper_verification.py`
+(offline, in CI) checks each of these rules. The `model.bin` hash is recorded for traceability; there is no
 committed reference hash to compare it against.
 
 ### Environment provenance
 
-Since PR #10 the record has a `provenance` section. It never changes
-`complete`. It separates what the environment *said* from what the test
-process *loaded*:
+Since PR #10 the record has a `provenance` section. Its *values* never
+change `complete`; only a failure to collect a section does (see above). It
+separates what the environment *said* from what the test process *loaded*:
 
 | Field | What it is | What it is not |
 |---|---|---|
-| `environment_metadata.variables` | Allowlisted variables passed to the test process: `LD_LIBRARY_PATH` (as entries), `LD_PRELOAD`, `CUDA_HOME`, `CUDA_PATH`, `CUDA_VISIBLE_DEVICES`, `CUDA_MODULE_LOADING`, `NVIDIA_VISIBLE_DEVICES`, `NVIDIA_DRIVER_CAPABILITIES`, `PYTEST_DISABLE_PLUGIN_AUTOLOAD`, any `CT2_*` | Proof of anything loaded. Nothing outside the allowlist is read. URL credentials and secret-looking `KEY=value` entries are redacted. |
-| `environment_metadata.cuda_libraries_on_search_path` | Which `LD_LIBRARY_PATH` directories contain `libcublas.so.12`, `libcublasLt.so.12`, `libcudnn.so.9` | Which copy the loader picked: it also searches `RUNPATH`, `ld.so.cache` and system directories. |
+| `environment_metadata.variables` | Allowlisted variables passed to the test process: `LD_LIBRARY_PATH` (as entries), `LD_PRELOAD`, `CUDA_HOME`, `CUDA_PATH`, `CUDA_VISIBLE_DEVICES`, `CUDA_MODULE_LOADING`, `NVIDIA_VISIBLE_DEVICES`, `NVIDIA_DRIVER_CAPABILITIES`, `PYTEST_DISABLE_PLUGIN_AUTOLOAD`, any `CT2_*` | Proof of anything loaded. Nothing outside the allowlist is read. Recognisable credentials are redacted (see *Redaction*). |
+| `environment_metadata.cuda_libraries_on_search_path` | Which `LD_LIBRARY_PATH` directories contain `libcublas.so.12`, `libcublasLt.so.12`, `libcudnn.so.9` | Which copy the loader picked: it also searches `RUNPATH`, `ld.so.cache` and system directories. A directory that cannot be read appears in `search_errors`, and `ld_library_path_entries_exist` shows the error; whether it holds the library is unknown. |
 | `environment_metadata.nvidia_wheels` | Installed `nvidia-*` pip distributions and versions | Proof they were used. |
-| `pytest_plugins.auto_loadable` | `pytest11` entry points (plugin, module, distribution, version) in the recorder's interpreter, which is the one the tests run in | A guarantee: pytest decides at start-up. |
-| `pytest_plugins.reported_loaded` | The `plugins:` line pytest printed for this run | |
+| `pytest_plugins.installed_entry_points` | Installed `pytest11` entry points (plugin, module, distribution, version) in the recorder's interpreter, which is the one the tests run in: what pytest *can* auto-load | A list of what ran. |
+| `pytest_plugins.header_reported` | The `plugins:` line pytest printed for this run | **A complete list of loaded plugins.** pytest lists only plugins that came from installed distributions. A plugin loaded with `-p`, `PYTEST_PLUGINS`, a `conftest.py` or a `pytest_plugins` variable does not appear in it. Those routes are covered by the override rule and the checkout audit, not by this inventory. |
 | `loaded_libraries` | CUDA / CTranslate2 shared objects mapped into the pytest process after the real-speech decodes (`/proc/self/maps`, Linux) | Which library served a given call, or anything loaded later. On macOS or without `/proc` it is `available: false`. |
 
 **Limits.**
@@ -165,9 +184,27 @@ process *loaded*:
   or disabling plugin auto-loading for the run. Both are possible follow-ups
   that change what counts as a valid run, so they are left for a decision.
 * `loaded_libraries` comes from the tests' own process, so a run that
-  substitutes the test code could falsify it. The existing integrity rules
-  (no overrides, clean checkout, the exact expected tests) are what make it
-  trustworthy.
+  substitutes the test code could falsify it. The integrity rules (no
+  overrides, clean checkout, checkout audit, the exact expected tests) are
+  what make it trustworthy.
+* `/proc/self/maps` is parsed with the pathname taken as everything after
+  the fifth field, so paths containing spaces are kept whole. A
+  ` (deleted)` suffix (file replaced while mapped) is dropped.
+
+**Redaction.** Only allowlisted variables are read; that is the main
+control. Within them, redaction removes:
+* URL userinfo, from `//` to the *last* `@`, so passwords containing `@` or
+  `/` are removed whole. This can over-redact a path that itself contains
+  `@`.
+* `KEY=value` assignments whose key looks secret (`token`, `secret`,
+  `passw`, `pwd`, `apikey`, `credential`, `auth`, ...), including inside
+  query strings.
+* Common token formats: GitHub `ghp_`/`github_pat_`, Hugging Face `hf_`,
+  AWS `AKIA`/`ASIA`, `sk-`, Slack `xox?-`, GitLab `glpat-`, JWTs.
+
+Variables whose *name* looks secret are redacted entirely. **Redaction
+cannot recognise every secret**: an unknown token format in an allowlisted
+variable would be recorded.
 * The variables are those the recorder passes to pytest. Changes made inside
   the test process (none in this suite) would not appear.
 
@@ -186,8 +223,9 @@ To reproduce the `096a034` T4 run as closely as the evidence allows:
    below). With the PR #10 recorder, check that `provenance.loaded_libraries`
    lists `libcublas.so.12` from the pip wheel directory, not CUDA 13's
    `libcublas.so.13`.
-4. **Recorder environment.** Run it without `PYTHONPATH`, `PYTEST_ADDOPTS` or
-   `PYTEST_PLUGINS` (Cell 2 removes Colab's `PYTHONPATH`).
+4. **Recorder environment.** Run it from a fresh clone with no added files
+   (the checkout audit rejects untracked files), and without `PYTHONPATH`,
+   `PYTEST_ADDOPTS` or `PYTEST_PLUGINS` (Cell 2 removes them).
 5. **Weights.** `observed_model_path` names the Hugging Face snapshot that was
    used (`3d3d5dee…`), and `observed_model_bin_sha256` its hash. Compare them
    with the committed record.
@@ -277,7 +315,7 @@ From PR #10 the recorder records it, and the libraries actually loaded.
 | Change | Commit | Offline tests | Real-model run |
 |---|---|---|---|
 | Suite, recorder, identity checks | `096a034` | yes | **T4, 8/8, `complete: true`** |
-| v1/v2 comment correction; loaded-library recording in the real-speech test; recorder provenance; `PYTEST_PLUGINS` as an override | PR #10 | yes (`tests/test_whisper_verification.py`) | **not yet re-verified** |
+| v1/v2 comment correction; loaded-library recording in the real-speech test; recorder provenance; `PYTEST_PLUGINS` as an override; checkout audit; fail-closed provenance collection; stronger redaction | PR #10 | yes (`tests/test_whisper_verification.py`) | **not yet re-verified** |
 
 Re-running Cell 2 on a T4 at the PR #10 commit would re-verify the current
 code and produce the first record with provenance.

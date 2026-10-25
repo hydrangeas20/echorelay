@@ -30,7 +30,6 @@ from __future__ import annotations
 import asyncio
 import json
 import os
-import re
 import socket
 import threading
 import time
@@ -67,8 +66,6 @@ MAX_CORPUS_WER = 0.12
 # (3 edits / 26 words): v1 in docs/benchmarks/phase1-t4/raw/gpu_smoke.json and
 # v2 in docs/benchmarks/whisper-t4 agree for this utterance.
 MAX_STREAM_WER = 0.25
-# Shared objects that show which CUDA / CTranslate2 libraries a decode loaded.
-_CUDA_LIB = re.compile(r"/(libcublas|libcudnn|libcudart|libcuda\.so|libctranslate2)[^/]*$")
 
 
 # ---------------------------------------------------------------- fixtures
@@ -163,12 +160,13 @@ def _loaded_libraries() -> list[str] | str:
     """CUDA-related shared objects mapped into this process (Linux). Evidence
     of what a decode actually loaded, unlike LD_LIBRARY_PATH, which only says
     where the loader would look."""
+    from benchmarks.whisper_verification import parse_loaded_libraries
+
     try:
         with open("/proc/self/maps") as maps:
-            paths = {line.split()[-1] for line in maps if len(line.split()) >= 6}
+            return parse_loaded_libraries(maps)
     except OSError as exc:
         return f"unavailable: {exc.strerror or exc}"
-    return sorted(p for p in paths if _CUDA_LIB.search(p))
 
 
 def test_adapter_transcribes_real_speech(model, utterances, record_property):

@@ -78,8 +78,8 @@ async def test_cancelling_session_mid_partial_cancels_receive_and_partial():
     runner = InferenceRunner(fake, max_concurrency=1, timeout_s=5)
     session = StreamSession("mid", make_settings(idle_timeout_s=60), runner, receive, send)
     before = asyncio.all_tasks()
+    task = asyncio.create_task(session.run())
     try:
-        task = asyncio.create_task(session.run())
         await until(lambda: runner.in_flight > 0, what="partial decode to start")
 
         task.cancel()
@@ -95,4 +95,7 @@ async def test_cancelling_session_mid_partial_cancels_receive_and_partial():
         await until(lambda: runner.in_flight == 0, what="decode slot to be released")
         assert runner.in_flight == 0
     finally:
+        if not task.done():  # a failed wait above: don't leave the session running
+            task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
         runner.shutdown()
