@@ -21,6 +21,7 @@ import pytest
 
 HAS_PS = shutil.which("ps") is not None
 HAS_PROC = os.path.isdir("/proc/self")
+HAS_PIDFD = hasattr(os, "pidfd_open")
 
 
 @pytest.fixture
@@ -229,7 +230,13 @@ def test_unverifiable_ownership_fails_safe(helpers, spawned, monkeypatch):
 
 
 # ------------------------------------------------------------ escalation
-def test_sigterm_ignored_escalates_to_sigkill(helpers, spawned, monkeypatch):
+@pytest.mark.parametrize("pidfd", [
+    pytest.param(True, marks=pytest.mark.skipif(not HAS_PIDFD, reason="Linux pidfd")),
+    False,
+])
+def test_sigterm_ignored_escalates_to_sigkill(helpers, spawned, monkeypatch, pidfd):
+    if not pidfd:
+        monkeypatch.setattr(helpers, "_pidfd", lambda pid: None)  # as on macOS
     stubborn = _ready(spawned(SLEEPER, "ignore-term", "-m", "echorelay", "--port", str(helpers.PORT)))
     ident = helpers._identity(stubborn.pid)
     helpers.PIDFILE.write_text(json.dumps({"pid": stubborn.pid, "port": helpers.PORT,
@@ -249,11 +256,110 @@ def test_unkillable_process_raises_and_keeps_pid_file(helpers, spawned, monkeypa
                                            "start": helpers._identity(stubborn.pid)["start"]}))
     monkeypatch.setattr(helpers, "STOP_GRACE_S", 0.1)
     monkeypatch.setattr(helpers, "STOP_KILL_S", 0.2)
-    monkeypatch.setattr(helpers, "_signal_group", lambda pid, sig: True)  # signals never arrive
+    monkeypatch.setattr(helpers, "_signal_group", lambda *a: True)  # signals never arrive
     with pytest.raises(RuntimeError, match="did not exit"):
         helpers.stop_server()
     assert helpers.PIDFILE.exists() and stubborn.poll() is None
     helpers.PIDFILE.unlink()
+
+
+# A pid file without a recorded start time names a process whose command line
+# may match but whose identity cannot be confirmed: never signal it.
+@pytest.mark.parametrize("liveness", [
+    pytest.param("proc", marks=pytest.mark.skipif(not HAS_PROC, reason="needs /proc")),
+    pytest.param("ps", marks=pytest.mark.skipif(not HAS_PS, reason="needs ps")),
+])
+@pytest.mark.parametrize("content", ["legacy-int", "start-null", "start-missing"])
+def test_pid_file_without_start_time_fails_safe(helpers, spawned, monkeypatch, content, liveness):
+    monkeypatch.setattr(helpers, "_HAVE_PROC", liveness == "proc")
+    lookalike = _ready(spawned(SLEEPER, "-m", "echorelay", "--port", str(helpers.PORT)))
+    assert all(m in helpers._identity(lookalike.pid)["command"] for m in helpers._server_marker())
+    text = {"legacy-int": str(lookalike.pid),
+            "start-null": json.dumps({"pid": lookalike.pid, "port": helpers.PORT, "start": None}),
+            "start-missing": json.dumps({"pid": lookalike.pid, "port": helpers.PORT})}[content]
+    helpers.PIDFILE.write_text(text)
+    sent = _record_signals(monkeypatch, helpers)
+    for _ in range(2):  # stays safe when retried
+        with pytest.raises(RuntimeError, match="no start time"):
+            helpers.stop_server()
+    assert sent == [] and lookalike.poll() is None
+    assert helpers.PIDFILE.read_text() == text  # kept, unchanged, for the user to act on
+    assert helpers._LOG is None
+    helpers.PIDFILE.unlink()
+
+
+def test_pid_file_without_start_time_for_an_exited_process_is_removed(helpers, spawned, monkeypatch):
+    gone = spawned("pass")
+    gone.wait(timeout=10)
+    helpers.PIDFILE.write_text(str(gone.pid))
+    sent = _record_signals(monkeypatch, helpers)
+    helpers.stop_server()
+    assert sent == [] and not helpers.PIDFILE.exists()
+
+
+# ------------------------------------------------- pidfd (Linux) pinning
+@pytest.mark.skipif(not HAS_PIDFD, reason="Linux pidfd")
+def test_pinned_process_that_exited_is_never_signalled(helpers, spawned, monkeypatch):
+    """Exit between verification and signalling: the pid may already be
+    someone else's, so nothing is sent."""
+    p = _ready(spawned(SLEEPER))
+    fd = os.pidfd_open(p.pid)
+    try:
+        os.killpg(p.pid, signal.SIGKILL)
+        p.wait(timeout=10)  # exited and reaped: the pid number is free for reuse
+        sent = _record_signals(monkeypatch, helpers)
+        assert helpers._signal_group(p.pid, signal.SIGTERM, fd) is False
+        assert helpers._wait_exit(p.pid, 5, pidfd=fd) is True
+        assert sent == []
+    finally:
+        os.close(fd)
+
+
+@pytest.mark.skipif(not HAS_PIDFD, reason="Linux pidfd")
+def test_identity_read_after_pinned_exit_is_not_trusted(helpers, spawned, monkeypatch):
+    """The identity is read by pid number; if the pinned process exited first,
+    that read may describe a successor with the same pid, so it is 'gone'."""
+    p = _ready(spawned(SLEEPER, "-m", "echorelay", "--port", str(helpers.PORT)))
+    rec = {"pid": p.pid, "start": helpers._identity(p.pid)["start"]}
+    fd = os.pidfd_open(p.pid)
+    try:
+        assert helpers._ownership(rec, fd) == "owned"
+        ident = helpers._identity(p.pid)
+        os.killpg(p.pid, signal.SIGKILL)
+        p.wait(timeout=10)
+        # pretend a successor with an identical identity took the pid
+        monkeypatch.setattr(helpers, "_alive", lambda pid: True)
+        monkeypatch.setattr(helpers, "_identity", lambda pid: ident)
+        assert helpers._ownership(rec) == "owned"  # without the pin it would be fooled
+        assert helpers._ownership(rec, fd) == "gone"
+    finally:
+        os.close(fd)
+
+
+@pytest.mark.skipif(not HAS_PIDFD, reason="Linux pidfd")
+def test_pidfd_wait_is_bounded_and_wakes_on_exit(helpers, spawned):
+    p = _ready(spawned(SLEEPER))
+    fd = os.pidfd_open(p.pid)
+    try:
+        t0 = time.monotonic()
+        assert helpers._wait_exit(p.pid, 0.2, pidfd=fd) is False
+        assert 0.15 < time.monotonic() - t0 < 2
+        os.killpg(p.pid, signal.SIGTERM)
+        t0 = time.monotonic()
+        assert helpers._wait_exit(p.pid, 10, pidfd=fd) is True
+        assert time.monotonic() - t0 < 2
+    finally:
+        os.close(fd)
+
+
+def test_pidfd_unavailable_falls_back(helpers, monkeypatch):
+    """Old kernels and seccomp sandboxes refuse pidfd_open: fall back to the
+    unpinned path instead of failing."""
+    if HAS_PIDFD:
+        def refuse(pid):
+            raise PermissionError(1, "Operation not permitted")
+        monkeypatch.setattr(helpers.os, "pidfd_open", refuse)
+    assert helpers._pidfd(os.getpid()) is None
 
 
 # -------------------------------------------------------------- liveness

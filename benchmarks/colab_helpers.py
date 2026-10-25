@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import json
 import os
+import select
 import signal
 import socket
 import subprocess
@@ -162,8 +163,42 @@ def _server_marker() -> tuple[str, str]:
     return ("-m echorelay", f"--port {PORT}")
 
 
-def _ownership(rec: dict) -> str:
-    """'owned', 'foreign' (pid reused or not our server), 'gone', or 'unknown'."""
+def _pidfd(pid: int) -> int | None:
+    """A Linux pidfd pinning this exact process, or None where unsupported
+    (macOS, old kernels, sandboxes). Raises ProcessLookupError if pid is gone.
+
+    A pidfd keeps referring to the process it was opened for even if that
+    process exits and its pid is reused, which closes the window between
+    verifying a process and signalling or waiting for it.
+    """
+    if not hasattr(os, "pidfd_open"):
+        return None
+    try:
+        return os.pidfd_open(pid)
+    except ProcessLookupError:
+        raise
+    except OSError:  # ENOSYS, EPERM under seccomp, ...
+        return None
+
+
+def _pinned_exited(pidfd: int, timeout: float = 0.0) -> bool:
+    """True once the pinned process has exited (its pidfd becomes readable),
+    waiting at most timeout seconds. poll, unlike select, takes any fd number."""
+    poller = select.poll()
+    poller.register(pidfd, select.POLLIN)
+    return bool(poller.poll(max(timeout, 0.0) * 1000))
+
+
+def _ownership(rec: dict, pidfd: int | None = None) -> str:
+    """'owned', 'foreign' (pid reused or not our server), 'gone', 'unknown'
+    (identity unreadable), or 'unconfirmed' (no recorded start time).
+
+    A process is 'owned' only if its start time matches the one recorded at
+    start-up AND its command line is the server's. A matching command line
+    alone is never enough: another EchoRelay server, or anything started with
+    the same arguments, would pass. With a pidfd, the identity read is
+    confirmed to belong to the pinned process.
+    """
     pid = rec["pid"]
     if not _alive(pid):
         return "gone"  # includes a zombie, whose command line is no longer readable
@@ -172,16 +207,23 @@ def _ownership(rec: dict) -> str:
         return "gone" if _proc_state(pid) is None else "unknown"
     if not all(m in ident["command"] for m in _server_marker()):
         return "foreign"
-    if rec.get("start") is not None and rec["start"] != ident["start"]:
+    if rec.get("start") is None:
+        return "unconfirmed"  # legacy pid file, or start time unreadable at start-up
+    if rec["start"] != ident["start"]:
         return "foreign"  # same pid, different process: the pid was reused
-    return "owned"  # a legacy pid file has no start time: the command line must match
+    if pidfd is not None and _pinned_exited(pidfd):
+        return "gone"  # pinned process gone: the identity read may be a successor's
+    return "owned"
 
 
-def _signal_group(pid: int, sig: int) -> bool:
+def _signal_group(pid: int, sig: int, pidfd: int | None = None) -> bool:
     """Send sig to pid's process group (the server leads its own session).
     Returns False if the process is already gone. Only called for this
     kernel's child or a process whose ownership was verified, both started
-    with start_new_session=True, so their group id equals their pid."""
+    with start_new_session=True, so their group id equals their pid. With a
+    pidfd, nothing is sent once the pinned process has exited."""
+    if pidfd is not None and _pinned_exited(pidfd):
+        return False
     try:
         pgid = os.getpgid(pid)
     except ProcessLookupError:
@@ -200,15 +242,19 @@ def _signal_group(pid: int, sig: int) -> bool:
     return True
 
 
-def _wait_exit(pid: int, timeout: float, proc: subprocess.Popen | None = None) -> bool:
+def _wait_exit(pid: int, timeout: float, proc: subprocess.Popen | None = None,
+               pidfd: int | None = None) -> bool:
     """Wait at most timeout seconds for pid to exit. A child of this kernel is
-    also reaped; any other process is polled with a growing interval."""
+    also reaped; a pinned process is waited for on its pidfd, which a reused
+    pid cannot fool; anything else is polled with a growing interval."""
     if proc is not None:
         try:
             proc.wait(timeout=timeout)
             return True
         except subprocess.TimeoutExpired:
             return False
+    if pidfd is not None:
+        return _pinned_exited(pidfd, timeout)
     deadline = time.monotonic() + timeout
     delay = 0.02
     while _alive(pid):
@@ -220,22 +266,23 @@ def _wait_exit(pid: int, timeout: float, proc: subprocess.Popen | None = None) -
     return True
 
 
-def _stop_pid(pid: int, proc: subprocess.Popen | None = None, still_ours=None) -> None:
+def _stop_pid(pid: int, proc: subprocess.Popen | None = None, still_ours=None,
+              pidfd: int | None = None) -> None:
     """SIGTERM pid's group; SIGKILL it if it outlives STOP_GRACE_S."""
     if proc is not None:
         if proc.poll() is not None:
             return  # exited and reaped: its pid may already belong to someone else
     elif not _alive(pid):
         return
-    if not _signal_group(pid, signal.SIGTERM):
+    if not _signal_group(pid, signal.SIGTERM, pidfd):
         return
-    if _wait_exit(pid, STOP_GRACE_S, proc):
+    if _wait_exit(pid, STOP_GRACE_S, proc, pidfd):
         return
     if still_ours is not None and not still_ours():
         return  # it exited and the pid was reused while we waited
     print(f"pid {pid} still running {STOP_GRACE_S:g} s after SIGTERM; sending SIGKILL")
-    _signal_group(pid, signal.SIGKILL)
-    if not _wait_exit(pid, STOP_KILL_S, proc):
+    _signal_group(pid, signal.SIGKILL, pidfd)
+    if not _wait_exit(pid, STOP_KILL_S, proc, pidfd):
         raise RuntimeError(f"pid {pid} did not exit {STOP_KILL_S:g} s after SIGKILL")
 
 
@@ -291,6 +338,39 @@ def _close_log() -> None:
         _LOG = None
 
 
+def _stop_recorded(rec: dict) -> None:
+    """Stop the server named by the pid file, only if it is provably that
+    server. Raises, keeping the pid file, when ownership cannot be confirmed."""
+    pid = rec["pid"]
+    try:
+        pidfd = _pidfd(pid)  # pin first, so the identity checked is the one signalled
+    except ProcessLookupError:
+        print(f"stale pid file: pid {pid} has already exited")
+        return
+    try:
+        status = _ownership(rec, pidfd)
+        if status == "owned":
+            _stop_pid(pid, still_ours=lambda: _ownership(rec, pidfd) == "owned", pidfd=pidfd)
+        elif status == "foreign":
+            print(f"stale pid file: pid {pid} is not the EchoRelay server on :{PORT}; "
+                  "not signalling it")
+        elif status == "gone":
+            print(f"stale pid file: pid {pid} has already exited")
+        elif status == "unconfirmed":
+            raise RuntimeError(
+                f"{PIDFILE} records no start time (written by an older version, or the start "
+                f"time was unreadable), so pid {pid} cannot be confirmed as the server even "
+                f"though its command line matches; not signalling it. If it is the server, "
+                f"stop it with `kill -TERM -- -{pid}`, then delete the pid file")
+        else:  # "unknown"
+            raise RuntimeError(
+                f"cannot verify that pid {pid} from {PIDFILE} is the EchoRelay server "
+                f"(no /proc and no ps); stop it yourself, then delete the pid file")
+    finally:
+        if pidfd is not None:
+            os.close(pidfd)
+
+
 # ---------------------------------------------------------------- public
 def stop_server() -> None:
     """Stop the server started by start_server (its whole process group).
@@ -308,18 +388,7 @@ def stop_server() -> None:
             _PROC = None
         rec = _read_pidfile()
         if rec is not None and (own is None or rec["pid"] != own.pid):
-            status = _ownership(rec)
-            if status == "unknown":
-                raise RuntimeError(
-                    f"cannot verify that pid {rec['pid']} from {PIDFILE} is the EchoRelay server "
-                    f"(no /proc and no ps); stop it yourself, then delete the pid file")
-            if status == "owned":
-                _stop_pid(rec["pid"], still_ours=lambda: _ownership(rec) == "owned")
-            elif status == "foreign":
-                print(f"stale pid file: pid {rec['pid']} is not the EchoRelay server on :{PORT}; "
-                      "not signalling it")
-            else:  # "gone"
-                print(f"stale pid file: pid {rec['pid']} has already exited")
+            _stop_recorded(rec)
         PIDFILE.unlink(missing_ok=True)
     finally:
         _close_log()
