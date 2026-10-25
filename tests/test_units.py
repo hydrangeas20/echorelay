@@ -6,6 +6,7 @@ import asyncio
 
 import numpy as np
 import pytest
+from gated import until
 
 from echorelay.audio import AudioBuffer, AudioLimitExceeded, InvalidAudioFrame
 from echorelay.inference import FakeTranscriber, InferenceError, InferenceRunner, InferenceTimeout
@@ -49,17 +50,20 @@ async def test_runner_releases_slot_only_when_thread_finishes():
     fake = FakeTranscriber(delay_s=0.3)
     runner = InferenceRunner(fake, max_concurrency=1, timeout_s=0.1)
     audio = np.zeros(16000, dtype=np.float32)
-    with pytest.raises(InferenceTimeout):
-        await runner.transcribe(audio, final=True)
-    assert runner.in_flight == 1  # thread is still running; slot still held
-    await asyncio.sleep(0.4)
-    assert runner.in_flight == 0
-    runner.timeout_s = 2.0
-    fake.delay_s = 0.0
-    result = await runner.transcribe(audio, final=True)
-    assert result.text == "w1 w2" and result.inference_s >= 0
-    assert fake.max_active == 1
-    runner.shutdown()
+    try:
+        with pytest.raises(InferenceTimeout):
+            await runner.transcribe(audio, final=True)
+        assert runner.in_flight == 1  # thread is still running; slot still held
+        # The release runs on the loop after the worker thread returns; when
+        # depends on the machine, so wait for it (bounded) rather than sleeping.
+        await until(lambda: runner.in_flight == 0, what="timed-out decode to release its slot")
+        runner.timeout_s = 2.0
+        fake.delay_s = 0.0
+        result = await runner.transcribe(audio, final=True)
+        assert result.text == "w1 w2" and result.inference_s >= 0
+        assert fake.max_active == 1
+    finally:
+        runner.shutdown()
 
 
 async def test_runner_wraps_unexpected_exceptions():
