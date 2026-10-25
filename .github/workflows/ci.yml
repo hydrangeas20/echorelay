@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-linux:
+    # The offline suite (fake and gated backends) under every combination of
+    # the two scheduling flags. Real-model tests (`-m whisper`) need Whisper
+    # weights and are excluded; nothing here needs a GPU, secrets or network
+    # access beyond installing packages.
+    name: Linux · py${{ matrix.python }} · final_priority=${{ matrix.final_priority }} · cancel=${{ matrix.cancel }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.13"]
+        final_priority: ["false", "true"]
+        cancel: ["false", "true"]
+    env:
+      ECHORELAY_FINAL_PRIORITY: ${{ matrix.final_priority }}
+      ECHORELAY_CANCEL_QUEUED_PARTIAL_ON_END: ${{ matrix.cancel }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: Install
+        run: python -m pip install -e ".[dev]"
+      - name: Test (offline; real-model tests excluded)
+        run: python -m pytest -q -m "not whisper"
+
+  test-macos:
+    # macOS has no /proc: covers the server-shutdown path that failed there.
+    # Default scheduling flags only.
+    name: macOS · py3.13
+    runs-on: macos-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: Install
+        run: python -m pip install -e ".[dev]"
+      - name: Test (offline; real-model tests excluded)
+        run: python -m pytest -q -m "not whisper"
+
+  evidence:
+    # Every committed benchmark file is present, hash-matched and tracked.
+    name: Benchmark evidence
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Verify evidence manifests
+        run: python -m benchmarks.verify_evidence

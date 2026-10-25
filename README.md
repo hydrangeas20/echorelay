@@ -10,6 +10,8 @@
 
 Python · FastAPI · WebSockets · faster-whisper / CTranslate2 · NVIDIA T4
 
+[![CI](https://github.com/hydrangeas20/echorelay/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/hydrangeas20/echorelay/actions/workflows/ci.yml)
+
 [Architecture](#architecture) · [Results](#experimental-findings) · [Quick Start](#quick-start-local-cpu) · [Reproducibility](#reproducibility)
 
 </div>
