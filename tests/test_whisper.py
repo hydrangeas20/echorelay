@@ -95,9 +95,43 @@ def _wer(refs: list[str], hyps: list[str]) -> float:
 
 
 # ------------------------------------------------------------- adapter level
-def test_adapter_loads_with_requested_device_and_compute_type(model):
+def _class_name(obj) -> str:
+    return f"{type(obj).__module__}.{type(obj).__qualname__}"
+
+
+def _observed(model: WhisperTranscriber) -> dict[str, str]:
+    """What the loaded runtime reports about itself, independent of the
+    settings passed in. Recorded as JUnit properties for the verifier."""
+    import hashlib
+
+    import ctranslate2
+    from faster_whisper.utils import download_model
+
+    ct2 = model._model.model  # faster_whisper.WhisperModel -> ctranslate2.models.Whisper
+    # Same resolution WhisperModel performed at load time (download_root=MODEL_DIR);
+    # local_files_only, so this reads the cached snapshot and never downloads.
+    path = Path(download_model(MODEL, cache_dir=MODEL_DIR, local_files_only=True))
+    digest = hashlib.sha256()
+    with open(path / "model.bin", "rb") as f:
+        for block in iter(lambda: f.read(1 << 20), b""):
+            digest.update(block)
+    return {
+        "observed_whisper_class": _class_name(model._model),
+        "observed_ct2_class": _class_name(ct2),
+        "observed_ct2_device": ct2.device,
+        "observed_ct2_compute_type": ct2.compute_type,
+        "observed_ct2_is_multilingual": str(ct2.is_multilingual),
+        "observed_cuda_devices": str(ctranslate2.get_cuda_device_count()),
+        "observed_model_path": str(path),
+        "observed_model_bin_sha256": digest.hexdigest(),
+    }
+
+
+def test_adapter_loads_with_requested_device_and_compute_type(model, record_property):
     """The device and compute type CTranslate2 actually uses, not only the
     values passed in."""
+    for key, value in _observed(model).items():  # recorded before asserting
+        record_property(key, value)
     assert model.info.backend == "whisper" and model.info.model == MODEL
     assert (model.info.device, model.info.compute_type) == (DEVICE, COMPUTE_TYPE)
     ct2 = model._model.model  # faster_whisper.WhisperModel -> ctranslate2.models.Whisper
@@ -180,8 +214,9 @@ def live_server():
     thread.join(timeout=30)
 
 
-def test_server_loads_real_model_from_settings(live_server):
+def test_server_loads_real_model_from_settings(live_server, record_property):
     body = httpx.get(f"http://{live_server['addr']}/health", timeout=10).json()
+    record_property("reported_health_model", json.dumps(body.get("model")))  # self-reported config
     assert body["status"] == "ok"
     assert body["model"]["backend"] == "whisper"
     assert body["model"]["name"] == MODEL

@@ -119,8 +119,9 @@ record of the environment and results. Needs the 5-utterance reference set
 !python -m benchmarks.whisper_verification --audio-dir /content/eval_audio5 --device cuda --out /content/whisper_verification
 ```
 
-Pass criterion: the last line reads `COMPLETE: 8 passed, 0 failed, 0 errors,
-0 skipped`. See [docs/whisper-verification.md](../docs/whisper-verification.md).
+Pass criterion: the last line starts with `COMPLETE: 8 passed, 0 failed, 0
+errors, 0 skipped`. Otherwise it reads `NOT COMPLETE` and lists each problem.
+See [docs/whisper-verification.md](../docs/whisper-verification.md).
 
 ## 3. Server smoke test (one real stream)
 

@@ -70,14 +70,34 @@ Once the PR is merged, clone `main` instead of the branch.
 on `tests/test_whisper.py` with `ECHORELAY_TEST_DEVICE=cuda` and
 `ECHORELAY_TEST_COMPUTE_TYPE=float16`, then writes `record.json` (UTC times,
 git commit and dirty flag, `nvidia-smi` output, GPU and driver, Python and
-package versions, model, device, compute type, the exact command, any
-`PYTEST_ADDOPTS` / `PYTHONPATH` overrides, and per-test outcomes with recorded
-WER), `pytest.log` and `junit.xml`. `complete` is true only if every collected
-test passed and none was skipped.
+package versions, the requested model, device and compute type, the exact
+command, any `PYTEST_ADDOPTS` / `PYTHONPATH` overrides, per-test outcomes with
+recorded WER, and the runtime identity observed during the run), `pytest.log`
+and `junit.xml`.
 
-The suite also runs on CPU (`ECHORELAY_TEST_DEVICE=cpu`, `int8`, the default)
-with the same commands minus `--device cuda`. A CPU run verifies the adapter,
-server and WebSocket paths with the real model, but not CUDA or FP16.
+**What `complete: true` requires.** The requested settings in the record are
+not treated as evidence. `complete` is true only if `problems` is empty, i.e.:
+
+* exactly the 8 expected tests ran (by name), all passed, none failed, errored
+  or was skipped, and pytest exited 0;
+* the identity test recorded what the loaded runtime reported, and it matches
+  the request: the object is faster-whisper's `WhisperModel` over
+  CTranslate2's `Whisper` (a substituted model class fails), the CTranslate2
+  device and compute type (exactly `float16` on CUDA), at least one CUDA
+  device, the `models--Systran--faster-whisper-base.en` weights snapshot that
+  faster-whisper resolved (with the SHA-256 of its `model.bin`), and an
+  English-only model;
+* on CUDA, `nvidia-smi` lists a GPU containing `T4` (`--expect-gpu`);
+* `PYTEST_ADDOPTS` and `PYTHONPATH` are unset, so no plugin or module was
+  injected, and the checkout had no local edits.
+
+`tests/test_whisper_verification.py` (offline, in CI) checks each of these
+rules. The `model.bin` hash is recorded for traceability; there is no
+committed reference hash to compare it against.
+
+The suite also runs on CPU (`int8`) with `--device cpu`. A CPU run verifies
+the adapter, server and WebSocket paths with the real model, but not CUDA or
+FP16.
 
 ## Verification log
 
@@ -97,7 +117,10 @@ environment used to write this suite):
   speech tests), when CUDA is requested with no GPU (the model fixture fails;
   it does not skip), and when the audio is not the recorded set (hash check).
   Without `ECHORELAY_TEST_AUDIO_DIR`, the 3 speech tests skip with a stated
-  reason and the recorder reports `complete: false`.
+  reason; the recorder reports `complete: false`.
+* With the stub, all 8 tests pass but the recorder reports `complete: false`
+  and names why: the stub's model and CTranslate2 classes, the injected
+  `PYTEST_ADDOPTS` / `PYTHONPATH`, and the uncommitted checkout.
 
 None of this is evidence about the real model; it only shows that the tests
 and the recorder behave as described.
