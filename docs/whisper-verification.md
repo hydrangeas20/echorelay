@@ -1,11 +1,10 @@
 # Real-model verification (Whisper `base.en`)
 
-> **Status: GPU verification pending.** The real-model test suite below exists
-> and its harness has been exercised, but it has **not yet been run against the
-> real model on an NVIDIA T4**. No real-model result is recorded in this file
-> yet. Until one is, the repository's real-model evidence is the Phase 1–4 T4
-> benchmark data, collected through the benchmark tooling and the server, not
-> through this test suite.
+> **Status: verified on an NVIDIA T4** (2026-10-25, commit `096a034`). All 8
+> real-model tests passed with faster-whisper `base.en`, CUDA FP16, and the
+> recorder reported `complete: true` with no problems. The evidence is
+> committed unmodified in [`docs/benchmarks/whisper-t4/`](benchmarks/whisper-t4/README.md).
+> One verified configuration only; see [Limitations](#limitations).
 
 ## Why this exists
 
@@ -35,14 +34,23 @@ claims only what it exercises.
 `python -m benchmarks.prepare_audio --num 5` (Mini LibriSpeech dev-clean-2,
 first 5 utterances of 3–20 s). They check each file's PCM SHA-256 against the
 recorded Phase 1 precision run (`docs/benchmarks/phase1-t4/raw/precision_t4.json`),
-so the WER is computed on exactly the audio whose FP16 WER was recorded.
+so the WER is computed on exactly the audio used by the recorded T4 runs.
 
-**Thresholds are regression guards, not measurements.** Recorded T4 FP16
-values on the same audio: corpus WER 0.0708 (8 edits / 113 words,
-`precision_t4.json`) and 0.1154 for the streamed utterance (3 / 26,
-`gpu_smoke.json`). The bounds (0.12 and 0.25) allow for library and driver
-drift; a broken decode path (wrong sample rate, scaling or truncation) lands
-far above them.
+**Thresholds are regression guards, not measurements.** The bounds (0.12
+corpus, 0.25 for the streamed utterance) were set before the T4 run and were
+not changed after it; a broken decode path (wrong sample rate, scaling or
+truncation) lands far above them. Recorded T4 FP16 values on the same audio,
+under the **v2** normalizer the tests use: corpus WER 0.0531 (6 edits / 113
+words, Phase 3 evidence). For the streamed utterance, 0.1154 (3 / 26) was
+recorded in `gpu_smoke.json` under v1. The T4 run scored the identical
+transcript 0.1154 under v2, so for this utterance the two normalizers agree.
+
+*Correction.* The suite was written citing Phase 1's 0.0708 (8 / 113) as the
+recorded corpus value. That figure was scored with the **v1** normalizer on
+the same transcripts; the comparable v2 value is 0.0531. The comment above
+`MAX_CORPUS_WER` in `tests/test_whisper.py` still cites 0.0708. It is left
+unchanged so that the test file stays byte-identical to the verified commit.
+The bound itself is unaffected.
 
 **Not covered.** GPU memory release after shutdown (only worker threads and
 the port are checked), concurrency under load (covered by the benchmarks,
@@ -50,7 +58,11 @@ not this suite), other model sizes, `int8_float16`, and GPUs other than the T4.
 
 ## How to run
 
-On a Colab T4 runtime, one cell:
+On a Colab **T4 GPU** runtime. These are the steps of the verified run,
+including the library-path fix it needed (see
+[troubleshooting](#troubleshooting-incident-colab-cuda-libraries)).
+
+Cell 1: clone, install and fetch the reference audio.
 
 ```bash
 !nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv
@@ -60,10 +72,38 @@ On a Colab T4 runtime, one cell:
 !git log -1 --format='%H %s'
 !pip install -q -e ".[dev]" soundfile
 !python -m benchmarks.prepare_audio --out /content/eval_audio5 --num 5
-!python -m benchmarks.whisper_verification --audio-dir /content/eval_audio5 --device cuda --out /content/whisper_verification
-!cd /content && zip -qr whisper_verification.zip whisper_verification
-from google.colab import files; files.download("/content/whisper_verification.zip")
 ```
+
+Cell 2: expose cuBLAS 12 (and cuDNN 9, if present), run the recorder without
+Colab's default `PYTHONPATH`, and download the evidence.
+
+```python
+import glob, os, subprocess
+
+cublas = glob.glob("/usr/local/lib/python*/dist-packages/nvidia/cublas/lib/libcublas.so.12")
+assert cublas, "cuBLAS 12 library not found"
+dirs = [os.path.dirname(cublas[0])]
+cudnn = glob.glob("/usr/local/lib/python*/dist-packages/nvidia/cudnn/lib/libcudnn.so.9")
+if cudnn:
+    dirs.append(os.path.dirname(cudnn[0]))
+existing = os.environ.get("LD_LIBRARY_PATH", "")
+os.environ["LD_LIBRARY_PATH"] = ":".join(dirs + ([existing] if existing else []))
+
+env = os.environ.copy()
+env.pop("PYTHONPATH", None)  # Colab sets /env/python; the recorder rejects any PYTHONPATH
+result = subprocess.run(
+    ["python", "-m", "benchmarks.whisper_verification", "--audio-dir", "/content/eval_audio5",
+     "--device", "cuda", "--out", "/content/whisper_verification"],
+    cwd="/content/echorelay", env=env)
+print("exit code:", result.returncode)
+
+subprocess.run(["zip", "-qr", "whisper_verification.zip", "whisper_verification"], cwd="/content", check=True)
+from google.colab import files
+files.download("/content/whisper_verification.zip")
+```
+
+It passes if the recorder's last line starts with `COMPLETE: 8 passed, 0
+failed, 0 errors, 0 skipped` and the exit code is 0.
 
 Once the PR is merged, clone `main` instead of the branch.
 `benchmarks/whisper_verification.py` runs `python -m pytest -m whisper -rA -s`
@@ -101,14 +141,81 @@ FP16.
 
 ## Verification log
 
-| UTC date | Commit | GPU / driver | Python | faster-whisper / CTranslate2 | Device / compute | Result |
-|---|---|---|---|---|---|---|
-| — | — | — | — | — | — | **Pending: not yet run on the real model** |
+| UTC date | Commit | GPU / driver | Python | faster-whisper / CTranslate2 | Device / compute | Result | Evidence |
+|---|---|---|---|---|---|---|---|
+| 2026-10-25 | `096a034` | Tesla T4 / 580.82.07 | 3.13.16 | 1.2.1 / 4.8.3 | cuda / float16 (observed) | **8 passed**, 0 failed / errors / skips; `complete: true`. Corpus WER 0.0531, stream WER 0.1154 | [whisper-t4](benchmarks/whisper-t4/README.md) |
 
-## What was verified so far
+The evidence README lists the checks made on these files independently of
+the recorder's verdict. They include re-deriving the results from
+`junit.xml`, re-running the validator, and matching each JUnit test line to
+the committed source. It also compares the transcripts with earlier T4
+evidence: all five are word for word identical to Phase 1's FP16
+hypotheses.
 
-Without a GPU or model weights (Hugging Face is not reachable from the
-environment used to write this suite):
+## Troubleshooting incident: Colab CUDA libraries
+
+*Source: the operator's account of the Colab session. The failed attempts'
+output is not in the repository or in the evidence ZIP. Only the final,
+successful run's files are committed.*
+
+1. **First attempt: failed.** Loading the model on CUDA failed with:
+
+   ```
+   Library libcublas.so.12 is not found or cannot be loaded
+   ```
+
+   The Colab environment had:
+
+   ```
+   PYTHONPATH: /env/python
+   LD_LIBRARY_PATH: /usr/lib64-nvidia
+   ```
+
+   The system CUDA installation exposed `libcublas.so.13`. CTranslate2 4.8.3
+   needs the CUDA 12 library, which was present as a pip-installed package at
+   `/usr/local/lib/python3.13/dist-packages/nvidia/cublas/lib/libcublas.so.12`
+   but was not on the loader's search path.
+
+2. **Fix:** that directory was prepended to `LD_LIBRARY_PATH` in the kernel,
+   so child processes inherit it. If `libcudnn.so.9` was present, its
+   directory was added too. Cell 2 above does the same thing.
+
+3. **Second attempt: tests passed, recorder rejected it.** With the library
+   path fixed, all 8 real-model tests passed. The recorder still reported
+   `NOT COMPLETE`, because Colab's default `PYTHONPATH=/env/python` violates
+   its evidence-integrity rule (any `PYTHONPATH` could substitute modules).
+   This was the rule working as designed, and it was not relaxed.
+
+4. **Final run: complete.** The recorder was run with `PYTHONPATH` removed
+   from its environment (Cell 2). It exited 0 and reported `complete: true`.
+   Those are the committed files.
+
+The record does not capture `LD_LIBRARY_PATH`, so the library-path fix
+appears only in this account, not in the evidence.
+
+## Limitations
+
+* **One configuration.** `base.en`, CUDA FP16, one Colab T4, one run.
+  Not verified: CPU `int8`, `int8_float16`, other model sizes or GPUs, and
+  other driver or library versions.
+* **Not covered by the suite:** GPU memory release after shutdown (only
+  worker threads and the port are checked), and behaviour under concurrent
+  load (that is the benchmarks' job).
+* **Single-run timings.** Test durations in the evidence are a side effect,
+  not measurements.
+* **`model.bin` hash.** Recorded for traceability. No independent reference
+  hash is committed to compare it against.
+* **Not recorded by the recorder:** `LD_LIBRARY_PATH`, and the pytest plugins
+  auto-loaded from the environment (they appear only in `pytest.log`).
+* **Not in CI.** CI runs the offline suite, including the recorder's
+  validation rules (`tests/test_whisper_verification.py`), but not the
+  real-model tests. Re-verification is manual (Colab).
+
+## Before the GPU run
+
+These checks came before the T4 run. They were made without a GPU or model
+weights, because Hugging Face was not reachable from the environment used to
+write this suite:
 
 * The suite is collected by `pytest -m whisper` (8 tests) and deselected by
   the default run.
@@ -122,5 +229,6 @@ environment used to write this suite):
   and names why: the stub's model and CTranslate2 classes, the injected
   `PYTEST_ADDOPTS` / `PYTHONPATH`, and the uncommitted checkout.
 
-None of this is evidence about the real model; it only shows that the tests
-and the recorder behave as described.
+None of this is evidence about the real model. It showed only that the tests
+and the recorder behave as described; the T4 run above is the real-model
+evidence.

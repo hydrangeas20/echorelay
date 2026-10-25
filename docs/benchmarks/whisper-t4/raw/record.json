@@ -1,0 +1,146 @@
+{
+  "kind": "real_model_verification",
+  "started_utc": "2026-10-25T04:06:41.498807+00:00",
+  "finished_utc": "2026-10-25T04:06:52.965638+00:00",
+  "command": "python -m pytest -m whisper -rA -s -p no:cacheprovider -o junit_family=xunit1 --junitxml=/content/whisper_verification_final/junit.xml tests/test_whisper.py",
+  "requested": {
+    "model": "base.en",
+    "device": "cuda",
+    "compute_type": "float16",
+    "expect_gpu": "T4",
+    "note": "requested settings; the observed identity below is the evidence"
+  },
+  "env": {
+    "ECHORELAY_TEST_DEVICE": "cuda",
+    "ECHORELAY_TEST_COMPUTE_TYPE": "float16",
+    "ECHORELAY_TEST_AUDIO_DIR": "/content/eval_audio5"
+  },
+  "pytest_overrides": {
+    "PYTEST_ADDOPTS": null,
+    "PYTHONPATH": null,
+    "ECHORELAY_MODEL_DIR": null
+  },
+  "observed": {
+    "observed_whisper_class": "faster_whisper.transcribe.WhisperModel",
+    "observed_ct2_class": "ctranslate2._ext.Whisper",
+    "observed_ct2_device": "cuda",
+    "observed_ct2_compute_type": "float16",
+    "observed_ct2_is_multilingual": "False",
+    "observed_cuda_devices": "1",
+    "observed_model_path": "/root/.cache/huggingface/hub/models--Systran--faster-whisper-base.en/snapshots/3d3d5dee26484f91867d81cb899cfcf72b96be6c",
+    "observed_model_bin_sha256": "2a166925539a16005f14ff328359f9b9adb9dc4fb631bb3b227526862e93e2ef"
+  },
+  "environment": {
+    "python": "3.13.16",
+    "platform": "Linux-6.6.122+-x86_64-with-glibc2.39",
+    "cpu": "x86_64",
+    "packages": {
+      "faster-whisper": "1.2.1",
+      "ctranslate2": "4.8.3",
+      "numpy": "2.1.3",
+      "fastapi": "0.141.1",
+      "uvicorn": "0.54.0",
+      "websockets": "15.0.1",
+      "jiwer": "4.0.0"
+    },
+    "gpus": [
+      "Tesla T4, 580.82.07, 15360 MiB"
+    ],
+    "ctranslate2_cuda_devices": 1,
+    "git": {
+      "commit": "096a0347b620e4e5a8696cd6288379c3a3ccae77",
+      "dirty": false
+    }
+  },
+  "nvidia_smi": "Sun Oct 25 04:06:53 2026       \n+-----------------------------------------------------------------------------------------+\n| NVIDIA-SMI 580.82.07              Driver Version: 580.82.07      CUDA Version: 13.0     |\n+-----------------------------------------+------------------------+----------------------+\n| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n|                                         |                        |               MIG M. |\n|=========================================+========================+======================|\n|   0  Tesla T4                       Off |   00000000:00:04.0 Off |                    0 |\n| N/A   53C    P0             36W /   70W |       3MiB /  15360MiB |      1%      Default |\n|                                         |                        |                  N/A |\n+-----------------------------------------+------------------------+----------------------+\n\n+-----------------------------------------------------------------------------------------+\n| Processes:                                                                              |\n|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |\n|        ID   ID                                                               Usage      |\n|=========================================================================================|\n|  No running processes found                                                             |\n+-----------------------------------------------------------------------------------------+\n",
+  "pytest_exit_code": 0,
+  "results": {
+    "collected": 8,
+    "passed": 8,
+    "failed": 0,
+    "error": 0,
+    "skipped": 0,
+    "tests": [
+      {
+        "name": "test_adapter_loads_with_requested_device_and_compute_type",
+        "classname": "tests.test_whisper",
+        "outcome": "passed",
+        "time_s": 1.379,
+        "properties": {
+          "observed_whisper_class": "faster_whisper.transcribe.WhisperModel",
+          "observed_ct2_class": "ctranslate2._ext.Whisper",
+          "observed_ct2_device": "cuda",
+          "observed_ct2_compute_type": "float16",
+          "observed_ct2_is_multilingual": "False",
+          "observed_cuda_devices": "1",
+          "observed_model_path": "/root/.cache/huggingface/hub/models--Systran--faster-whisper-base.en/snapshots/3d3d5dee26484f91867d81cb899cfcf72b96be6c",
+          "observed_model_bin_sha256": "2a166925539a16005f14ff328359f9b9adb9dc4fb631bb3b227526862e93e2ef"
+        }
+      },
+      {
+        "name": "test_adapter_decodes_silence_and_empty_audio",
+        "classname": "tests.test_whisper",
+        "outcome": "passed",
+        "time_s": 0.345
+      },
+      {
+        "name": "test_adapter_transcribes_real_speech",
+        "classname": "tests.test_whisper",
+        "outcome": "passed",
+        "time_s": 0.9,
+        "properties": {
+          "corpus_wer_final": "0.05309734513274336",
+          "corpus_wer_partial_settings": "0.05309734513274336"
+        }
+      },
+      {
+        "name": "test_adapter_final_decode_is_deterministic",
+        "classname": "tests.test_whisper",
+        "outcome": "passed",
+        "time_s": 0.235
+      },
+      {
+        "name": "test_adapter_wraps_decode_errors",
+        "classname": "tests.test_whisper",
+        "outcome": "passed",
+        "time_s": 0.001
+      },
+      {
+        "name": "test_server_loads_real_model_from_settings",
+        "classname": "tests.test_whisper",
+        "outcome": "passed",
+        "time_s": 0.577,
+        "properties": {
+          "reported_health_model": "{\"backend\": \"whisper\", \"name\": \"base.en\", \"device\": \"cuda\", \"compute_type\": \"float16\"}"
+        }
+      },
+      {
+        "name": "test_websocket_streams_real_speech",
+        "classname": "tests.test_whisper",
+        "outcome": "passed",
+        "time_s": 5.815,
+        "properties": {
+          "websocket_wer": "0.11538461538461539"
+        }
+      },
+      {
+        "name": "test_server_shutdown_releases_inference_workers",
+        "classname": "tests.test_whisper",
+        "outcome": "passed",
+        "time_s": 0.359
+      }
+    ]
+  },
+  "expected_tests": [
+    "test_adapter_decodes_silence_and_empty_audio",
+    "test_adapter_final_decode_is_deterministic",
+    "test_adapter_loads_with_requested_device_and_compute_type",
+    "test_adapter_transcribes_real_speech",
+    "test_adapter_wraps_decode_errors",
+    "test_server_loads_real_model_from_settings",
+    "test_server_shutdown_releases_inference_workers",
+    "test_websocket_streams_real_speech"
+  ],
+  "complete": true,
+  "problems": []
+}
