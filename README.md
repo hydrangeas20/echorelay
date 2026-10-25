@@ -319,13 +319,15 @@ python clients/stream_wav.py --synthetic 3
 
 The fake adapter emits synthetic transcript tokens and is useful for exercising the WebSocket lifecycle without GPU access.
 
-### Real-model smoke test
+### Real-model tests
 
 ```bash
-pytest -m whisper
+python -m pytest -q -m whisper
 ```
 
-This test requires access to the actual Whisper model weights and may download them on first use. It was excluded from the recorded validation because model downloads were unavailable in that environment. A successful real-model smoke test should be confirmed separately before claiming end-to-end model validation.
+Eight tests run the real `base.en` model at three levels: the adapter (device and compute type in effect, transcripts of reference speech, error wrapping), the server (`/health` after loading from settings, clean shutdown), and a real WebSocket stream of reference speech. They need the model weights (downloaded on first use) and, for the speech tests, the 5-utterance reference set; `ECHORELAY_TEST_DEVICE=cuda` selects the GPU.
+
+**GPU verification is pending:** these tests have not yet been run against the real model on a T4. They were excluded from the recorded validation because model downloads were unavailable in that environment. See [Real-model verification](docs/whisper-verification.md) for what each test claims, the one-cell Colab procedure, and the verification log.
 
 ### Docker
 
@@ -546,6 +548,7 @@ These limitations are part of the engineering record and inform the next researc
 | [Scheduling Design](docs/scheduling-design.md)                          | Scheduler mechanics, invariants, and race conditions |
 | [Measurement Definitions](docs/measurements.md)                         | Metrics, timing boundaries, and analysis methodology |
 | [GPU Workflow](benchmarks/COLAB.md)                                     | Colab experiment execution                           |
+| [Real-Model Verification](docs/whisper-verification.md)                 | Real Whisper test suite and its status (GPU pending) |
 | [Protocol](docs/protocol.md)                                            | WebSocket messages and error behavior                |
 
 ---

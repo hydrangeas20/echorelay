@@ -108,6 +108,20 @@ and writes the first 50 utterances of 3–20 s (sorted by id) with
 references. Keep `eval_audio/` unchanged across all runs; every result file
 records each file's SHA-256.
 
+### 2b. Real-model test suite (`pytest -m whisper`)
+
+The adapter, server and WebSocket tests against the real model, with a
+record of the environment and results. Needs the 5-utterance reference set
+(not the 50-file `eval_audio`):
+
+```bash
+!python -m benchmarks.prepare_audio --out /content/eval_audio5 --num 5
+!python -m benchmarks.whisper_verification --audio-dir /content/eval_audio5 --device cuda --out /content/whisper_verification
+```
+
+Pass criterion: the last line reads `COMPLETE: 8 passed, 0 failed, 0 errors,
+0 skipped`. See [docs/whisper-verification.md](../docs/whisper-verification.md).
+
 ## 3. Server smoke test (one real stream)
 
 ```bash
