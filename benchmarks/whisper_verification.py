@@ -23,8 +23,25 @@ that does not):
   the requested device and compute type, the ``base.en`` weights snapshot,
   and (for CUDA) a visible CUDA device and the expected GPU in ``nvidia-smi``.
   The requested settings in the record are not evidence of any of this;
-* no ``PYTEST_ADDOPTS`` or ``PYTHONPATH`` override (they could inject plugins
-  or substitute modules), and the checkout had no local edits.
+* no ``PYTEST_ADDOPTS``, ``PYTEST_PLUGINS`` or ``PYTHONPATH`` override (they
+  could inject plugins or substitute modules), and the checkout had no local
+  edits.
+
+The record also carries ``provenance``, which does not affect ``complete``:
+
+* ``environment_metadata``: allowlisted CUDA / dynamic-loader / pytest
+  variables (``LD_LIBRARY_PATH`` split into entries, ``LD_PRELOAD``,
+  ``CUDA_*``, ``CT2_*``...) as passed to the test process, with credentials
+  redacted; where the CUDA 12 cuBLAS / cuDNN 9 libraries sit on that search
+  path; installed ``nvidia-*`` wheels. This describes the environment. It is
+  **not** proof of which library was loaded.
+* ``pytest_plugins``: the auto-loadable plugins (``pytest11`` entry points,
+  with distribution versions) and the list pytest itself reported loading.
+* ``loaded_libraries``: CUDA-related shared objects mapped into the pytest
+  process after real decodes (``/proc/self/maps``, Linux only), as recorded
+  by the real-speech test. This is what was actually loaded, in that process.
+
+Nothing outside the allowlist is read from the environment.
 
 Exit status: pytest's if non-zero, otherwise 0 if complete, else 3.
 """
@@ -32,12 +49,15 @@ Exit status: pytest's if non-zero, otherwise 0 if complete, else 3.
 from __future__ import annotations
 
 import argparse
+import json
 import os
+import re
 import shutil
 import subprocess
 import sys
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
+from importlib import metadata
 from pathlib import Path
 
 from .common import environment, write_json
@@ -57,7 +77,23 @@ EXPECTED_TESTS = frozenset({
 IDENTITY_TEST = "test_adapter_loads_with_requested_device_and_compute_type"
 WHISPER_CLASS = "faster_whisper.transcribe.WhisperModel"
 CT2_CLASS = "ctranslate2._ext.Whisper"
-OVERRIDE_VARS = ("PYTEST_ADDOPTS", "PYTHONPATH")
+OVERRIDE_VARS = ("PYTEST_ADDOPTS", "PYTEST_PLUGINS", "PYTHONPATH")
+LOADED_LIBRARIES_TEST = "test_adapter_transcribes_real_speech"
+
+# Environment provenance: only these variables are read, never the whole
+# environment. Path lists are recorded entry by entry.
+PROVENANCE_VARS = (
+    "LD_LIBRARY_PATH", "LD_PRELOAD", "CUDA_HOME", "CUDA_PATH", "CUDA_VISIBLE_DEVICES",
+    "CUDA_MODULE_LOADING", "NVIDIA_VISIBLE_DEVICES", "NVIDIA_DRIVER_CAPABILITIES",
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD",
+)
+PROVENANCE_PREFIXES = ("CT2_",)  # CTranslate2 runtime switches
+PATH_LIST_VARS = frozenset({"LD_LIBRARY_PATH", "LD_PRELOAD"})
+# The CUDA libraries the CTranslate2 4.x wheels load at run time.
+CUDA_RUNTIME_LIBRARIES = ("libcublas.so.12", "libcublasLt.so.12", "libcudnn.so.9")
+# userinfo after "//" (with or without a scheme), e.g. https://user:pw@host
+_URL_USERINFO = re.compile(r"(?P<scheme>//)[^/@\s]+@")
+_SECRET_LIKE = re.compile(r"(token|secret|passw|apikey|api_key|credential|auth)", re.I)
 
 
 def _nvidia_smi() -> str | None:
@@ -65,6 +101,106 @@ def _nvidia_smi() -> str | None:
         return None
     q = subprocess.run(["nvidia-smi"], capture_output=True, text=True, timeout=30, check=False)
     return q.stdout if q.returncode == 0 else f"nvidia-smi exited {q.returncode}: {q.stderr}"
+
+
+def _redact(value: str) -> str:
+    """Remove credentials a path-like value should never contain."""
+    value = _URL_USERINFO.sub(lambda m: m["scheme"] + "[redacted]@", value)
+    if "=" in value and _SECRET_LIKE.search(value.split("=", 1)[0]):
+        return "[redacted]"
+    return value[:4096]
+
+
+def _split_redacted(raw: str, sep: str) -> list[str]:
+    """Redact the whole value first, so splitting can never separate a
+    credential from the context that marks it as one."""
+    clean = _URL_USERINFO.sub(lambda m: m["scheme"] + "[redacted]@", raw)
+    return [_redact(e) for e in clean.split(sep) if e]
+
+
+def environment_metadata(environ: dict[str, str]) -> dict:
+    """Allowlisted CUDA / loader / pytest variables from the environment the
+    tests ran with. Metadata only: it says where the loader *would* look, not
+    what it loaded."""
+    names = [n for n in PROVENANCE_VARS if n in environ]
+    names += sorted(n for n in environ if n.startswith(PROVENANCE_PREFIXES) and n not in names)
+    variables: dict[str, object] = {}
+    for name in names:
+        raw = environ[name]
+        if _SECRET_LIKE.search(name):
+            variables[name] = "[redacted]"
+        elif name in PATH_LIST_VARS:
+            sep = " " if name == "LD_PRELOAD" and ":" not in raw else ":"
+            variables[name] = _split_redacted(raw, sep)
+        else:
+            variables[name] = _redact(raw)
+    search_path = variables.get("LD_LIBRARY_PATH", [])
+    found = {lib: [d for d in search_path if (Path(d) / lib).exists()] for lib in CUDA_RUNTIME_LIBRARIES}
+    return {
+        "note": ("environment metadata, not proof of loading: see loaded_libraries "
+                 "for what the test process actually mapped"),
+        "variables": variables,
+        "unset": [n for n in PROVENANCE_VARS if n not in environ],
+        "ld_library_path_entries_exist": {d: Path(d).is_dir() for d in search_path},
+        "cuda_libraries_on_search_path": found,
+        "nvidia_wheels": nvidia_wheels(),
+    }
+
+
+def nvidia_wheels() -> dict[str, str]:
+    """Installed ``nvidia-*`` distributions (pip-provided CUDA libraries)."""
+    out: dict[str, str] = {}
+    for dist in metadata.distributions():
+        name = dist.metadata["Name"] or ""
+        if name.lower().startswith("nvidia-"):
+            out[name] = dist.version
+    return dict(sorted(out.items()))
+
+
+def pytest_plugin_inventory() -> list[dict]:
+    """Plugins pytest auto-loads from installed packages (``pytest11`` entry
+    points). Same interpreter and site-packages as the test run."""
+    plugins = []
+    for ep in metadata.entry_points(group="pytest11"):
+        dist = getattr(ep, "dist", None)
+        plugins.append({"name": ep.name, "module": ep.value,
+                        "distribution": dist.name if dist else None,
+                        "version": dist.version if dist else None})
+    return sorted(plugins, key=lambda p: p["name"])
+
+
+def plugins_reported_by_pytest(log: str) -> list[str] | None:
+    """The ``plugins:`` header pytest printed for the run (what it loaded)."""
+    m = re.search(r"^plugins: (.*)$", log, re.M)
+    return [p.strip() for p in m.group(1).split(",")] if m else None
+
+
+def loaded_libraries(results: dict) -> dict:
+    """CUDA-related libraries the test process had mapped after decoding, as
+    recorded by the real-speech test. Absent if that test did not record it."""
+    props = next((t.get("properties", {}) for t in results.get("tests", [])
+                  if t["name"] == LOADED_LIBRARIES_TEST), {})
+    raw = props.get("observed_loaded_libraries")
+    if raw is None:
+        return {"available": False, "reason": "not recorded by the test run"}
+    try:
+        value = json.loads(raw)
+    except ValueError:
+        return {"available": False, "reason": f"unreadable value {raw[:200]!r}"}
+    if not isinstance(value, list):
+        return {"available": False, "reason": str(value)[:200]}
+    return {"available": True, "source": "/proc/self/maps of the pytest process, after the real-speech test's decodes",
+            "libraries": value}
+
+
+def provenance(environ: dict[str, str], results: dict, log: str) -> dict:
+    return {
+        "environment_metadata": environment_metadata(environ),
+        "pytest_plugins": {"auto_loadable": pytest_plugin_inventory(),
+                           "reported_loaded": plugins_reported_by_pytest(log),
+                           "autoload_disabled": bool(environ.get("PYTEST_DISABLE_PLUGIN_AUTOLOAD"))},
+        "loaded_libraries": loaded_libraries(results),
+    }
 
 
 def _junit_results(path: Path) -> dict:
@@ -195,6 +331,7 @@ def main() -> None:
                           if t["name"] == IDENTITY_TEST), {}),
         "environment": env_info,
         "nvidia_smi": _nvidia_smi(),
+        "provenance": provenance(env, results, proc.stdout + proc.stderr),
         "pytest_exit_code": proc.returncode,
         "results": results,
         "expected_tests": sorted(EXPECTED_TESTS),

@@ -5,6 +5,13 @@
 > recorder reported `complete: true` with no problems. The evidence is
 > committed unmodified in [`docs/benchmarks/whisper-t4/`](benchmarks/whisper-t4/README.md).
 > One verified configuration only; see [Limitations](#limitations).
+>
+> **Later changes not yet re-verified on a GPU.** PR #10 changed
+> `tests/test_whisper.py` (a corrected comment; the real-speech test also
+> records the CUDA libraries it loaded) and `benchmarks/whisper_verification.py`
+> (environment provenance, and `PYTEST_PLUGINS` treated as an override). That
+> code has been tested offline only. The T4 result above applies to `096a034`;
+> see [Status of later changes](#status-of-later-changes).
 
 ## Why this exists
 
@@ -47,10 +54,10 @@ transcript 0.1154 under v2, so for this utterance the two normalizers agree.
 
 *Correction.* The suite was written citing Phase 1's 0.0708 (8 / 113) as the
 recorded corpus value. That figure was scored with the **v1** normalizer on
-the same transcripts; the comparable v2 value is 0.0531. The comment above
-`MAX_CORPUS_WER` in `tests/test_whisper.py` still cites 0.0708. It is left
-unchanged so that the test file stays byte-identical to the verified commit.
-The bound itself is unaffected.
+the same transcripts; the comparable v2 value is 0.0531. PR #9 left the stale
+comment in place so that the test file stayed byte-identical to the verified
+commit. PR #10 corrected it, explaining the v1/v2 distinction. The bound was
+not changed.
 
 **Not covered.** GPU memory release after shutdown (only worker threads and
 the port are checked), concurrency under load (covered by the benchmarks,
@@ -111,9 +118,9 @@ on `tests/test_whisper.py` with `ECHORELAY_TEST_DEVICE=cuda` and
 `ECHORELAY_TEST_COMPUTE_TYPE=float16`, then writes `record.json` (UTC times,
 git commit and dirty flag, `nvidia-smi` output, GPU and driver, Python and
 package versions, the requested model, device and compute type, the exact
-command, any `PYTEST_ADDOPTS` / `PYTHONPATH` overrides, per-test outcomes with
-recorded WER, and the runtime identity observed during the run), `pytest.log`
-and `junit.xml`.
+command, any `PYTEST_ADDOPTS` / `PYTEST_PLUGINS` / `PYTHONPATH` overrides,
+per-test outcomes with recorded WER, the runtime identity observed during the
+run, and environment provenance), `pytest.log` and `junit.xml`.
 
 **What `complete: true` requires.** The requested settings in the record are
 not treated as evidence. `complete` is true only if `problems` is empty, i.e.:
@@ -128,12 +135,62 @@ not treated as evidence. `complete` is true only if `problems` is empty, i.e.:
   faster-whisper resolved (with the SHA-256 of its `model.bin`), and an
   English-only model;
 * on CUDA, `nvidia-smi` lists a GPU containing `T4` (`--expect-gpu`);
-* `PYTEST_ADDOPTS` and `PYTHONPATH` are unset, so no plugin or module was
-  injected, and the checkout had no local edits.
+* `PYTEST_ADDOPTS`, `PYTEST_PLUGINS` and `PYTHONPATH` are unset, so no plugin
+  or module was injected, and the checkout had no local edits.
+  `PYTEST_PLUGINS` was added in PR #10; the `096a034` run predates that check.
 
 `tests/test_whisper_verification.py` (offline, in CI) checks each of these
 rules. The `model.bin` hash is recorded for traceability; there is no
 committed reference hash to compare it against.
+
+### Environment provenance
+
+Since PR #10 the record has a `provenance` section. It never changes
+`complete`. It separates what the environment *said* from what the test
+process *loaded*:
+
+| Field | What it is | What it is not |
+|---|---|---|
+| `environment_metadata.variables` | Allowlisted variables passed to the test process: `LD_LIBRARY_PATH` (as entries), `LD_PRELOAD`, `CUDA_HOME`, `CUDA_PATH`, `CUDA_VISIBLE_DEVICES`, `CUDA_MODULE_LOADING`, `NVIDIA_VISIBLE_DEVICES`, `NVIDIA_DRIVER_CAPABILITIES`, `PYTEST_DISABLE_PLUGIN_AUTOLOAD`, any `CT2_*` | Proof of anything loaded. Nothing outside the allowlist is read. URL credentials and secret-looking `KEY=value` entries are redacted. |
+| `environment_metadata.cuda_libraries_on_search_path` | Which `LD_LIBRARY_PATH` directories contain `libcublas.so.12`, `libcublasLt.so.12`, `libcudnn.so.9` | Which copy the loader picked: it also searches `RUNPATH`, `ld.so.cache` and system directories. |
+| `environment_metadata.nvidia_wheels` | Installed `nvidia-*` pip distributions and versions | Proof they were used. |
+| `pytest_plugins.auto_loadable` | `pytest11` entry points (plugin, module, distribution, version) in the recorder's interpreter, which is the one the tests run in | A guarantee: pytest decides at start-up. |
+| `pytest_plugins.reported_loaded` | The `plugins:` line pytest printed for this run | |
+| `loaded_libraries` | CUDA / CTranslate2 shared objects mapped into the pytest process after the real-speech decodes (`/proc/self/maps`, Linux) | Which library served a given call, or anything loaded later. On macOS or without `/proc` it is `available: false`. |
+
+**Limits.**
+* Provenance is recorded but **not** validated: a surprising `LD_PRELOAD` or
+  an extra pytest plugin does not make a run incomplete. Requiring that
+  would mean choosing an allowlist of plugins (Colab's image ships several)
+  or disabling plugin auto-loading for the run. Both are possible follow-ups
+  that change what counts as a valid run, so they are left for a decision.
+* `loaded_libraries` comes from the tests' own process, so a run that
+  substitutes the test code could falsify it. The existing integrity rules
+  (no overrides, clean checkout, the exact expected tests) are what make it
+  trustworthy.
+* The variables are those the recorder passes to pytest. Changes made inside
+  the test process (none in this suite) would not appear.
+
+### Reproducing the environment
+
+To reproduce the `096a034` T4 run as closely as the evidence allows:
+
+1. **Runtime.** A Colab T4 GPU runtime, Python 3.13 (the record shows
+   3.13.16, driver 580.82.07).
+2. **Packages.** Pin the libraries the record lists instead of installing
+   the latest: after `pip install -e ".[dev]" soundfile`, run
+   `pip install faster-whisper==1.2.1 ctranslate2==4.8.3`. Compare the
+   `environment.packages` of your record with
+   `docs/benchmarks/whisper-t4/raw/record.json`.
+3. **Libraries.** Apply the cuBLAS 12 / cuDNN 9 `LD_LIBRARY_PATH` fix (Cell 2
+   below). With the PR #10 recorder, check that `provenance.loaded_libraries`
+   lists `libcublas.so.12` from the pip wheel directory, not CUDA 13's
+   `libcublas.so.13`.
+4. **Recorder environment.** Run it without `PYTHONPATH`, `PYTEST_ADDOPTS` or
+   `PYTEST_PLUGINS` (Cell 2 removes Colab's `PYTHONPATH`).
+5. **Weights.** `observed_model_path` names the Hugging Face snapshot that was
+   used (`3d3d5dee…`), and `observed_model_bin_sha256` its hash. Compare them
+   with the committed record.
 
 The suite also runs on CPU (`int8`) with `--device cpu`. A CPU run verifies
 the adapter, server and WebSocket paths with the real model, but not CUDA or
@@ -190,8 +247,9 @@ successful run's files are committed.*
    from its environment (Cell 2). It exited 0 and reported `complete: true`.
    Those are the committed files.
 
-The record does not capture `LD_LIBRARY_PATH`, so the library-path fix
-appears only in this account, not in the evidence.
+The `096a034` record does not capture `LD_LIBRARY_PATH`, so for that run
+the library-path fix appears only in this account, not in the evidence.
+From PR #10 the recorder records it, and the libraries actually loaded.
 
 ## Limitations
 
@@ -205,11 +263,24 @@ appears only in this account, not in the evidence.
   not measurements.
 * **`model.bin` hash.** Recorded for traceability. No independent reference
   hash is committed to compare it against.
-* **Not recorded by the recorder:** `LD_LIBRARY_PATH`, and the pytest plugins
-  auto-loaded from the environment (they appear only in `pytest.log`).
+* **Provenance in the `096a034` evidence.** That record has no
+  `LD_LIBRARY_PATH`, plugin inventory or loaded-library list; the plugins
+  appear only in its `pytest.log`. The PR #10 recorder records all three,
+  but records them without validating them (see
+  [Environment provenance](#environment-provenance)).
 * **Not in CI.** CI runs the offline suite, including the recorder's
   validation rules (`tests/test_whisper_verification.py`), but not the
   real-model tests. Re-verification is manual (Colab).
+
+## Status of later changes
+
+| Change | Commit | Offline tests | Real-model run |
+|---|---|---|---|
+| Suite, recorder, identity checks | `096a034` | yes | **T4, 8/8, `complete: true`** |
+| v1/v2 comment correction; loaded-library recording in the real-speech test; recorder provenance; `PYTEST_PLUGINS` as an override | PR #10 | yes (`tests/test_whisper_verification.py`) | **not yet re-verified** |
+
+Re-running Cell 2 on a T4 at the PR #10 commit would re-verify the current
+code and produce the first record with provenance.
 
 ## Before the GPU run
 

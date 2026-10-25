@@ -5,9 +5,11 @@ Offline: exercises the validator on synthetic JUnit results."""
 from __future__ import annotations
 
 import copy
+import json
 
 import pytest
 
+from benchmarks import whisper_verification as wv
 from benchmarks.whisper_verification import (
     CT2_CLASS,
     EXPECTED_TESTS,
@@ -133,3 +135,109 @@ def test_duplicate_test_names_are_incomplete():
     results = _results()
     results["tests"].append(copy.deepcopy(results["tests"][0]))
     assert any("duplicate" in p for p in _validate(results))
+
+
+# ------------------------------------------------- environment provenance
+# These cover the record's `provenance` section, which describes the run but
+# never changes `complete`.
+
+
+def test_pytest_plugins_env_is_an_override():
+    """PYTEST_PLUGINS loads arbitrary plugin modules, like PYTEST_ADDOPTS."""
+    assert "PYTEST_PLUGINS" in wv.OVERRIDE_VARS
+    overrides = {"PYTEST_ADDOPTS": None, "PYTHONPATH": None, "PYTEST_PLUGINS": "evil_plugin"}
+    assert any("PYTEST_PLUGINS is set" in p for p in _validate(overrides=overrides))
+
+
+def test_environment_metadata_reads_only_allowlisted_variables(tmp_path):
+    env = {"LD_LIBRARY_PATH": "/a:/b", "CT2_VERBOSE": "1", "HOME": "/root",
+           "AWS_SECRET_ACCESS_KEY": "abc", "GH_TOKEN": "ghp_x", "HF_TOKEN": "hf_x"}
+    meta = wv.environment_metadata(env)
+    assert set(meta["variables"]) == {"LD_LIBRARY_PATH", "CT2_VERBOSE"}
+    assert meta["variables"]["LD_LIBRARY_PATH"] == ["/a", "/b"]
+    assert "LD_PRELOAD" in meta["unset"] and "LD_LIBRARY_PATH" not in meta["unset"]
+    flat = repr(meta)
+    for secret in ("abc", "ghp_x", "hf_x", "/root"):
+        assert secret not in flat
+    assert "not proof of loading" in meta["note"]
+
+
+def test_environment_metadata_redacts_credentials():
+    env = {"CUDA_PATH": "https://user:pw@mirror.example/cuda",
+           "LD_LIBRARY_PATH": "/usr/lib64-nvidia:https://u:pw2@host/lib:/opt/x",
+           "CT2_AUTH_TOKEN": "s3cr3t", "LD_PRELOAD": "/lib/libtcmalloc.so.4 TOKEN=xyz"}
+    meta = wv.environment_metadata(env)
+    v = meta["variables"]
+    assert v["CUDA_PATH"] == "https://[redacted]@mirror.example/cuda"
+    # a URL inside a ':'-separated list is redacted before the list is split
+    assert v["LD_LIBRARY_PATH"] == ["/usr/lib64-nvidia", "https", "//[redacted]@host/lib", "/opt/x"]
+    assert v["CT2_AUTH_TOKEN"] == "[redacted]"
+    assert v["LD_PRELOAD"] == ["/lib/libtcmalloc.so.4", "[redacted]"]
+    flat = repr(meta)
+    for secret in ("pw", "pw2", "s3cr3t", "xyz", "user:", "u:"):
+        assert secret not in flat, secret
+
+
+def test_environment_metadata_locates_cuda_libraries_on_the_search_path(tmp_path):
+    have, empty = tmp_path / "cublas", tmp_path / "empty"
+    have.mkdir()
+    empty.mkdir()
+    (have / "libcublas.so.12").write_bytes(b"")
+    env = {"LD_LIBRARY_PATH": f"{empty}:{have}:{tmp_path / 'missing'}"}
+    meta = wv.environment_metadata(env)
+    assert meta["cuda_libraries_on_search_path"]["libcublas.so.12"] == [str(have)]
+    assert meta["cuda_libraries_on_search_path"]["libcudnn.so.9"] == []
+    assert meta["ld_library_path_entries_exist"] == {
+        str(empty): True, str(have): True, str(tmp_path / "missing"): False}
+
+
+def test_nvidia_wheels_lists_only_nvidia_distributions(monkeypatch):
+    class Dist:
+        def __init__(self, name, version):
+            self.metadata, self.version = {"Name": name}, version
+
+    fake = [Dist("nvidia-cublas-cu12", "12.4.5.8"), Dist("numpy", "2.1.3"),
+            Dist("nvidia-cudnn-cu12", "9.1.0.70")]
+    monkeypatch.setattr(wv.metadata, "distributions", lambda: fake)
+    assert wv.nvidia_wheels() == {"nvidia-cublas-cu12": "12.4.5.8", "nvidia-cudnn-cu12": "9.1.0.70"}
+
+
+def test_pytest_plugin_inventory_includes_versions():
+    inventory = {p["name"]: p for p in wv.pytest_plugin_inventory()}
+    assert inventory["asyncio"]["distribution"] == "pytest-asyncio"  # a dev dependency
+    assert inventory["asyncio"]["version"]
+
+
+def test_plugins_reported_by_pytest_parses_the_header():
+    log = "platform linux\nplugins: asyncio-1.4.0, typeguard-4.6.0, anyio-4.15.1\ncollected 8\n"
+    assert wv.plugins_reported_by_pytest(log) == ["asyncio-1.4.0", "typeguard-4.6.0", "anyio-4.15.1"]
+    assert wv.plugins_reported_by_pytest("no header here") is None
+
+
+def _with_loaded(value: str | None) -> dict:
+    results = _results()
+    for t in results["tests"]:
+        if t["name"] == wv.LOADED_LIBRARIES_TEST and value is not None:
+            t["properties"] = {"observed_loaded_libraries": value}
+    return results
+
+
+def test_loaded_libraries_come_only_from_the_test_process():
+    libs = ["/usr/local/lib/python3.13/dist-packages/nvidia/cublas/lib/libcublas.so.12"]
+    got = wv.loaded_libraries(_with_loaded(json.dumps(libs)))
+    assert got == {"available": True, "libraries": libs,
+                   "source": "/proc/self/maps of the pytest process, after the real-speech test's decodes"}
+    assert wv.loaded_libraries(_with_loaded(None)) == {
+        "available": False, "reason": "not recorded by the test run"}
+    assert wv.loaded_libraries(_with_loaded(json.dumps("unavailable: no maps")))["available"] is False
+    assert wv.loaded_libraries(_with_loaded("{not json"))["available"] is False
+
+
+def test_provenance_never_changes_completeness():
+    """A complete run stays complete whatever provenance says, and an
+    incomplete one stays incomplete: provenance is not evidence of identity."""
+    assert _validate() == []
+    prov = wv.provenance({"LD_LIBRARY_PATH": "/x"}, _results(), "plugins: asyncio-1.4.0\n")
+    assert set(prov) == {"environment_metadata", "pytest_plugins", "loaded_libraries"}
+    assert prov["pytest_plugins"]["reported_loaded"] == ["asyncio-1.4.0"]
+    assert prov["loaded_libraries"]["available"] is False
