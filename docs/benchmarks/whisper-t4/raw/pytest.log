@@ -1,0 +1,31 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.16, pytest-8.4.2, pluggy-1.7.0
+rootdir: /content/echorelay
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, typeguard-4.6.0, anyio-4.15.1, langsmith-0.14.11, platformdirs-4.13.5
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 8 items
+
+tests/test_whisper.py ..
+cuda/float16 final corpus WER = 0.0531 over 5 files
+  1272-135031-0000: Because you are sleeping instead of conquering, the lovely rose princess has become a fiddle without a bow, while poor Shaggy sits there, accuing dove.
+  1272-135031-0001: "'He has gone, and gone for good,' answered Polychrome, who had managed to squeeze into the room beside the dragon, and had witnessed the occurrences with much interest.
+  1272-135031-0002: I have remained a prisoner only because I wish to be one. And with this, he stepped forward and burst the stout chains as easily as if they had been threads.
+  1272-135031-0003: The little girl had been asleep, but she heard the raps and opened the door.
+  1272-135031-0004: The king has flooded disgrace and your friends are asking for you.
+....
+websocket: 10 partials; final WER 0.1154: Because you are sleeping instead of conquering, the lovely rose princess has become a fiddle without a bow, while poor Shaggy sits there, accuing dove.
+..
+
+==================================== PASSES ====================================
+------ generated xml file: /content/whisper_verification_final/junit.xml -------
+=========================== short test summary info ============================
+PASSED tests/test_whisper.py::test_adapter_loads_with_requested_device_and_compute_type
+PASSED tests/test_whisper.py::test_adapter_decodes_silence_and_empty_audio
+PASSED tests/test_whisper.py::test_adapter_transcribes_real_speech
+PASSED tests/test_whisper.py::test_adapter_final_decode_is_deterministic
+PASSED tests/test_whisper.py::test_adapter_wraps_decode_errors
+PASSED tests/test_whisper.py::test_server_loads_real_model_from_settings
+PASSED tests/test_whisper.py::test_websocket_streams_real_speech
+PASSED tests/test_whisper.py::test_server_shutdown_releases_inference_workers
+============================== 8 passed in 9.72s ===============================

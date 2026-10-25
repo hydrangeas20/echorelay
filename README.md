@@ -222,9 +222,10 @@ The repository contains the following benchmark evidence, with checksums recorde
 | Phase 1    |              5 |
 | Phase 3    |             60 |
 | Phase 4    |            105 |
-| **Total**  |        **170** |
+| Real-model verification (T4) |  3 |
+| **Total**  |        **173** |
 
-All three expected manifests were present, and the referenced files matched their recorded checksums.
+All four expected manifests were present, and the referenced files matched their recorded checksums.
 
 Verify the evidence with:
 
@@ -236,15 +237,16 @@ The verifier checks the manifests that exist. A complete repository audit should
 
 ### Test validation
 
-The recorded test validation covered:
+The offline suite (fake and gated backends) runs in CI on every pull request:
 
-- Python 3.11 and Python 3.13.
-- All four combinations of the two experimental scheduling flags.
-- Eight configurations in total.
+- Linux: Python 3.11 and 3.13 × all four combinations of the two experimental scheduling flags (eight configurations).
+- macOS: Python 3.13, default flags.
 
-**Result: 209 tests passed per configuration, with one real-model test deselected.**
+**Result: 269 tests passed per configuration, with the 8 real-model tests deselected.**
 
-The recorded validation included baseline compatibility checks with scheduling flags disabled, deterministic inference-order traces, and WebSocket protocol tests.
+It includes baseline compatibility checks with scheduling flags disabled, deterministic inference-order traces, WebSocket protocol tests, server-shutdown reliability, and the real-model recorder's validation rules.
+
+**Real-model tests: 8 of 8 passed on an NVIDIA T4** (faster-whisper `base.en`, CUDA FP16, commit `096a034`). The run covered the model adapter, server and WebSocket levels. Evidence: [docs/benchmarks/whisper-t4](docs/benchmarks/whisper-t4/README.md).
 
 ### Reproducing the analyses
 
@@ -259,6 +261,7 @@ Detailed procedures and evidence are available in:
 - [Phase 1 T4 Pilot](docs/benchmarks/phase1-t4/README.md)
 - [Phase 3 Scheduling Results](docs/benchmarks/scheduling-t4/README.md)
 - [Phase 4 Results and Evidence](docs/benchmarks/phase4-t4/README.md)
+- [Real-Model Verification Evidence](docs/benchmarks/whisper-t4/README.md)
 - [Colab GPU Workflow](benchmarks/COLAB.md)
 - [Measurement Definitions](docs/measurements.md)
 
@@ -319,13 +322,15 @@ python clients/stream_wav.py --synthetic 3
 
 The fake adapter emits synthetic transcript tokens and is useful for exercising the WebSocket lifecycle without GPU access.
 
-### Real-model smoke test
+### Real-model tests
 
 ```bash
-pytest -m whisper
+python -m pytest -q -m whisper
 ```
 
-This test requires access to the actual Whisper model weights and may download them on first use. It was excluded from the recorded validation because model downloads were unavailable in that environment. A successful real-model smoke test should be confirmed separately before claiming end-to-end model validation.
+Eight tests run the real `base.en` model at three levels: the adapter (device and compute type in effect, transcripts of reference speech, error wrapping), the server (`/health` after loading from settings, clean shutdown), and a real WebSocket stream of reference speech. They need the model weights (downloaded on first use) and, for the speech tests, the 5-utterance reference set; `ECHORELAY_TEST_DEVICE=cuda` selects the GPU.
+
+**Verified on an NVIDIA T4:** all 8 passed with CUDA FP16 (corpus WER 0.0531, streamed-utterance WER 0.1154). That is one configuration; CPU, other GPUs and other model sizes are not verified. See [Real-model verification](docs/whisper-verification.md) for what each test claims, the Colab procedure (including a required CUDA library-path fix), and the verification log.
 
 ### Docker
 
@@ -546,6 +551,7 @@ These limitations are part of the engineering record and inform the next researc
 | [Scheduling Design](docs/scheduling-design.md)                          | Scheduler mechanics, invariants, and race conditions |
 | [Measurement Definitions](docs/measurements.md)                         | Metrics, timing boundaries, and analysis methodology |
 | [GPU Workflow](benchmarks/COLAB.md)                                     | Colab experiment execution                           |
+| [Real-Model Verification](docs/whisper-verification.md)                 | Real Whisper test suite, T4 result, troubleshooting  |
 | [Protocol](docs/protocol.md)                                            | WebSocket messages and error behavior                |
 
 ---

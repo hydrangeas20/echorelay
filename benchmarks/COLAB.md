@@ -1,7 +1,8 @@
 # Running the GPU checks and benchmarks on Google Colab
 
-Nothing in this directory has been run on a GPU yet. Run the stages **in
-order** and stop at the first failure: the smoke stages exist so that a
+These stages produced the committed T4 evidence in `docs/benchmarks/`: the
+Phase 1–4 benchmarks, and the real-model verification in stage 2b. Run the
+stages **in order** and stop at the first failure: the smoke stages exist so that a
 broken CUDA setup or model path is found in two minutes, not halfway
 through a benchmark.
 
@@ -27,7 +28,7 @@ Runtime → Change runtime type → **T4 GPU** (or better).
 ### Public repository
 
 ```bash
-!git clone -b feat/streaming-mvp https://github.com/hydrangeas20/echorelay.git
+!git clone https://github.com/hydrangeas20/echorelay.git
 ```
 
 ### Private repository (no credentials in the notebook, URL, or `.git/config`)
@@ -58,8 +59,7 @@ env = {
     "GIT_CONFIG_VALUE_0": f"AUTHORIZATION: basic {auth}",
 }
 subprocess.run(
-    ["git", "clone", "-b", "feat/streaming-mvp",
-     "https://github.com/hydrangeas20/echorelay.git"],
+    ["git", "clone", "https://github.com/hydrangeas20/echorelay.git"],
     env=env, check=True,
 )
 del token, auth, env
@@ -103,10 +103,36 @@ If loading fails with a `libcudnn` / `libcublas` error: faster-whisper ≥1.1
 `nvidia-cublas-cu12 nvidia-cudnn-cu12==9.*` and set `LD_LIBRARY_PATH` as
 described in the faster-whisper README, then rerun the smoke test.
 
+Observed on Colab (October 2026): `Library libcublas.so.12 is not found or
+cannot be loaded`, because the image exposes CUDA 13's `libcublas.so.13`
+while the pip-installed `libcublas.so.12` sat outside `LD_LIBRARY_PATH`
+(`/usr/lib64-nvidia`). Prepending its directory, and cuDNN 9's if present,
+fixed it. The exact steps are in
+[docs/whisper-verification.md](../docs/whisper-verification.md#troubleshooting-incident-colab-cuda-libraries).
+
 `prepare_audio` downloads Mini LibriSpeech dev-clean-2 (~126 MB) from OpenSLR
 and writes the first 50 utterances of 3–20 s (sorted by id) with
 references. Keep `eval_audio/` unchanged across all runs; every result file
 records each file's SHA-256.
+
+### 2b. Real-model test suite (`pytest -m whisper`)
+
+The adapter, server and WebSocket tests against the real model, with a
+record of the environment and results. Needs the 5-utterance reference set
+(not the 50-file `eval_audio`):
+
+Use the two cells in [docs/whisper-verification.md](../docs/whisper-verification.md#how-to-run).
+They prepare `eval_audio5`, fix the cuBLAS/cuDNN library path, and run
+`python -m benchmarks.whisper_verification --device cuda` **with Colab's
+default `PYTHONPATH=/env/python` removed**. The recorder rejects any
+`PYTHONPATH` or `PYTEST_ADDOPTS` override as an evidence-integrity violation,
+so a plain `!python -m …` in Colab reports `NOT COMPLETE` even when all tests
+pass.
+
+Pass criterion: the last line starts with `COMPLETE: 8 passed, 0 failed, 0
+errors, 0 skipped` and the exit code is 0. Otherwise the recorder prints
+`NOT COMPLETE` and each problem. The verified run is in
+[docs/benchmarks/whisper-t4](../docs/benchmarks/whisper-t4/README.md).
 
 ## 3. Server smoke test (one real stream)
 

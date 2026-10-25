@@ -11,6 +11,7 @@ import time
 import numpy as np
 import pytest
 from conftest import chunks, collect, pcm16
+from gated import GatedTranscriber, until
 
 from echorelay.inference import FakeTranscriber, InferenceRunner
 from echorelay.metrics import Distribution, Metrics, monitor_event_loop_lag
@@ -56,18 +57,31 @@ async def test_runner_separates_queue_wait_from_decode_time():
 
 
 async def test_runner_counts_timeouts_while_queued():
-    runner = InferenceRunner(FakeTranscriber(delay_s=0.5), max_concurrency=1, timeout_s=0.2)
+    # The test decides when the running decode finishes (no fixed sleep): a
+    # timed-out decode keeps its slot until its worker thread returns, and the
+    # release then happens on the loop, so its timing depends on the machine.
+    gated = GatedTranscriber()
+    runner = InferenceRunner(gated, max_concurrency=1, timeout_s=0.2)
     audio = np.zeros(1600, dtype=np.float32)
-    results = await asyncio.gather(
-        runner.transcribe(audio, final=False), runner.transcribe(audio, final=False),
-        return_exceptions=True,
-    )
-    assert all(type(r).__name__ == "InferenceTimeout" for r in results)
-    assert runner.metrics.counter("inference.partial.timeouts") == 2
-    assert runner.metrics.counter("inference.partial.timeouts_while_queued") == 1
-    await asyncio.sleep(0.4)
-    assert runner.in_flight == 0 and runner.waiting == 0
-    runner.shutdown()
+    try:
+        results = await asyncio.gather(
+            runner.transcribe(audio, final=False), runner.transcribe(audio, final=False),
+            return_exceptions=True,
+        )
+        assert all(type(r).__name__ == "InferenceTimeout" for r in results)
+        assert runner.metrics.counter("inference.partial.timeouts") == 2
+        assert runner.metrics.counter("inference.partial.timeouts_while_queued") == 1
+        # Both callers gave up; the first decode is still running and holds the slot.
+        assert gated.started == ["P1600"]
+        assert runner.in_flight == 1 and runner.waiting == 0
+        gated.release_all()
+        await until(lambda: runner.in_flight == 0, what="timed-out decode to release its slot")
+        assert runner.in_flight == 0 and runner.waiting == 0
+        assert runner.scheduler.free == 1  # slot returned, not leaked to the timed-out waiter
+        assert gated.started == ["P1600"]  # the queued request never ran
+    finally:
+        gated.release_all()
+        runner.shutdown()
 
 
 async def test_event_loop_lag_monitor_detects_a_blocked_loop():
