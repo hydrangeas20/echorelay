@@ -51,8 +51,12 @@ Done on the files above, without trusting the recorder's own verdict:
   reports no problems.
 * Every JUnit test `line` matches the `def` of that test in
   `tests/test_whisper.py` at the recorded commit, so the suite that ran is the
-  committed one. `tests/test_whisper.py` and `benchmarks/whisper_verification.py`
-  are unchanged since that commit.
+  committed one. Both `tests/test_whisper.py` and
+  `benchmarks/whisper_verification.py` were unchanged from that commit
+  through the merge of PR #9 (`be98cd1`). PR #10 later changed both (a
+  corrected comment, provenance recording); see
+  [the current status](../../whisper-verification.md#status-of-later-changes).
+  This result applies to `096a034`.
 * `pytest.log` agrees (`8 passed`, rootdir `/content/echorelay`), and its
   timestamps fall inside the recorded run window.
 * The commit exists on `test/whisper-t4-verification` (PR #9).
@@ -76,8 +80,8 @@ These come from the Colab session (the operator's account), not from the
 files above. See [troubleshooting](../../whisper-verification.md#troubleshooting-incident-colab-cuda-libraries):
 
 * `LD_LIBRARY_PATH` was extended to the pip-installed cuBLAS 12 (and cuDNN 9,
-  if present) directories before the run. The recorder does not record
-  `LD_LIBRARY_PATH`.
+  if present) directories before the run. The recorder at `096a034` did not
+  record `LD_LIBRARY_PATH`; it does from PR #10 onwards.
 * The recorder was started with Colab's default `PYTHONPATH=/env/python`
   removed from its environment, so the record shows no override.
 * pytest auto-loaded the plugins installed on the Colab image (`typeguard`,

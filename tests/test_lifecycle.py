@@ -10,6 +10,7 @@ from echorelay.inference import FakeTranscriber, InferenceRunner
 from echorelay.session import StreamSession
 
 from conftest import make_settings
+from gated import until
 
 
 async def test_cancelling_session_cancels_and_awaits_pending_receive():
@@ -78,17 +79,23 @@ async def test_cancelling_session_mid_partial_cancels_receive_and_partial():
     session = StreamSession("mid", make_settings(idle_timeout_s=60), runner, receive, send)
     before = asyncio.all_tasks()
     task = asyncio.create_task(session.run())
-    while runner.in_flight == 0:
-        await asyncio.sleep(0.01)
-
-    task.cancel()
     try:
-        await task
-    except asyncio.CancelledError:
-        pass
+        await until(lambda: runner.in_flight > 0, what="partial decode to start")
 
-    assert receive_state["cancelled"] == 1
-    assert not (asyncio.all_tasks() - before)
-    await asyncio.sleep(0.4)  # worker thread finishes; its slot is released
-    assert runner.in_flight == 0
-    runner.shutdown()
+        task.cancel()
+        try:
+            await task
+        except asyncio.CancelledError:
+            pass
+
+        assert receive_state["cancelled"] == 1
+        assert not (asyncio.all_tasks() - before)
+        # The worker thread finishes the decode, then its slot is released on
+        # the loop; when depends on the machine, so wait for state, bounded.
+        await until(lambda: runner.in_flight == 0, what="decode slot to be released")
+        assert runner.in_flight == 0
+    finally:
+        if not task.done():  # a failed wait above: don't leave the session running
+            task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
+        runner.shutdown()

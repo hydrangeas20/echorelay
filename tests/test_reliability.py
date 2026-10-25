@@ -106,6 +106,18 @@ async def _drain(ws) -> list[dict]:
     return events
 
 
+async def _await_metrics(srv: LiveServer, pred, what: str, timeout: float = 5.0) -> dict:
+    """Wait (bounded) for server state from inside a client scenario, so a
+    regression fails with a message instead of hanging the run."""
+    deadline = time.monotonic() + timeout
+    while True:
+        m = srv.metrics()
+        if pred(m):
+            return m
+        assert time.monotonic() < deadline, f"timed out waiting for {what}: {m}"
+        await asyncio.sleep(0.01)
+
+
 def _assert_recovered(srv: LiveServer) -> None:
     srv.wait_idle()
     srv.fake.delay_s = 0.0
@@ -125,8 +137,7 @@ def test_disconnect_during_final_decode(live):
         await ws.recv()
         await ws.send(pcm16(1.0))
         await ws.send(json.dumps({"type": "end"}))
-        while srv.metrics()["inference"]["in_flight"] == 0:
-            await asyncio.sleep(0.01)
+        await _await_metrics(srv, lambda m: m["inference"]["in_flight"] > 0, "final decode to start")
         ws.transport.abort()  # gone while the final decode runs
 
     asyncio.run(scenario())
@@ -149,8 +160,7 @@ def test_disconnect_while_queued_for_inference(live):
         await victim.recv()
         await victim.send(pcm16(1.0))
         await victim.send(json.dumps({"type": "end"}))
-        while srv.metrics()["inference"]["waiting"] == 0:
-            await asyncio.sleep(0.01)
+        await _await_metrics(srv, lambda m: m["inference"]["waiting"] > 0, "victim to queue")
         victim.transport.abort()  # leaves while waiting for a slot
         events = [json.loads(m) async for m in hog]
         assert events[-1]["type"] == "final"
@@ -168,9 +178,14 @@ def test_slow_sender_within_idle_timeout_completes(live):
     async def scenario():
         async with websockets.connect(srv.url) as ws:
             await ws.recv()
-            for frame in chunks(pcm16(1.0), seconds=0.25):
+            # 0.1 s of audio every 0.15 s: slower than real time (1.5x), with
+            # gaps far enough under the 0.5 s idle limit (0.35 s of margin)
+            # that a late wake-up on a loaded runner cannot fire it. The
+            # stream still lasts well past 0.5 s in total, so an idle timer
+            # that stopped resetting on each frame would still fail this.
+            for frame in chunks(pcm16(1.0), seconds=0.1):
                 await ws.send(frame)
-                await asyncio.sleep(0.35)  # slower than real time, under idle limit
+                await asyncio.sleep(0.15)
             await ws.send(json.dumps({"type": "end"}))
             return [json.loads(m) async for m in ws], ws.close_code
 
@@ -230,8 +245,7 @@ def test_malformed_message_while_partial_in_flight(live):
             await ws.recv()
             for frame in chunks(pcm16(1.0)):
                 await ws.send(frame)
-            while srv.metrics()["inference"]["in_flight"] == 0:
-                await asyncio.sleep(0.01)
+            await _await_metrics(srv, lambda m: m["inference"]["in_flight"] > 0, "partial decode to start")
             await ws.send("{not json")
             return await _drain(ws), ws.close_code
 
@@ -257,8 +271,7 @@ def test_shutdown_with_active_streams_terminates(live):
 
     async def scenario():
         tasks = [asyncio.create_task(client()) for _ in range(3)]
-        while srv.metrics()["streams"]["active"] < 3:
-            await asyncio.sleep(0.02)
+        await _await_metrics(srv, lambda m: m["streams"]["active"] >= 3, "3 active streams", timeout=10)
         t0 = time.monotonic()
         srv.server.should_exit = True
         await asyncio.wait_for(asyncio.gather(*tasks), timeout=15)

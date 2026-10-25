@@ -330,7 +330,7 @@ python -m pytest -q -m whisper
 
 Eight tests run the real `base.en` model at three levels: the adapter (device and compute type in effect, transcripts of reference speech, error wrapping), the server (`/health` after loading from settings, clean shutdown), and a real WebSocket stream of reference speech. They need the model weights (downloaded on first use) and, for the speech tests, the 5-utterance reference set; `ECHORELAY_TEST_DEVICE=cuda` selects the GPU.
 
-**Verified on an NVIDIA T4:** all 8 passed with CUDA FP16 (corpus WER 0.0531, streamed-utterance WER 0.1154). That is one configuration; CPU, other GPUs and other model sizes are not verified. See [Real-model verification](docs/whisper-verification.md) for what each test claims, the Colab procedure (including a required CUDA library-path fix), and the verification log.
+**Verified on an NVIDIA T4** at commit `096a034`: all 8 passed with CUDA FP16 (corpus WER 0.0531, streamed-utterance WER 0.1154). That is one configuration; CPU, other GPUs and other model sizes are not verified. The test file and recorder have since gained environment provenance; that version has been tested offline but not yet re-run on a GPU. See [Real-model verification](docs/whisper-verification.md) for what each test claims, the Colab procedure (including a required CUDA library-path fix), and the verification log.
 
 ### Docker
 

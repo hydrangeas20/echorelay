@@ -21,8 +21,8 @@ Configuration (environment variables):
 
 The speech tests require exactly the five Mini LibriSpeech dev-clean-2 files
 of the recorded Phase 1 precision run (checked by PCM SHA-256), so their WER
-is comparable to the recorded FP16 value (0.0708). The WER bound below is a
-regression guard, not a measurement.
+is comparable to the recorded T4 FP16 values (see the bounds below). The WER
+bounds are regression guards, not measurements.
 """
 
 from __future__ import annotations
@@ -52,12 +52,19 @@ DEVICE = os.getenv("ECHORELAY_TEST_DEVICE", "cpu")
 COMPUTE_TYPE = os.getenv("ECHORELAY_TEST_COMPUTE_TYPE", "float16" if DEVICE == "cuda" else "int8")
 MODEL_DIR = os.getenv("ECHORELAY_MODEL_DIR")
 AUDIO_DIR = os.getenv("ECHORELAY_TEST_AUDIO_DIR")
-# Recorded FP16 corpus WER on these five files is 0.0708 (8 edits / 113 words).
-# 0.12 allows ~5 extra word errors for library/driver drift; a broken decode
-# path (wrong sample rate, wrong scaling, truncated audio) lands far above it.
+# WER here is scored with the v2 normalizer (benchmarks.common default since
+# Phase 2: typographic quotes mapped, edge punctuation stripped). Recorded T4
+# FP16 corpus WER on these five files under v2 is 0.0531 (6 edits / 113 words:
+# docs/benchmarks/scheduling-t4 and the real-model run in
+# docs/benchmarks/whisper-t4). Phase 1 reported 0.0708 (8 / 113) for the SAME
+# transcripts because it scored them with v1; the difference is scoring, not
+# decoding. 0.12 allows several extra word errors for library/driver drift; a
+# broken decode path (wrong sample rate, scaling, truncated audio) lands far
+# above it.
 MAX_CORPUS_WER = 0.12
 # Recorded FP16 WER of the streamed utterance (1272-135031-0000) is 0.1154
-# (3 edits / 26 words, docs/benchmarks/phase1-t4/raw/gpu_smoke.json).
+# (3 edits / 26 words): v1 in docs/benchmarks/phase1-t4/raw/gpu_smoke.json and
+# v2 in docs/benchmarks/whisper-t4 agree for this utterance.
 MAX_STREAM_WER = 0.25
 
 
@@ -149,9 +156,23 @@ def test_adapter_decodes_silence_and_empty_audio(model):
     assert model.transcribe(np.zeros(0, dtype=np.float32), final=True).text == ""
 
 
+def _loaded_libraries() -> list[str] | str:
+    """CUDA-related shared objects mapped into this process (Linux). Evidence
+    of what a decode actually loaded, unlike LD_LIBRARY_PATH, which only says
+    where the loader would look."""
+    from benchmarks.whisper_verification import parse_loaded_libraries
+
+    try:
+        with open("/proc/self/maps") as maps:
+            return parse_loaded_libraries(maps)
+    except OSError as exc:
+        return f"unavailable: {exc.strerror or exc}"
+
+
 def test_adapter_transcribes_real_speech(model, utterances, record_property):
     finals = [model.transcribe(u.float32(), final=True).text for u in utterances]
     partial_settings = [model.transcribe(u.float32(), final=False).text for u in utterances]
+    record_property("observed_loaded_libraries", json.dumps(_loaded_libraries()))  # before asserting
     assert all(t.strip() for t in finals), finals
     assert all(t.strip() for t in partial_settings), partial_settings
     wer = _wer([u.reference for u in utterances], finals)
